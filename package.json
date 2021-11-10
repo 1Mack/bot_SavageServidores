@@ -1,0 +1,22 @@
+{
+  "name": "botmain",
+  "version": "1.0.0",
+  "description": "",
+  "main": "bot.js",
+  "dependencies": {
+    "@discordjs/rest": "^0.1.0-canary.0",
+    "chalk": "^4.1.1",
+    "discord-api-types": "^0.23.1",
+    "discord.js": "^13.2.0",
+    "gamedig": "^3.0.7",
+    "mysql2": "^2.3.3-rc.0",
+    "node-fetch": "^2.6.1",
+    "steamid": "^2.0.0"
+  },
+  "scripts": {
+    "start": "node ."
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
