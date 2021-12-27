@@ -12,7 +12,7 @@ exports.TicketCreate = async function (interaction, client) {
             permissionOverwrites: [
                 {
                     id: guild.roles.everyone,
-                    deny: ['VIEW_CHANNEL'],
+                    deny: ['VIEW_CHANNEL', 'SEND_MESSAGES'],
                 },
                 {
                     id: interaction.user.id,
@@ -24,7 +24,7 @@ exports.TicketCreate = async function (interaction, client) {
         .then(async (m) => {
             interaction.reply({embeds: [ChannelCreated(interaction.user, m)], ephemeral: true});
             m.send(`${interaction.user}`).then((m) => m.delete());
-            await m.send({embeds: [TicketStart(interaction.user).embed], components: [TicketStart(interaction.user).lista]});
+            let msg = await m.send({embeds: [TicketStart(interaction.user).embed], components: [TicketStart(interaction.user).lista]});
 
             const filter = i => {
                 i.deferUpdate();
@@ -32,11 +32,10 @@ exports.TicketCreate = async function (interaction, client) {
             };
 
             await m
-                .awaitMessageComponent({ filter, componentType: 'SELECT_MENU', time: 45000})
+                .awaitMessageComponent({ filter, componentType: 'SELECT_MENU', time: 100000})
                 .then(async (response) => {
-                    await m.bulkDelete(10);
 
-                    await m.send({embeds: [TicketServerOptions(interaction.user).embed], components: [TicketServerOptions(interaction.user).lista]});
+                    await msg.edit({embeds: [TicketServerOptions(interaction.user).embed], components: [TicketServerOptions(interaction.user).lista]});
                     const filter = i => {
                         i.deferUpdate();
                         return i.user.id === interaction.user.id;
@@ -46,7 +45,6 @@ exports.TicketCreate = async function (interaction, client) {
                         .awaitMessageComponent({ filter, componentType: 'SELECT_MENU', time: 45000})
                         .then(async (response2) => {
                          
-                             await m.bulkDelete(10);
 
                             const ServerFound = serversInfos.find((f) => f.name == response2.values[0]);
 
@@ -59,7 +57,7 @@ exports.TicketCreate = async function (interaction, client) {
                                 roleStaffComprado: ServerFound.tagComprado,
                             };
 
-                            ticketOptions(m, interaction.user, roles); 
+                            ticketOptions(m, interaction.user, roles, msg); 
                         })
                         .catch((error) => {
                             return m.delete(), console.log(error);

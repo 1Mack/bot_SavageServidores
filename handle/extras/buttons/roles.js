@@ -1,11 +1,13 @@
-const {MessageActionRow, MessageButton} = require('discord.js')
-const {TicketCreate} = require('../../ticket/Create_Ticket')
-const {FormCreate} = require('../../formulario/Create_Form')
+const { MessageActionRow, MessageButton } = require('discord.js')
+const { TicketCreate } = require('../../ticket/Create_Ticket')
+const { FormCreate } = require('../../formulario/Create_Form')
 const { TicketClosed, TicketOpened, TicketDeleting, TicketSaved, TicketLog, ticketActionsEmbed } = require('../../ticket/embed');
 const { Save } = require('../../ticket/Save_Ticket');
+const { Diretor_DemotarConfirm } = require('../demotar');
+const { Captcha } = require('../../protection');
 
 function buttonMessage(buttonType, type, interaction) {
-    interaction.reply({content: `Cargo de **${buttonType}** foi **${type}** com sucesso!`, ephemeral: true})
+    interaction.reply({ content: `Cargo de **${buttonType}** foi **${type}** com sucesso!`, ephemeral: true })
 }
 
 const functionCargos = {
@@ -31,7 +33,7 @@ const functionCargos = {
         }
     },
     'iTut'(interaction) {
-        if (interaction.member.roles.cache.has('808485962161717288'))  {
+        if (interaction.member.roles.cache.has('808485962161717288')) {
             interaction.member.roles.remove('808485962161717288');
             buttonMessage('Tutoriais', 'removido', interaction)
 
@@ -52,49 +54,49 @@ const functionCargos = {
 
         }
     },
-    'ticket'(interaction, client){
+    'ticket'(interaction, client) {
         TicketCreate(interaction, client)
     },
     async 'lock'(interaction, client) {
         //lock
-        if(!interaction.member.roles.cache.has('711022747081506826') && !interaction.member.roles.cache.has('722814929056563260')) return interaction.reply({content: 'Você não tem permissão para fechar o ticket', ephemeral: true});
+        if (!interaction.member.roles.cache.has('711022747081506826') && !interaction.member.roles.cache.has('722814929056563260')) return interaction.reply({ content: 'Você não tem permissão para fechar o ticket', ephemeral: true });
         const rows = new MessageActionRow()
-			.addComponents(
-		                new MessageButton()
-					        .setCustomId('unlock')
-					        .setLabel('Abrir')
-                            .setEmoji('<:unlock_savage:856225547210326046>')
-					        .setStyle('PRIMARY'),
-                        new MessageButton()
-					        .setCustomId('save')
-					        .setLabel('Salvar')
-                            .setEmoji('<:save_savage:856212830969659412>')
-					        .setStyle('PRIMARY'),
-                        new MessageButton()
-					        .setCustomId('delete')
-					        .setLabel('Deletar')
-                            .setEmoji('<:delete_savage:856222528997556244>')
-					        .setStyle('DANGER'),
-			);
-            interaction.update({components: []})
-        interaction.channel.send({embeds: [TicketClosed(interaction.user)], components: [rows]})
-        
+            .addComponents(
+                new MessageButton()
+                    .setCustomId('unlock')
+                    .setLabel('Abrir')
+                    .setEmoji('<:unlock_savage:856225547210326046>')
+                    .setStyle('PRIMARY'),
+                new MessageButton()
+                    .setCustomId('save')
+                    .setLabel('Salvar')
+                    .setEmoji('<:save_savage:856212830969659412>')
+                    .setStyle('PRIMARY'),
+                new MessageButton()
+                    .setCustomId('delete')
+                    .setLabel('Deletar')
+                    .setEmoji('<:delete_savage:856222528997556244>')
+                    .setStyle('DANGER'),
+            );
+        interaction.update({ components: [] })
+        interaction.channel.send({ embeds: [TicketClosed(interaction.user)], components: [rows] })
+
         interaction.guild.members.cache.get(interaction.channel.topic).send({
             embeds: [ticketActionsEmbed('fechado', interaction.user.username, interaction.channel.name.slice(7), interaction.channel)]
         })
-        
+
 
         interaction.channel.permissionOverwrites.edit(interaction.channel.topic, {
             VIEW_CHANNEL: false,
         });
-        client.channels.cache.get('757709253766283294').send({embeds: [TicketLog(interaction.user, 'Fechado', interaction.channel)]});
+        client.channels.cache.get('757709253766283294').send({ embeds: [TicketLog(interaction.user, 'Fechado', interaction.channel)] });
     },
     async 'unlock'(interaction, client) {
         //unlock
         let userFind = interaction.guild.members.cache.find((m) => m.id == interaction.user.id);
 
-        if (userFind._roles.filter((m) => m == '722814929056563260' || m == '603318536798077030') == '') return interaction.reply({content: 'Você não tem permissão para abrir o ticket', ephemeral: true});
-        
+        if (userFind._roles.filter((m) => m == '722814929056563260' || m == '603318536798077030') == '') return interaction.reply({ content: 'Você não tem permissão para abrir o ticket', ephemeral: true });
+
         interaction.guild.members.cache.get(interaction.channel.topic).send({
             embeds: [ticketActionsEmbed('aberto', interaction.user.username, interaction.channel.name.slice(7), interaction.channel)]
         })
@@ -104,53 +106,62 @@ const functionCargos = {
         });
 
         const row = new MessageActionRow()
-                .addComponents(
-                    new MessageButton()
-                        .setCustomId('lock')
-                        .setLabel('Fechar')
-                        .setEmoji('<:lock_savage:856224681136226314>')
-                        .setStyle('PRIMARY')
-                )
+            .addComponents(
+                new MessageButton()
+                    .setCustomId('lock')
+                    .setLabel('Fechar')
+                    .setEmoji('<:lock_savage:856224681136226314>')
+                    .setStyle('PRIMARY')
+            )
 
-        interaction.update({components: []})
-        interaction.channel.send({embeds: [TicketOpened(interaction.user)], components: [row]})
+        interaction.update({ components: [] })
+        interaction.channel.send({ embeds: [TicketOpened(interaction.user)], components: [row] })
 
-        client.channels.cache.get('757709253766283294').send({embeds: [TicketLog(interaction.user, 'Aberto', interaction.channel)]});
+        client.channels.cache.get('757709253766283294').send({ embeds: [TicketLog(interaction.user, 'Aberto', interaction.channel)] });
     },
     'save'(interaction, client) {
         //save
         let userFind = interaction.guild.members.cache.find((m) => m.id == interaction.user.id);
 
-        if (userFind._roles.filter((m) => m == '711022747081506826' || m == '603318536798077030') == '') return interaction.reply({content: 'Você não tem permissão para salvar o ticket', ephemeral: true});
+        if (userFind._roles.filter((m) => m == '711022747081506826' || m == '603318536798077030') == '') return interaction.reply({ content: 'Você não tem permissão para salvar o ticket', ephemeral: true });
 
         const row = new MessageActionRow()
-        .addComponents(
-            new MessageButton()
-            .setCustomId('delete')
-			.setLabel('Deletar')
-            .setEmoji('<:delete_savage:856222528997556244>')
-			.setStyle('DANGER'),
-        )
-        interaction.update({components: []})
+            .addComponents(
+                new MessageButton()
+                    .setCustomId('delete')
+                    .setLabel('Deletar')
+                    .setEmoji('<:delete_savage:856222528997556244>')
+                    .setStyle('DANGER'),
+            )
+        interaction.update({ components: [] })
         Save(interaction, client);
-        interaction.channel.send({embeds: [TicketSaved(interaction.user)], components: [row]});
-        client.channels.cache.get('757709253766283294').send({embeds: [TicketLog(interaction.user, 'Salvo', interaction.channel)]});
+        interaction.channel.send({ embeds: [TicketSaved(interaction.user)], components: [row] });
+        client.channels.cache.get('757709253766283294').send({ embeds: [TicketLog(interaction.user, 'Salvo', interaction.channel)] });
     },
     async 'delete'(interaction, client) {
         //delete
-        if (interaction.user.id !== '323281577956081665') return interaction.reply({content: 'Você não tem permissão para excluir o ticket', ephemeral: true}); //Mack
-        interaction.channel.send({embeds: [TicketDeleting(interaction.user)]});
+        if (interaction.user.id !== '323281577956081665') return interaction.reply({ content: 'Você não tem permissão para excluir o ticket', ephemeral: true }); //Mack
+        interaction.channel.send({ embeds: [TicketDeleting(interaction.user)] });
 
-        interaction.update({components: []})
+        interaction.update({ components: [] })
         setTimeout(() => {
             interaction.channel.delete();
         }, 5000);
         client.channels.cache
             .get('757709253766283294')
-            .send({embeds: [TicketLog(interaction.user, 'Deletado', interaction.channel)]});
+            .send({ embeds: [TicketLog(interaction.user, 'Deletado', interaction.channel)] });
     },
-    'formulario'(interaction, client){
+    'formulario'(interaction, client) {
         FormCreate(interaction, client)
+    },
+    'horasdemotar_demotar2'(interaction, client) {
+        Diretor_DemotarConfirm(interaction, client)
+    },
+    'horasdemotar_recusado'(interaction, client) {
+        Diretor_DemotarConfirm(interaction, client)
+    },
+    'captchaStart'(interaction, client) {
+        Captcha(interaction, client)
     },
 };
 

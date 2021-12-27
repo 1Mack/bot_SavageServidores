@@ -25,7 +25,7 @@ module.exports = {
          let steamid = interaction.options.getString('steamid'),
             servidor = interaction.options.getString('servidor'),
             extra = interaction.options.getString('motivo');
-            interaction.deferReply()
+            await interaction.deferReply()
 
         if (steamid.startsWith('STEAM_0')) {
             steamid = steamid.replace('0', '1');
@@ -179,9 +179,11 @@ module.exports = {
 
                         fetchedUser.roles.remove([serversInfosFound.tagVip, '753728995849142364']);
 
-                        if(fetchedUser.nickname.includes('VIP | ')){
+                        if(fetchedUser.nickname) {
+                            if(fetchedUser.nickname.includes('VIP | ')){
 
-                            fetchedUser.setNickname(fetchedUser.user.username).catch(() => {})
+                                fetchedUser.setNickname(fetchedUser.user.username).catch(() => {})
+                            }
                         }
                     }
                 } else if (staffRoles.length > 1) {

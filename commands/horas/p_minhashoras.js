@@ -7,34 +7,34 @@ module.exports = {
     options: [],
     default_permission: false,
     cooldown: 0,
-    permissions: [{id: '748964438773727334', type: 1, permission: true}], // verificado
+    permissions: [{ id: '748964438773727334', type: 1, permission: true }], // verificado
     async execute(client, interaction) {
 
 
         const con = connection.promise();
         let serversFormatDisplay = []
-      for(let i in serversInfos){
+        for (let i in serversInfos) {
             let result
-            
+
             try {
                 [result] = await con.query(`select * from mostactive_${serversInfos[i].name} WHERE steamid = (select steamid from du_users WHERE userid = '${interaction.user.id}')`);
-            } catch (error) {}
+            } catch (error) { }
             if (result == undefined || result == '') continue;
-                 
-   
-                 function HourFormat(duration) {
-                     var hrs = ~~(duration / 3600);
-                     var mins = ~~((duration % 3600) / 60);
-     
-                     if(mins == 0){
-                         return `${hrs} horas`
-                     }else if(hrs == 0){
-                         return `${mins} minutos`
-                     }else {
-                         return `${hrs} horas e ${mins} minutos`
-                     }
-                 }
-                 serversFormatDisplay.push(`
+
+
+            function HourFormat(duration) {
+                let hrs = ~~(duration / 3600);
+                let mins = ~~((duration % 3600) / 60);
+
+                if (mins == 0) {
+                    return `${hrs} horas`
+                } else if (hrs == 0) {
+                    return `${mins} minutos`
+                } else {
+                    return `${hrs} horas e ${mins} minutos`
+                }
+            }
+            serversFormatDisplay.push(`
                  ***${serversInfos[i].visualName}***
                  
                  **Horas Totais:** ${HourFormat(result[0].total)}
@@ -43,13 +43,13 @@ module.exports = {
                  **Horas CT:** ${HourFormat(result[0].timeCT)}
                  **Última conexao:** ${new Date(result[0].last_accountuse * 1000).toLocaleDateString('en-GB')}
                  ▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃
-                 `)            
+                 `)
         }
 
-        if(serversFormatDisplay.length > 0){
-            interaction.reply({embeds: [minhasHorasEmbed(serversFormatDisplay, interaction.user.username)]})
-        }else {
-            interaction.reply({content: 'Nenhuma hora encontrada!!', ephemeral: true})
+        if (serversFormatDisplay.length > 0) {
+            interaction.reply({ embeds: [minhasHorasEmbed(serversFormatDisplay, interaction.user.username)] })
+        } else {
+            interaction.reply({ content: 'Nenhuma hora encontrada!!', ephemeral: true })
         }
     },
 };

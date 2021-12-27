@@ -1,6 +1,7 @@
-const Discord = require('discord.js');
+const { MessageEmbed } = require('discord.js');
+
 exports.NotTarget = function (interaction) {
-    const embed = new Discord.MessageEmbed()
+    const embed = new MessageEmbed()
         .setColor('#ff0000')
         .setDescription(
             `<a:warning_savage:856210165338603531> ${interaction.user}, você não pode ter o 1Mack como alvo/não pode setar Fundador, Diretor e Gerente!`
@@ -9,7 +10,7 @@ exports.NotTarget = function (interaction) {
 };
 
 exports.logVip = function (fetchUser, discord1, steamid, DataInicialUTC, DataFinalUTC, cargo, valor, extra, interaction) {
-    const embed = new Discord.MessageEmbed()
+    const embed = new MessageEmbed()
         .setColor('#0099ff')
         .setTitle(fetchUser.username.toString())
         .addFields(
@@ -26,7 +27,7 @@ exports.logVip = function (fetchUser, discord1, steamid, DataInicialUTC, DataFin
 };
 
 exports.vipSendMSG = function (fetchUser, cargo, tempo, servidor) {
-    const embed = new Discord.MessageEmbed()
+    const embed = new MessageEmbed()
         .setColor('F0FF00')
         .setTitle(`Olá ${fetchUser.username}`)
         .setDescription(
@@ -41,7 +42,7 @@ exports.vipSendMSG = function (fetchUser, cargo, tempo, servidor) {
 };
 
 exports.AskQuestion = function (interaction) {
-    const embed = new Discord.MessageEmbed().setColor('#cce336').setDescription(
+    const embed = new MessageEmbed().setColor('#cce336').setDescription(
         `<a:warning_savage:856210165338603531> ${interaction.user},  O player que voce esta tentando setar já possui um cargo.
         \n**Digite \`SIM\` - Para eu excluir o cargo anterior e setar o novo**
         \n**ou**\n\n**Digite \`NAO\` - Para que eu deixe o cargo antigo e não ponha o novo**`
@@ -50,7 +51,7 @@ exports.AskQuestion = function (interaction) {
 };
 
 exports.SetSuccess = function (interaction, fetchedUser, cargo) {
-    const embed = new Discord.MessageEmbed()
+    const embed = new MessageEmbed()
         .setColor('#00ff00')
         .setDescription(
             `<a:right_savage:856211226300121098> ${interaction.user}, O **${fetchedUser.username}** foi setado com o cargo **${cargo}** in-game com sucesso !`
@@ -59,7 +60,7 @@ exports.SetSuccess = function (interaction, fetchedUser, cargo) {
 };
 
 exports.isDono = function (interaction) {
-    const embed = new Discord.MessageEmbed()
+    const embed = new MessageEmbed()
         .setColor('#ff0000')
         .setDescription(
             `<a:warning_savage:856210165338603531> ${interaction.user}, Somente o 1MaaaaaacK pode setar alguém de dono !`
@@ -68,7 +69,7 @@ exports.isDono = function (interaction) {
 };
 
 exports.staffSendAllMSG = function (fetchUser, cargo, servidor) {
-    const embed = new Discord.MessageEmbed()
+    const embed = new MessageEmbed()
         .setColor('F0FF00')
         .setTitle('***Novo Staff***')
         .addFields(

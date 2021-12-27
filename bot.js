@@ -4,7 +4,7 @@ const fs = require('fs');
 const { botConfig } = require('./configs/config_privateInfos');
 const { REST } = require('@discordjs/rest');
 const { Routes } = require('discord-api-types/v9');
- const { checagem } = require('./handle/checks/checkVipTime');
+const { Checagem } = require('./handle/checks/checkVipTime');
 
 const commandFolders = fs.readdirSync('./commands');
 const eventFiles = fs.readdirSync('./events').filter((file) => file.endsWith('.js'));
@@ -18,11 +18,11 @@ for (const folder of commandFolders) {
         .filter((file) => file.endsWith('.js') && file.startsWith('p_'));
     for (const file of commandFiles) {
         const command = require(`./commands/${folder}/${file}`);
-       
+
         client.commands.set(command.name, command)
-        
+
     }
-    
+
 }
 for (const file of eventFiles) {
     const event = require(`./events/${file}`);
@@ -48,26 +48,26 @@ process.on('unhandledRejection', (err) => {
 const rest = new REST({ version: '9' }).setToken(botConfig.token);
 
 (async () => {
-	try {
-		await rest.put(
-			Routes.applicationGuildCommands(botConfig.applicationId, '343532544559546368'),
-			{ body: client.commands },
-		) .then((m) => m.forEach(async element => {
-             
-                await rest.put(
-                    Routes.applicationCommandPermissions(botConfig.applicationId, '343532544559546368', element.id),
-                    { body: {permissions: (client.commands.find(m => m.name == element.name).permissions)}},  
-                )
-        })) 
-       
-		console.log('COMANDOS (/) FORAM ATUALIZADOS!');
-	} catch (error) {
-		console.error(error);
-	}
+    try {
+        await rest.put(
+            Routes.applicationGuildCommands(botConfig.applicationId, '343532544559546368'),
+            { body: client.commands },
+        ).then((m) => m.forEach(async element => {
+
+            await rest.put(
+                Routes.applicationCommandPermissions(botConfig.applicationId, '343532544559546368', element.id),
+                { body: { permissions: (client.commands.find(m => m.name == element.name).permissions) } },
+            )
+        }))
+
+        console.log('COMANDOS (/) FORAM ATUALIZADOS!');
+    } catch (error) {
+        console.error(error);
+    }
 })();
 
 setInterval(function () {
-    checagem();
+    Checagem();
 }, 43200000);
 
 client.login(botConfig.token);

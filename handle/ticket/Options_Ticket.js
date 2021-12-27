@@ -1,5 +1,6 @@
 const { TicketTypeChoosed } = require('./embed');
 const {MessageActionRow, MessageButton} = require('discord.js')
+const {compra_Handle} = require('./handles/compra_handle')
 const row = new MessageActionRow()
                 .addComponents(
                     new MessageButton()
@@ -9,7 +10,7 @@ const row = new MessageActionRow()
                         .setStyle('PRIMARY'),        
             );
 const Options = {
-    'bugs'(m, user, roles) {
+    'bugs'(m, user, roles, msg) {
         //bugs
         m.permissionOverwrites.set([
             {
@@ -42,9 +43,9 @@ const Options = {
         m.send({content: `<@&${roles.roleStaff}>, <@&${roles.roleGerente}>, <@&${roles.roleStaffComprado}>`}).then((m) =>
             m.delete()
         );
-        m.send({embeds: [TicketTypeChoosed(user, 'Bugs', roles.servidor)], components: [row]})
+        msg.edit({embeds: [TicketTypeChoosed(user, 'Bugs', roles.servidor)], components: [row]})
     },
-    'denuncia'(m, user, roles) {
+    'denuncia'(m, user, roles, msg) {
         //Denuncia
         m.permissionOverwrites.set([
             {
@@ -77,9 +78,9 @@ const Options = {
         m.send({content: `<@&${roles.roleStaff}>, <@&${roles.roleGerente}>, <@&${roles.roleStaffComprado}>`}).then((m) =>
             m.delete()
         );
-        m.send({embeds: [TicketTypeChoosed(user, 'Denúncia', roles.servidor)], components: [row]})
+        msg.edit({embeds: [TicketTypeChoosed(user, 'Denúncia', roles.servidor)], components: [row]})
     },
-    'banimento'(m, user, roles) {
+    'banimento'(m, user, roles, msg) {
         //Banimento
         m.permissionOverwrites.set([
             {
@@ -112,9 +113,9 @@ const Options = {
         m.send({content: `<@&${roles.roleStaff}>, <@&${roles.roleGerente}>, <@&${roles.roleStaffComprado}>`}).then((m) =>
             m.delete()
         );
-        m.send({embeds: [TicketTypeChoosed(user, 'Banimento', roles.servidor)], components: [row]})
+        msg.edit({embeds: [TicketTypeChoosed(user, 'Banimento', roles.servidor)], components: [row]})
     },
-    'compra_cargo'(m, user, roles) {
+    async 'compra_cargo'(m, user, roles, msg) {
         //Compra de Cargo
         m.permissionOverwrites.set([
             {
@@ -136,10 +137,11 @@ const Options = {
             },
         ]);
         m.setName('ticket→compras')
-        m.send({content: `<@&&${roles.roleGerente}>, <@&&780582159731130378>`}).then((m) => m.delete());
-        m.send({embeds: [TicketTypeChoosed(user, 'Compras', roles.servidor)], components: [row]})
+        m.send({content: `<@&${roles.roleGerente}>, <@&780582159731130378>`}).then((m) => m.delete());
+        
+        msg.edit({embeds: [TicketTypeChoosed(user, 'Compras', roles.servidor, (await compra_Handle(m, user, msg)))], components: [row]})
     },
-    'duvida'(m, user, roles) {
+    'duvida'(m, user, roles, msg) {
         //Dúvidas
         m.permissionOverwrites.set([
             {
@@ -172,7 +174,7 @@ const Options = {
         m.send({content: `<@&${roles.roleStaff}>, <@&${roles.roleGerente}>, <@&${roles.roleStaffComprado}>`}).then((m) =>
             m.delete()
         );
-        m.send({embeds: [TicketTypeChoosed(user, 'Dúvidas', roles.servidor)], components: [row]})
+        msg.edit({embeds: [TicketTypeChoosed(user, 'Dúvidas', roles.servidor)], components: [row]})
     },
 };
 

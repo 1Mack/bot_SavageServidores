@@ -1,4 +1,4 @@
-const {MessageEmbed} = require('discord.js');
+const { MessageEmbed } = require('discord.js');
 
 exports.HoursNotFoundError = function (interaction) {
     const embed = new MessageEmbed()
@@ -25,7 +25,7 @@ exports.HorasLog = function (result, HourFormat, servidor, steamid, interaction)
             { name: `**Horas Spec**`, value: HourFormat(result[0].timeSPE) },
             { name: `**Horas TR**`, value: HourFormat(result[0].timeTT) },
             { name: `**Horas CT**`, value: HourFormat(result[0].timeCT) },
-            { name: `**Última conexao**`, value: new Date(result[0].last_accountuse * 1000).toLocaleDateString('en-GB')},
+            { name: `**Última conexao**`, value: new Date(result[0].last_accountuse * 1000).toLocaleDateString('en-GB') },
             { name: '**Servidor**', value: servidor.toUpperCase().toString() },
             { name: '**Steamid**', value: steamid.toString() }
         )
