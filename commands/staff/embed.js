@@ -1,4 +1,4 @@
-const {MessageEmbed} = require('discord.js');
+const { MessageEmbed, MessageActionRow, MessageButton } = require('discord.js');
 
 exports.LogAdv = function (discord, adv, reason, interaction) {
     const embed = new MessageEmbed()
@@ -12,7 +12,7 @@ exports.LogAdv = function (discord, adv, reason, interaction) {
             { name: 'ADV:', value: `**${adv}**` },
             { name: 'Motivo:', value: reason }
         )
-        .setFooter(`Aplicada Pelo ${interaction.user.username}`);
+        .setFooter({ text: `Aplicada Pelo ${interaction.user.username}` });
     return embed;
 };
 exports.AdvWarning = function (interaction, discord) {
@@ -91,7 +91,7 @@ exports.newEmbed = function (valido, m, resposta, interaction) {
             { name: `\u200B`, value: resposta, inline: true },
             { name: '\u200B', value: '\u200B', inline: false }
         )
-        .setFooter(`Respondido pelo ${interaction.user.username}`)
+        .setFooter({ text: `Respondido pelo ${interaction.user.username}` })
         .setTimestamp();
     return embed;
 };
@@ -126,7 +126,7 @@ exports.FormCreated = function (user, canalCheck) {
     const embed = new MessageEmbed()
         .setColor('#00ff00')
         .setDescription(
-            `<a:right_savage:856211226300121098> ${user}, canal criado com sucesso <#${canalCheck.id}> !`
+            `<a:right_savage:856211226300121098> ${user}, [canal criado com sucesso](https://discord.com/channels/343532544559546368/${canalCheck.id})`
         );
     return embed;
 };
@@ -143,7 +143,7 @@ exports.LogAprovado = function (fetchUser, servidor) {
     const embed = new MessageEmbed()
         .setColor('F0FF00')
         .setTitle(`Olá ${fetchUser.username}`)
-        .setDescription(`***Você passou para a próxima fase do recrutamento para ser staff do __${servidor}__, a qual será feita por entrevista***`);
+        .setDescription(`***Você passou para a próxima fase do recrutamento para ser staff do __${servidor}__, a qual será feita por (entrevista)[https://discord.com/channels/343532544559546368/870290174242861106]***`);
     return embed;
 };
 
@@ -154,14 +154,22 @@ exports.LogAprovadoChannel = function (user, fetchUser, result) {
         .addFields(
             { name: 'Nome', value: fetchUser.username },
             { name: 'Servidor', value: result[result.length - 1].servidor },
-            { name: 'Idade', value: result[1].awnser},
-            { name: 'Link do Perfil', value: result[2].awnser},
-            { name: 'Ajudará Mensalmente?', value: result[7].awnser},
+            { name: 'Idade', value: result[1].awnser },
+            { name: 'Link do Perfil', value: result[2].awnser },
+            { name: 'Ajudará Mensalmente?', value: result[7].awnser },
             { name: 'ID', value: fetchUser.id }
         )
-        .setFooter(`Aprovado pelo ${user.username}`)
+        .setFooter({ text: `Aprovado pelo ${user.username}` })
         .setTimestamp();
-    return embed;
+
+    const row = new MessageActionRow()
+        .addComponents(
+            new MessageButton()
+                .setCustomId('verform_resultado_averiguar')
+                .setLabel('Averiguar')
+                .setStyle('PRIMARY')
+        );
+    return { embed, row };
 };
 exports.logInfos = function (fetchUser, result) {
     const embed = new MessageEmbed()

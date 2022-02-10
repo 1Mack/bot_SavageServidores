@@ -40,7 +40,7 @@ exports.serverStatus = async function (msg, client) {
     let embed = new MessageEmbed()
         .setColor('36393f')
         .setDescription(CatchFormat.toString())
-        .setFooter('A lista atualizada a cada 5 minutos')
+        .setFooter({ text: 'A lista atualizada a cada 5 minutos' })
         .setTimestamp()
     let cont = 0, contTotal = 0
     for (let i in Catch) {

@@ -5,6 +5,9 @@ const { TicketClosed, TicketOpened, TicketDeleting, TicketSaved, TicketLog, tick
 const { Save } = require('../../ticket/Save_Ticket');
 const { Diretor_DemotarConfirm } = require('../demotar');
 const { Captcha } = require('../../protection');
+const { Diretor_UpConfirm } = require('../setar/procurar_merecedores_handle');
+const { Form_resultado } = require('../form_resultado');
+const { Staff } = require('../setar/normal');
 
 function buttonMessage(buttonType, type, interaction) {
     interaction.reply({ content: `Cargo de **${buttonType}** foi **${type}** com sucesso!`, ephemeral: true })
@@ -162,6 +165,40 @@ const functionCargos = {
     },
     'captchaStart'(interaction, client) {
         Captcha(interaction, client)
+    },
+    'up_confirm2'(interaction, client) {
+        Diretor_UpConfirm(interaction, client)
+    },
+    'up_recusado'(interaction, client) {
+        Diretor_UpConfirm(interaction, client)
+    },
+    'verform_resultado_averiguar'(interaction, client) {
+        Form_resultado(interaction, client)
+    },
+    async 'verform_resultado_aprovado'(interaction, client) {
+
+        await Staff(
+            client,
+            interaction,
+            interaction.guild.members.cache.get(interaction.message.embeds[0].fields.find(f => f.name.includes('Discord')).value.replace(/[<@>]/g, '')),
+            interaction.message.embeds[0].fields.find(f => f.name.includes('SteamID')).value,
+            'trial',
+            interaction.message.embeds[0].fields.find(f => f.name.includes('Servidor')).value,
+            'formulário'
+        )
+        interaction.message.embeds[0].title = `APROVADO`
+
+        interaction.message.edit({ components: [], embeds: [interaction.message.embeds[0]] })
+    },
+    'verform_resultado_reprovado'(interaction, client) {
+
+        interaction.message.embeds[0].footer.text = `Reprovado pelo ${interaction.user.username} na parte do SET`
+        interaction.message.embeds[0].title = `REPROVADO NA HORA DO SET`
+
+        interaction.message.edit({ components: [], embeds: [interaction.message.embeds[0]] })
+        interaction.member.guild.members.cache.get(interaction.message.embeds[0].fields.find(f => f.name.includes('Discord')).value.replace(/[<@>]/g, ''))
+            .send(`**Você foi reprovado pelo ${interaction.user.username} na hora da setagem!**\n[Qualquer dúvida abra um ticket](https://discord.com/channels/343532544559546368/855200110685585419/927000168933511219)`)
+
     },
 };
 

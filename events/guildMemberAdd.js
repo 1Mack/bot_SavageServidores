@@ -7,7 +7,7 @@ module.exports = {
 
         const embed = new MessageEmbed()
             .setColor('#00F180')
-            .setAuthor(member.user.username.toString(), member.user.displayAvatarURL({ dynamic: true }))
+            .setAuthor({ name: member.user.username.toString(), iconURL: member.user.displayAvatarURL({ dynamic: true }) })
             .setTitle('***Novo Membro***')
             .addFields(
                 { name: 'Discord', value: member.user.toString(), inline: true },
@@ -18,7 +18,7 @@ module.exports = {
                 },
                 { name: 'Membro Número', value: member.guild.memberCount.toString() }
             )
-            .setFooter(`ID: ${member.user.id}`)
+            .setFooter({ text: `ID: ${member.user.id}` })
             .setTimestamp();
 
         client.channels.cache.get('716023078374867036').send({ embeds: [embed] });

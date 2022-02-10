@@ -1,13 +1,12 @@
-const fetch = require('node-fetch')
 const { MessageEmbed, MessageButton, MessageActionRow } = require('discord.js');
-const { connection, panelApiKey } = require('../../configs/config_privateInfos');
-const { serversInfos, servidoresHoras } = require('../../configs/config_geral');
+const { connection } = require('../../configs/config_privateInfos');
+const { serversInfos } = require('../../configs/config_geral');
 const wait = require('util').promisify(setTimeout);
 
 module.exports = {
     name: 'horasdemotar',
     description: 'Ver as horas in-game dos staffs',
-    options: [{ name: 'servidor', type: 3, description: 'Escolha um Servidor', required: true, choices: servidoresHoras.map(m => { return { name: m, value: m } }) }],
+    options: [{ name: 'servidor', type: 3, description: 'Escolha um Servidor', required: true, choices: serversInfos.map(m => { return { name: m.name, value: m.name } }) }],
     default_permission: false,
     cooldown: 0,
     permissions: [{ id: '711022747081506826', type: 1, permission: true }, // Gerente
@@ -41,7 +40,7 @@ module.exports = {
                         allow: ['VIEW_CHANNEL'],
                     },
                 ],
-                parent: '818261624317149235',
+                parent: '936310042225934408',
             });
             canalCheck = await client.channels.cache.find((m) => m.name === `horasdemotar→${interaction.user.id}`);
         }
@@ -102,7 +101,7 @@ module.exports = {
 
             let formMessage = new MessageEmbed()
                 .setColor('#0099ff')
-                .setTitle(result[i].name ? result[i].name.toString(): 'Indefinido')
+                .setTitle(result[i].name ? result[i].name.toString() : 'Indefinido')
                 .addFields(
                     { name: 'Steamid', value: result[i].steamid.toString() },
                     { name: 'DiscordID', value: `<@${result[i].discord_id}>` },
@@ -114,7 +113,7 @@ module.exports = {
                     { name: `**Horas CT**`, value: HourFormat(result[i].timeCT) },
                     { name: `**Última conexao**`, value: new Date(result[i].last_accountuse * 1000).toLocaleDateString('en-GB') },
                 )
-                .setFooter(servidor.toString())
+                .setFooter({ text: servidor.toString() })
             const row = new MessageActionRow()
                 .addComponents(
                     new MessageButton()
@@ -160,7 +159,15 @@ module.exports = {
 
                         await canalCheck.send(`Staff <@${result[i].discord_id}> enviado para análise com sucesso!`).then(async m => setTimeout(() => m.delete(), 5000))
 
-                        logGuildDemotarConfirm.send({ embeds: [formMessage], components: [row2] })
+                        logGuildDemotarConfirm.send({ embeds: [formMessage], components: [row2] }).then(message => {
+                            let embedDiretorMSG = new MessageEmbed()
+                                .setColor('#00ff00')
+                                .setDescription(`[Novo staff para ser demotado](https://discord.com/channels/792575394271592458/931637295902240838/${message.id})`);
+
+                            interaction.guild.channels.cache.get('873396752760307742').send({ embeds: [embedDiretorMSG], content: '<@everyone>' })
+                        })
+
+
                     }
                 })
                 .catch(async (error) => {

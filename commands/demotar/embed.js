@@ -23,19 +23,19 @@ exports.PlayerDiscordRoleNotFound = function (interaction) {
     return embed;
 };
 
-exports.DemotedLog = function (fetchUser, steamid, extra, interaction) {
+exports.DemotedLog = function (rows, steamid, extra, interaction) {
     const embed = new Discord.MessageEmbed()
         .setColor('#0099ff')
-        .setTitle(fetchUser.username)
+        .setTitle(rows.name.toString())
         .addFields(
             {
                 name: 'discord',
-                value: `${fetchUser}`,
+                value: `<@${rows.discord_id}>`,
             },
             { name: 'Steamid', value: steamid },
             { name: 'Observações', value: extra }
         )
-        .setFooter(`Demotado Pelo ${interaction.user.username}`);
+        .setFooter({ text: `Demotado Pelo ${interaction.user.username}` });
     return embed;
 };
 exports.DemotedSendMSG = function (fetchUser, steamid, servidor, extra) {

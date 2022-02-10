@@ -1,4 +1,4 @@
-const {MessageEmbed} = require('discord.js')
+const { MessageEmbed } = require('discord.js')
 exports.CheckDatabaseError = function (interaction, servidores, serverNumber) {
     const embed = new MessageEmbed()
         .setColor('#ff0000')
@@ -41,7 +41,7 @@ exports.logVip = function (author, fetchedUser, procurar, DataInicialUTC, DataFi
             { name: 'Valor', value: '0' },
             { name: 'Servidor', value: servidores[serverNumber].toString() }
         )
-        .setFooter(`Setado Pelo ${author.username}`);
+        .setFooter({ text: `Setado Pelo ${author.username}` });
     return embed;
 };
 exports.vipSendMSG = function (fetchUser, servidores, serverNumber) {

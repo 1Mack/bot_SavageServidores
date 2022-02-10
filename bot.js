@@ -38,9 +38,10 @@ process.on('unhandledRejection', (err) => {
     if (
         err.message !== 'Unknown Channel' &&
         err.message !== 'Unknown Message' &&
-        err.message !== 'Cannot send messages to this user'
+        err.message !== 'Cannot send messages to this user' &&
+        err.message !== 'Collector received no interactions before ending with reason: time'
     ) {
-        console.log(err);
+        console.error(err);
     }
 });
 

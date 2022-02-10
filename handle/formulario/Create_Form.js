@@ -1,13 +1,13 @@
 const { formFunction } = require('./formFunction');
-const {formFunction2} = require('./formFunction2')
+const { formFunction2 } = require('./formFunction2')
 const { connection } = require('../../configs/config_privateInfos');
-const { HasAlreadyChannel, HasAlreadyDoneForm, FormStart, ChannelCreated } = require('./embed');
+const { HasAlreadyChannel, FormStart, ChannelCreated } = require('./embed');
 exports.FormCreate = async function (interaction, client) {
     const canalFind = () => interaction.guild.channels.cache.find((m) => m.name.includes(`form→${interaction.user.id}`));
 
     if (canalFind()) {
         return (
-            interaction.reply({embeds: [HasAlreadyChannel(interaction.user, canalFind())], ephemeral: true})
+            interaction.reply({ embeds: [HasAlreadyChannel(interaction.user, canalFind())], ephemeral: true })
             //formFunction(interaction.user, false, canalFind(), client)
         );
     }
@@ -18,16 +18,13 @@ exports.FormCreate = async function (interaction, client) {
     if (result != '') {
         result = false;
     }
-   
 
-    const guild = client.guilds.cache.get('343532544559546368');
-
-    await guild.channels
+    await interaction.guild.channels
         .create(`form→${interaction.user.id}`, {
             type: 'text',
             permissionOverwrites: [
                 {
-                    id: guild.roles.everyone,
+                    id: interaction.guild.roles.everyone,
                     deny: ['VIEW_CHANNEL'],
                 },
                 {
@@ -35,19 +32,19 @@ exports.FormCreate = async function (interaction, client) {
                     allow: ['VIEW_CHANNEL'],
                 },
             ],
-            parent: '865016939126849567',
+            parent: '936310042225934408',
         })
         .then(async (channel) => {
-            
+
             if (!result) {
                 return (formFunction2(interaction.user, channel, client, false, 'ChooseServer'),
-                interaction.reply({embeds: [ChannelCreated(interaction.user, channel)], ephemeral: true})
+                    interaction.reply({ embeds: [ChannelCreated(interaction.user, channel)], ephemeral: true })
                 )
             }
-           let msg = await channel.send({content: `${interaction.user}`, embeds: [FormStart(interaction.user).embed], components: [FormStart(interaction.user).lista]});
-            
+            let msg = await channel.send({ content: `${interaction.user}`, embeds: [FormStart(interaction.user).embed], components: [FormStart(interaction.user).lista] });
 
-            interaction.reply({embeds: [ChannelCreated(interaction.user, channel)], ephemeral: true})
+
+            interaction.reply({ embeds: [ChannelCreated(interaction.user, channel)], ephemeral: true })
 
             const filter = i => {
                 i.deferUpdate();

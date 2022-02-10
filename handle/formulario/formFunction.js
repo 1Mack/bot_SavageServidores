@@ -1,7 +1,7 @@
 const { connection } = require('../../configs/config_privateInfos');
 const wait = require('util').promisify(setTimeout);
-const {MessageEmbed} = require('discord.js');
-const {FormResultOptions} = require('./embed')
+const { MessageEmbed } = require('discord.js');
+const { FormResultOptions } = require('./embed')
 const { formFunction2 } = require('./formFunction2');
 
 async function formFunction(user, bool, channel, msg, client) {
@@ -16,7 +16,7 @@ async function formFunction(user, bool, channel, msg, client) {
             `select discord_id, MAX(message_id) as message_id from form_respostas where discord_id = "${user.id}"`
         );
 
-       let [result2] = await con.query(
+        let [result2] = await con.query(
             `select discord_id from form_respostas_2Etapa where discord_id = "${user.id}"`
         );
 
@@ -25,20 +25,21 @@ async function formFunction(user, bool, channel, msg, client) {
 
             return (
                 await channel
-                    .send({content: 
-                        `${user} **| Como você ainda não começou o form, esse canal será deletado!**\n**Dentro de 15 segundos eu irei excluir essa sala, após isso você poderá abrir outro form!!**`
+                    .send({
+                        content:
+                            `${user} **| Como você ainda não começou o form, esse canal será deletado!**\n**Dentro de 15 segundos eu irei excluir essa sala, após isso você poderá abrir outro form!!**`
                     }),
-                    await wait(10000),
-                    channel.delete()
+                await wait(10000),
+                channel.delete()
             );
-        }else if(result2 != ''){
+        } else if (result2 != '') {
             return formResult(true);
         }
 
         [resultFalseCheck] = await con.query(
             `select * from form_messages where message_id = ${result[0].message_id + 1}`
         );
-        
+
 
         if (resultFalseCheck == '') {
             return formResult(true);
@@ -46,23 +47,22 @@ async function formFunction(user, bool, channel, msg, client) {
     }
 
     [result] = await con.query(
-        `select * from ${
-            resultFalseCheck !== undefined
-                ? `form_messages where message_id >= '${resultFalseCheck[0].message_id}'`
-                : 'form_messages'
+        `select * from ${resultFalseCheck !== undefined
+            ? `form_messages where message_id >= '${resultFalseCheck[0].message_id}'`
+            : 'form_messages'
         }`
     );
 
     for (let i in result) {
- 
 
-     try {
-        await msg.edit({content: ' ', embeds: [FormResultOptions(user, result[i], i).embed], components: [FormResultOptions(user, result[i], i).lista]});
-    
-    } catch (error) {
-        
-        msg = channel.send({content: ' ', embeds: [FormResultOptions(user, result[i], i).embed], components: [FormResultOptions(user, result[i], i).lista]})
-    } 
+
+        try {
+            await msg.edit({ content: ' ', embeds: [FormResultOptions(user, result[i], i).embed], components: [FormResultOptions(user, result[i], i).lista] });
+
+        } catch (error) {
+
+            msg = channel.send({ content: ' ', embeds: [FormResultOptions(user, result[i], i).embed], components: [FormResultOptions(user, result[i], i).lista] })
+        }
 
         const filter = i => {
             i.deferUpdate();
@@ -86,9 +86,11 @@ async function formFunction(user, bool, channel, msg, client) {
                     );
                 } catch (error) {
                     return (
-                        await msg.edit({content:
+                        await msg.edit({
+                            content:
                                 `${user} **| Não consegui registrar essa resposta, deletando canal!!!\`**`,
-                            embeds:[], components: []}),
+                            embeds: [], components: []
+                        }),
                         await wait(5000),
                         await con.query(`delete from form_respostas where discord_id = '${user.id}'`),
                         await channel.delete(),
@@ -99,37 +101,37 @@ async function formFunction(user, bool, channel, msg, client) {
 
             .catch(async () => {
                 return (
-                    await msg.edit({content: `${user} **| Você não respondeu a tempo....Deletando Canal**`, embeds: [], components: []}),
+                    await msg.edit({ content: `${user} **| Você não respondeu a tempo....Deletando Canal**`, embeds: [], components: [] }),
                     await wait(8000),
-                    await con.query(`delete from form_respostas where discord_id = '${user.id}'`), 
+                    await con.query(`delete from form_respostas where discord_id = '${user.id}'`),
                     channel.delete()
                 );
             });
     }
-    
+
 
     async function formResult(bool) {
-        
+
         if (bool) {
             [result] = await con.query(
                 `select discord_id, server_choosen, MAX(message_id) as message_id from form_respostas_2Etapa where discord_id = "${user.id}" 
                 group by message_id order by message_id DESC limit 1;`
             );
             if (result !== '') {
-                
+
                 return formFunction2(user, channel, client, msg, result[0]);//ver se vai passar o parametro MSG
             }
         }
-        let embed2 = new MessageEmbed() 
-        .setDescription(`> **Seu formulário foi registrado com sucesso** 😎
+        let embed2 = new MessageEmbed()
+            .setDescription(`> **Seu formulário foi registrado com sucesso** 😎
             > 
             > **⚠️ Aguarde enquanto eu checo se você passou para a próxima fase**`);
         try {
 
-        await msg.edit({embeds: [embed2], components: []})
-            
+            await msg.edit({ embeds: [embed2], components: [] })
+
         } catch (error) {
-            msg = channel.send({embeds: [embed2], components: []})
+            msg = channel.send({ embeds: [embed2], components: [] })
         }
 
         await wait(7000);
@@ -141,29 +143,28 @@ async function formFunction(user, bool, channel, msg, client) {
 
 
         embed2 = embed2.setThumbnail(
-                'https://cdn.discordapp.com/attachments/823663459145089055/834833230452621322/1619110021129.png'
-            )
-        embed2 = embed2.setFooter(
-                'Sistema de Formuário Exclusivo da Savage Servidores',
-                'https://cdn.discordapp.com/attachments/823663459145089055/834833230452621322/1619110021129.png'
-            );
+            'https://cdn.discordapp.com/attachments/823663459145089055/834833230452621322/1619110021129.png'
+        )
+        embed2 = embed2.setFooter({
+            text: 'Sistema de Formuário Exclusivo da Savage Servidores',
+            iconURL: 'https://cdn.discordapp.com/attachments/823663459145089055/834833230452621322/1619110021129.png'
+        });
 
-        
+
         if (result[0].Porcentagem > 0.7) {
             embed2 = embed2.setColor('229D2D');
             embed2 = embed2.setTitle('Aprovado');
             embed2 = embed2.setDescription(`Parabéns ${user}
 
                         > Você foi **aprovado para a segunda etapa do formulário**
-                        > Você acertou **${result[0].Acertadas}/${
-                result[0].Total
-            }** perguntas, com uma eficiência de **${(result[0].Porcentagem * 100).toFixed()}%**
+                        > Você acertou **${result[0].Acertadas}/${result[0].Total
+                }** perguntas, com uma eficiência de **${(result[0].Porcentagem * 100).toFixed()}%**
                         > 
                         > A segunda etapa começará dentro de **10 segundos**, aguarde...`);
 
-            await msg.edit({embeds: [embed2]})
+            await msg.edit({ embeds: [embed2] })
             await wait(10000)
-            
+
             formFunction2(user, channel, client, msg);
         } else {
             embed2 = embed2.setColor('B30B0B');
@@ -171,18 +172,17 @@ async function formFunction(user, bool, channel, msg, client) {
             embed2 = embed2.setDescription(`Que pena ${user}
 
                         > Você foi reprovado!
-                        > Você acertou **${result[0].Acertadas}/${
-                result[0].Total
-            }** perguntas, com uma eficiência de **${(
-                result[0].Porcentagem * 100
-            ).toFixed()}%**, sendo que o mínimo para passar era **70%**
+                        > Você acertou **${result[0].Acertadas}/${result[0].Total
+                }** perguntas, com uma eficiência de **${(
+                    result[0].Porcentagem * 100
+                ).toFixed()}%**, sendo que o mínimo para passar era **70%**
                         > Você poderá fazer o formulário novamente daqui 1 semana`);
 
-            await msg.edit({embeds: [embed2]});
+            await msg.edit({ embeds: [embed2] });
             await con.query(`DELETE FROM form_respostas WHERE discord_id ='${user.id}'`);
             await wait(15000)
             channel.delete();
-            
+
         }
     }
     formResult();

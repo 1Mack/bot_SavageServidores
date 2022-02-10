@@ -2,16 +2,17 @@ const { TicketStart, ChannelCreated, TicketServerOptions } = require('./embed');
 const { Options } = require('./Options_Ticket');
 const { serversInfos } = require('../../configs/config_geral');
 exports.TicketCreate = async function (interaction, client) {
-  
-    let guild = client.guilds.cache.get('343532544559546368');
 
-    await guild.channels
+    if (interaction.guild.channels.cache.filter(c => c.name.includes('ticket') && c.topic == interaction.user.id).size > 2)
+        return interaction.reply({ content: `**Você já possui o máximo de tickets abertos possíveis!!**`, ephemeral: true })
+
+    await interaction.guild.channels
         .create(`ticket→${interaction.user.id}`, {
             type: 'text',
             topic: interaction.user.id.toString(),
             permissionOverwrites: [
                 {
-                    id: guild.roles.everyone,
+                    id: interaction.guild.roles.everyone,
                     deny: ['VIEW_CHANNEL', 'SEND_MESSAGES'],
                 },
                 {
@@ -22,9 +23,9 @@ exports.TicketCreate = async function (interaction, client) {
             parent: '729848799421530173',
         })
         .then(async (m) => {
-            interaction.reply({embeds: [ChannelCreated(interaction.user, m)], ephemeral: true});
+            interaction.reply({ embeds: [ChannelCreated(interaction.user, m)], ephemeral: true });
             m.send(`${interaction.user}`).then((m) => m.delete());
-            let msg = await m.send({embeds: [TicketStart(interaction.user).embed], components: [TicketStart(interaction.user).lista]});
+            let msg = await m.send({ embeds: [TicketStart(interaction.user).embed], components: [TicketStart(interaction.user).lista] });
 
             const filter = i => {
                 i.deferUpdate();
@@ -32,19 +33,19 @@ exports.TicketCreate = async function (interaction, client) {
             };
 
             await m
-                .awaitMessageComponent({ filter, componentType: 'SELECT_MENU', time: 100000})
+                .awaitMessageComponent({ filter, componentType: 'SELECT_MENU', time: 100000 })
                 .then(async (response) => {
 
-                    await msg.edit({embeds: [TicketServerOptions(interaction.user).embed], components: [TicketServerOptions(interaction.user).lista]});
+                    await msg.edit({ embeds: [TicketServerOptions(interaction.user).embed], components: [TicketServerOptions(interaction.user).lista] });
                     const filter = i => {
                         i.deferUpdate();
                         return i.user.id === interaction.user.id;
                     };
 
                     await m
-                        .awaitMessageComponent({ filter, componentType: 'SELECT_MENU', time: 45000})
+                        .awaitMessageComponent({ filter, componentType: 'SELECT_MENU', time: 45000 })
                         .then(async (response2) => {
-                         
+
 
                             const ServerFound = serversInfos.find((f) => f.name == response2.values[0]);
 
@@ -57,7 +58,7 @@ exports.TicketCreate = async function (interaction, client) {
                                 roleStaffComprado: ServerFound.tagComprado,
                             };
 
-                            ticketOptions(m, interaction.user, roles, msg); 
+                            ticketOptions(m, interaction.user, roles, msg);
                         })
                         .catch((error) => {
                             return m.delete(), console.log(error);

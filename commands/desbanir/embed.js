@@ -5,7 +5,7 @@ exports.DesbanLog = function (steamid, reason, interaction) {
         .setColor('#4287f5')
         .setTitle(`**DESBAN**`)
         .addFields({ name: 'Steamid', value: steamid }, { name: 'Motivo', value: reason })
-        .setFooter(`Desbanido Pelo ${interaction.user.username}`);
+        .setFooter({ text: `Desbanido Pelo ${interaction.user.username}` });
     return embed;
 };
 

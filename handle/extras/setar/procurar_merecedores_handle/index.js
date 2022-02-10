@@ -1,9 +1,9 @@
 const { MessageEmbed, MessageButton, MessageActionRow } = require('discord.js');
-const { HorasDemotarConfirm } = require('./horasDemotar');
+const { UpConfirmed } = require('./upConfirmed');
 
 
-exports.Diretor_DemotarConfirm = async function (interaction, client) {
-    //console.log(interaction)
+exports.Diretor_UpConfirm = async function (interaction, client) {
+
     const guildLog = await client.guilds.cache.get('792575394271592458')
     await guildLog.members.fetch()
     const message = await guildLog.channels.cache.get(interaction.channelId).messages.fetch(interaction.message.id)
@@ -12,17 +12,16 @@ exports.Diretor_DemotarConfirm = async function (interaction, client) {
     const embed = new MessageEmbed().setTitle(message.embeds[0].title).setFooter({ text: message.embeds[0].footer.text }).setColor('36393f'),
         row = new MessageActionRow()
 
-    if (interaction.customId == 'horasdemotar_demotar2') {
+    if (interaction.customId == 'up_confirm2') {
         const { components } = message.components[0]
 
         if (interaction.user.id == '323281577956081665') return (
-            await HorasDemotarConfirm(`pelo ${interaction.user}`, message, client),
-            message.delete()
+            await UpConfirmed(message, client, interaction.user)
         )
 
 
 
-        if (components[0].label === 'Demotar') {
+        if (components[0].label === 'Upar') {
 
             if (message.embeds[0].fields.find(m => m.value.includes(interaction.user.id))) {
                 return interaction.reply({ content: 'Você não pode reagir de novo!!!', ephemeral: true })
@@ -32,8 +31,8 @@ exports.Diretor_DemotarConfirm = async function (interaction, client) {
 
             row.addComponents(
                 new MessageButton()
-                    .setCustomId('horasdemotar_demotar2')
-                    .setLabel(`Demotar 1/${DiretorNumber}`)
+                    .setCustomId('up_confirm2')
+                    .setLabel(`Upar 1/${DiretorNumber}`)
                     .setStyle('DANGER'),
                 components[1]
             )
@@ -41,19 +40,17 @@ exports.Diretor_DemotarConfirm = async function (interaction, client) {
 
 
         } else {
-            let DemotarVoteValue = components[0].label.replace('Demotar ', '')
+            let UparVoteValue = components[0].label.replace('Upar ', '')
 
             if (message.embeds[0].fields.find(m => m.value.includes(interaction.user.id))) {
                 return interaction.reply({ content: 'Você não pode reagir de novo!!!', ephemeral: true })
             }
-            if (DemotarVoteValue === `${DiretorNumber}/${DiretorNumber}` || DemotarVoteValue === `${DiretorNumber - 1}/${DiretorNumber}`) return (
-                await HorasDemotarConfirm('pelos **diretores**', message, client),
-                message.delete(),
+            if (UparVoteValue === `${DiretorNumber}/${DiretorNumber}` || UparVoteValue === `${DiretorNumber - 1}/${DiretorNumber}`) return (
+                UpConfirmed(message, client, interaction.user),
                 interaction.reply({ content: 'Seu voto foi decisivo!!!', ephemeral: true })
-
             )
 
-            DemotarVoteValue = DemotarVoteValue.replace(DemotarVoteValue.charAt(0), Number(DemotarVoteValue.charAt(0)) + 1)
+            UparVoteValue = UparVoteValue.replace(UparVoteValue.charAt(0), Number(UparVoteValue.charAt(0)) + 1)
 
             const embedField = message.embeds[0].fields.map(m => {
                 if (m.name == 'Diretores Favoráveis') {
@@ -67,8 +64,8 @@ exports.Diretor_DemotarConfirm = async function (interaction, client) {
 
             row.addComponents(
                 new MessageButton()
-                    .setCustomId('horasdemotar_demotar2')
-                    .setLabel(`Demotar ${DemotarVoteValue}`)
+                    .setCustomId('up_confirm2')
+                    .setLabel(`Upar ${UparVoteValue}`)
                     .setStyle('DANGER'),
                 components[1]
             )
@@ -76,7 +73,7 @@ exports.Diretor_DemotarConfirm = async function (interaction, client) {
         }
 
 
-    } else if (interaction.customId == 'horasdemotar_recusado') {
+    } else if (interaction.customId == 'up_recusado') {
         const { components } = message.components[0]
 
         if (interaction.user.id == '323281577956081665') return message.delete()
@@ -92,7 +89,7 @@ exports.Diretor_DemotarConfirm = async function (interaction, client) {
             row.addComponents(
                 components[0],
                 new MessageButton()
-                    .setCustomId('horasdemotar_recusado')
+                    .setCustomId('up_recusado')
                     .setLabel(`Rejeitar 1/${DiretorNumber}`)
                     .setStyle('PRIMARY'),
             )
@@ -126,7 +123,7 @@ exports.Diretor_DemotarConfirm = async function (interaction, client) {
             row.addComponents(
                 components[0],
                 new MessageButton()
-                    .setCustomId('horasdemotar_recusado')
+                    .setCustomId('up_recusado')
                     .setLabel(`Rejeitar ${RejeitarVoteValue}`)
                     .setStyle('PRIMARY')
             )

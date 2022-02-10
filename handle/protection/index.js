@@ -19,7 +19,7 @@ exports.Captcha = async function (interaction, client) {
                     allow: ['VIEW_CHANNEL'],
                 },
             ],
-            parent: '924758535747809290',
+            parent: '936310042225934408',
         })
     }
 

@@ -22,7 +22,7 @@ exports.HorasDemotarConfirm = async function (user, message, client) {
 
     await con.query(`delete from vip_sets where steamid = '${steamid}'
     and server_id = (select id from vip_servers where server_name = '${servidor}')`);
-    await con.query(`delete from mostactive_${servidor} where steamid = '${steamid}'`);
+    await con.query(`delete from mostactive_${servidor} where steamid = '${steamid}'`).catch(() => { })
 
     const logDemoted = new MessageEmbed()
         .setColor('#0099ff')
@@ -36,7 +36,7 @@ exports.HorasDemotarConfirm = async function (user, message, client) {
             { name: 'Servidor', value: servidor.toUpperCase() },
             { name: 'Observações', value: 'Não cumpriu a meta de 20h' }
         )
-        .setFooter(`Demotado ${user.username} no HORASDEMOTAR`);
+        .setFooter({ text: `Demotado ${user.username} no HORASDEMOTAR` });
 
     if (fetchUser) {
         const demotedSendMSG = new MessageEmbed()

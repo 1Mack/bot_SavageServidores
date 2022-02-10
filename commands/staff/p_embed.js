@@ -13,7 +13,7 @@ module.exports = {
         { name: 'reactions', type: 3, description: 'Reações para adicionar. Tem que por espaço entre as reações junto com vírgula, exemplo → 👍, 😋', required: false, choices: null },
         { name: 'footer', type: 3, description: 'Texto no rodapé', required: false, choices: null },
         { name: 'timestamp', type: 5, description: 'Adicionar hora?', required: false, choices: null },
-        
+
     ],
     default_permission: false,
     cooldown: 0,
@@ -49,7 +49,7 @@ module.exports = {
             }
         }
         if (footer) {
-            embed.setFooter(footer);
+            embed.setFooter({ text: footer });
         }
         if (timestamp) {
             embed.setTimestamp();

@@ -2,11 +2,11 @@ const { connection } = require('../../configs/config_privateInfos');
 const wait = require('util').promisify(setTimeout);
 const Discord = require('discord.js');
 const { FormserverChoose } = require('./embed');
-const {serversInfos} = require('../../configs/config_geral')
+const { serversInfos } = require('../../configs/config_geral')
 async function formFunction2(user, channel, client, msg, resultForm1Check) {
     let result
-    
-    if(!msg){
+
+    if (!msg) {
         msg = await channel.send('refresh')
     }
     const con = connection.promise();
@@ -34,7 +34,7 @@ async function formFunction2(user, channel, client, msg, resultForm1Check) {
         } else {
             return formSecondPart(result[0]);
         }
-    }else if(resultForm1Check == 'ChooseServer'){
+    } else if (resultForm1Check == 'ChooseServer') {
         return formFirstPart()
     } else {
         [result] = await con.query('select * from form_messages_2Etapa where servidor = "geral"');
@@ -49,7 +49,7 @@ async function formFunction2(user, channel, client, msg, resultForm1Check) {
                 
                 Você tem 3 minutos para responder a essa pergunta!`);
 
-            msg.edit({embeds: [embed]});
+        msg.edit({ embeds: [embed] });
 
         const filter = (m) => m.author.bot == false && m.author == user;
 
@@ -57,7 +57,7 @@ async function formFunction2(user, channel, client, msg, resultForm1Check) {
             .awaitMessages({ filter, max: 1, time: 300000, errors: ['time'] })
             .then(async (collected) => {
                 collected = await collected.first()
-                
+
                 collected.delete()
 
                 let values = [[`${user.id}`, result[i].message_id, collected.content, 'geral']];
@@ -80,7 +80,7 @@ async function formFunction2(user, channel, client, msg, resultForm1Check) {
                 return (
                     await msg.edit(`${user} **| Você não respondeu a tempo....Deletando Canal**`),
                     await wait(5000),
-                    await DeleteRecords(), 
+                    await DeleteRecords(),
                     await channel.delete()
                 );
             });
@@ -89,18 +89,18 @@ async function formFunction2(user, channel, client, msg, resultForm1Check) {
     await formFirstPart();
 
     async function formFirstPart() {
-        
+
         let [resultCheck] = await con.query(`select discord_id, server_choosen from form_respostas_2Etapa where discord_id = "${user.id}"`)
         let resultServerFind = []
-        
-      for(let index in serversInfos){
-        if(!resultCheck.find(m => m.server_choosen == serversInfos[index].name)){
-            resultServerFind.push(serversInfos[index].name)
-        }
-      }
-      resultServerFind = serversInfos.filter(m => resultServerFind.includes(m.name))
 
-        msg.edit({embeds: [FormserverChoose(user, embed, resultServerFind).embed], components: [FormserverChoose(user, embed, resultServerFind).lista]});
+        for (let index in serversInfos) {
+            if (!resultCheck.find(m => m.server_choosen == serversInfos[index].name)) {
+                resultServerFind.push(serversInfos[index].name)
+            }
+        }
+        resultServerFind = serversInfos.filter(m => resultServerFind.includes(m.name))
+
+        msg.edit({ embeds: [FormserverChoose(user, embed, resultServerFind).embed], components: [FormserverChoose(user, embed, resultServerFind).lista] });
 
         const filter = i => {
             i.deferUpdate();
@@ -111,18 +111,20 @@ async function formFunction2(user, channel, client, msg, resultForm1Check) {
             .awaitMessageComponent({ filter, time: 300000, errors: ['time'] })
             .then(async (collected) => {
 
-            formSecondPart(collected.values[0]);
-               
+                formSecondPart(collected.values[0]);
+
             })
             .catch(async (err) => {
                 return (
-                    await msg.edit({content:
-                        `${user} **| Voce não respondeu a tempo, abortando formulário <a:loading44:650850501742821395>!!!!\`**`
-                    , components: []}),
-                   await wait(5000),
+                    await msg.edit({
+                        content:
+                            `${user} **| Voce não respondeu a tempo, abortando formulário <a:loading44:650850501742821395>!!!!\`**`
+                        , components: []
+                    }),
+                    await wait(5000),
                     DeleteRecords(),
                     channel.delete()
-                    
+
                 );
             });
     }
@@ -137,7 +139,7 @@ async function formFunction2(user, channel, client, msg, resultForm1Check) {
 
         embed = embed.setTitle(`Segunda Etapa - Perguntas ${result[0].servidor.toUpperCase()}`);
         for (let i in result) {
-            
+
 
             embed = embed.setDescription(`__Pergunta Número ${10 + parseInt(i)}__
         
@@ -146,11 +148,11 @@ async function formFunction2(user, channel, client, msg, resultForm1Check) {
                         
                         Você tem 3 minutos para responder a essa pergunta!`);
 
-            await msg.edit({embeds: [embed], components: []});
+            await msg.edit({ embeds: [embed], components: [] });
 
             const filter = (m) => m.author.bot == false && m.author == user;
             await channel
-                .awaitMessages({filter, max: 1, time: 300000, errors: ['time'] })
+                .awaitMessages({ filter, max: 1, time: 300000, errors: ['time'] })
                 .then(async (collected) => {
 
                     collected = await collected.first()
@@ -173,9 +175,9 @@ async function formFunction2(user, channel, client, msg, resultForm1Check) {
                         return (
                             await msg.edit(`${user} **| Você não respondeu a tempo....Deletando Canal**`),
                             await wait(5000),
-                            DeleteRecords(), 
+                            DeleteRecords(),
                             channel.delete()
-                            
+
                         );
                     }
                 })
@@ -183,12 +185,12 @@ async function formFunction2(user, channel, client, msg, resultForm1Check) {
                     return (
                         await msg.edit(`${user} **| Você não respondeu a tempo....Deletando Canal**`),
                         await wait(5000),
-                        DeleteRecords(), 
+                        DeleteRecords(),
                         channel.delete()
                     );
                 });
         }
-        
+
 
         let guild = client.guilds.cache.get('792575394271592458');
         const canal = await guild.channels.cache.find(
@@ -206,22 +208,22 @@ async function formFunction2(user, channel, client, msg, resultForm1Check) {
         ▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂
         `
             )
-            .setFooter('Formulário feito')
+            .setFooter({ text: 'Formulário feito' })
             .setTimestamp();
 
-        canal.send({embeds: [logFormDone]});
+        canal.send({ embeds: [logFormDone] });
 
         embed.setTitle(`***Formulário Preenchido com sucesso!***`);
         embed.setDescription(`
                 > **Suas respostas foram computadas no meu sistema com sucesso!**
                 > **O resultado sairá __até dia 1__**
                 > **Você será avisado no seu privado sobre o resultado!**`);
-        await msg.edit({embeds: [embed]});
+        await msg.edit({ embeds: [embed] });
 
         await wait(15000)
         channel.delete();
         con.query(`DELETE FROM form_respostas WHERE discord_id ='${user.id}'`);
-        
+
     }
 }
 

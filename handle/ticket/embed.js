@@ -1,9 +1,9 @@
-const {MessageEmbed, MessageActionRow, MessageSelectMenu} = require('discord.js');
+const { MessageEmbed, MessageActionRow, MessageSelectMenu } = require('discord.js');
 
 const emojis = ['<a:savage_1:839189109943042097>', '<a:savage_2:839189111172628550>', '<a:savage_3:839189110165995570>',
-'<a:savage_4:839189110630776863>', '<a:savage_5:839189110480306186>', '<a:savage_6:839199778172043275>', '<a:savage_7:839199778364457013>',
-'<a:savage_8:839199778516500510>', '<a:savage_9:839199778494480394>', '<a:savage_1:839189109943042097><a:savage_0:839199778415837254>',
-'<a:savage_1:839189109943042097><a:savage_1:839189109943042097>']
+    '<a:savage_4:839189110630776863>', '<a:savage_5:839189110480306186>', '<a:savage_6:839199778172043275>', '<a:savage_7:839199778364457013>',
+    '<a:savage_8:839199778516500510>', '<a:savage_9:839199778494480394>', '<a:savage_1:839189109943042097><a:savage_0:839199778415837254>',
+    '<a:savage_1:839189109943042097><a:savage_1:839189109943042097>']
 
 
 exports.HasAlreadyChannel = function (user, canalAwait) {
@@ -27,53 +27,53 @@ exports.TicketStart = function (user) {
             > Escolha qual tipo de ticket você quer abrir clicando na lista abaixo`
         )
         .setThumbnail('https://cdn.discordapp.com/attachments/823663459145089055/834833230452621322/1619110021129.png')
-        .setFooter(
-            'Sistema de Ticket Exclusivo da Savage Servidores',
-            'https://cdn.discordapp.com/attachments/823663459145089055/834833230452621322/1619110021129.png'
-        );
-        const row = new MessageActionRow()
+        .setFooter({
+            text: 'Sistema de Ticket Exclusivo da Savage Servidores',
+            iconURL: 'https://cdn.discordapp.com/attachments/823663459145089055/834833230452621322/1619110021129.png'
+        });
+    const row = new MessageActionRow()
         .addComponents(
             new MessageSelectMenu()
-            .setCustomId('TicketFirstOption')
-            .setPlaceholder('Nada Selecionado')
-            .addOptions([
-                {
-                    label: 'Banimento',
-                    description: 'Foi banido injustamente? Clique aqui!',
-                    value: 'banimento',
-                    emoji: '🚫'
-                },
-                {
-                    label: 'Bugs',
-                    description: 'Está com algum bug? Clique aqui!',
-                    value: 'bugs',
-                    emoji: '⚙️'
+                .setCustomId('TicketFirstOption')
+                .setPlaceholder('Nada Selecionado')
+                .addOptions([
+                    {
+                        label: 'Banimento',
+                        description: 'Foi banido injustamente? Clique aqui!',
+                        value: 'banimento',
+                        emoji: '🚫'
+                    },
+                    {
+                        label: 'Bugs',
+                        description: 'Está com algum bug? Clique aqui!',
+                        value: 'bugs',
+                        emoji: '⚙️'
 
-                },
-                {
-                    label: 'Compra de Cargo',
-                    description: 'Quer comprar algum cargo? Clique aqui!',
-                    value: 'compra_cargo',
-                    emoji: '💎'
+                    },
+                    {
+                        label: 'Compra de Cargo',
+                        description: 'Quer comprar algum cargo? Clique aqui!',
+                        value: 'compra_cargo',
+                        emoji: '💎'
 
-                },
-                {
-                    label: 'Denúncia',
-                    description: 'Quer reportar um player? Clique aqui!',
-                    value: 'denuncia',
-                    emoji: '⚠️'
+                    },
+                    {
+                        label: 'Denúncia',
+                        description: 'Quer reportar um player? Clique aqui!',
+                        value: 'denuncia',
+                        emoji: '⚠️'
 
-                },
-                {
-                    label: 'Dúvida',
-                    description: 'Está com alguma dúvida? Clique aqui!',
-                    value: 'duvida',
-                    emoji: '🆘'
+                    },
+                    {
+                        label: 'Dúvida',
+                        description: 'Está com alguma dúvida? Clique aqui!',
+                        value: 'duvida',
+                        emoji: '🆘'
 
-                },
-            ])
+                    },
+                ])
         )
-    return {embed: embed, lista: row};
+    return { embed: embed, lista: row };
 };
 
 exports.ChannelCreated = function (user, m) {
@@ -85,8 +85,8 @@ exports.ChannelCreated = function (user, m) {
 };
 
 exports.TicketServerOptions = function (user) {
-    const {serversInfos} = require('../../configs/config_geral')
-   
+    const { serversInfos } = require('../../configs/config_geral')
+
     const embed = new MessageEmbed()
         .setColor('36393f')
         .setTitle('Savage Servidores')
@@ -97,24 +97,24 @@ exports.TicketServerOptions = function (user) {
             `
         )
         .setThumbnail('https://cdn.discordapp.com/attachments/823663459145089055/834833230452621322/1619110021129.png')
-        .setFooter(
-            'Sistema de Ticket Exclusivo da Savage Servidores',
-            'https://cdn.discordapp.com/attachments/823663459145089055/834833230452621322/1619110021129.png'
-        );
+        .setFooter({
+            text: 'Sistema de Ticket Exclusivo da Savage Servidores',
+            iconURL: 'https://cdn.discordapp.com/attachments/823663459145089055/834833230452621322/1619110021129.png'
+        });
     const row = new MessageActionRow()
         .addComponents(
             new MessageSelectMenu()
-            .setCustomId('TicketSecondOption')
-            .setPlaceholder('Nada Selecionado')
-            .addOptions(serversInfos.map((m, i) => {
-                return {
-                    label: m.visualName.toString(),
-                    value: m.name.toString(),
-                    emoji: emojis[i].toString()
-                }
-            }))
+                .setCustomId('TicketSecondOption')
+                .setPlaceholder('Nada Selecionado')
+                .addOptions(serversInfos.map((m, i) => {
+                    return {
+                        label: m.visualName.toString(),
+                        value: m.name.toString(),
+                        emoji: emojis[i].toString()
+                    }
+                }))
         )
-    return {embed: embed, lista: row};
+    return { embed: embed, lista: row };
 };
 
 exports.TicketTypeChoosed = function (user, type, servidor, compra) {
@@ -132,10 +132,10 @@ exports.TicketTypeChoosed = function (user, type, servidor, compra) {
             `
         )
         .setThumbnail('https://cdn.discordapp.com/attachments/823663459145089055/834833230452621322/1619110021129.png')
-        .setFooter(
-            'Sistema de Ticket Exclusivo da Savage Servidores',
-            'https://cdn.discordapp.com/attachments/823663459145089055/834833230452621322/1619110021129.png'
-        );
+        .setFooter({
+            text: 'Sistema de Ticket Exclusivo da Savage Servidores',
+            iconURL: 'https://cdn.discordapp.com/attachments/823663459145089055/834833230452621322/1619110021129.png'
+        });
     return embed;
 };
 
@@ -156,7 +156,7 @@ exports.TicketClosed = function (user) {
             `
         )
         .setThumbnail('https://cdn.discordapp.com/attachments/823663459145089055/834833230452621322/1619110021129.png')
-        .setFooter(`Ticket fechado pelo ${user.username}`);
+        .setFooter({ text: `Ticket fechado pelo ${user.username}` });
     return embed;
 };
 
@@ -180,7 +180,7 @@ exports.TicketDeleting = function () {
 exports.TicketLog = function (user, action, channel) {
     const embed = new MessageEmbed()
         .setColor('36393f')
-        .setAuthor(user.username.toString(), user.displayAvatarURL().toString())
+        .setAuthor({ name: user.username.toString(), iconURL: user.displayAvatarURL().toString() })
         .addFields(
             { name: 'Discord', value: user.toString() },
             { name: 'Ação', value: action.toString() },
@@ -189,25 +189,25 @@ exports.TicketLog = function (user, action, channel) {
     return embed;
 };
 
-exports.ticketActionsEmbed = function(status, staff, tipo, channel) {
+exports.ticketActionsEmbed = function (status, staff, tipo, channel) {
 
     const embed = new MessageEmbed()
-    .setColor(status == 'fechado' || status == 'deletado'? '#ff0000' : '00ff00')
-    .setTitle('***TICKET***')
-    .setFields(
-        {name: 'Status', value: `\`\`\`${status.toUpperCase()}\`\`\``},
-        {name: 'Tipo', value: `\`\`\`${tipo.toUpperCase()}\`\`\``},
-        status == 'fechado' || status == 'deletado' ? 
-        {name: '\u200B', value: `\`\`\`cs\n"Caso precise de mais alguma coisa, sinta-se à vontade para abrir outro TICKET\n\nSavage Servidores agradece,\nTenha um Bom Jogo!\`\`\``}
-        : {name: '\u200B', value: `**Para acessar seu ticket, clique aqui → ${channel}**`}
+        .setColor(status == 'fechado' || status == 'deletado' ? '#ff0000' : '00ff00')
+        .setTitle('***TICKET***')
+        .setFields(
+            { name: 'Status', value: `\`\`\`${status.toUpperCase()}\`\`\`` },
+            { name: 'Tipo', value: `\`\`\`${tipo.toUpperCase()}\`\`\`` },
+            status == 'fechado' || status == 'deletado' ?
+                { name: '\u200B', value: `\`\`\`cs\n"Caso precise de mais alguma coisa, sinta-se à vontade para abrir outro TICKET\n\nSavage Servidores agradece,\nTenha um Bom Jogo!\`\`\`` }
+                : { name: '\u200B', value: `**Para acessar seu ticket, clique aqui → ${channel}**` }
         )
-    .setFooter(`Ticket ${status} pelo ${staff}`)
+        .setFooter({ text: `Ticket ${status} pelo ${staff}` })
     return embed
 }
 
 exports.TicketCompraPlanosOptions = function (user) {
-    const {paidRoles} = require('../../configs/config_geral')
-   
+    const { paidRoles } = require('../../configs/config_geral')
+
     const embed = new MessageEmbed()
         .setColor('36393f')
         .setTitle('Savage Servidores')
@@ -218,35 +218,35 @@ exports.TicketCompraPlanosOptions = function (user) {
             `
         )
         .setThumbnail('https://cdn.discordapp.com/attachments/823663459145089055/834833230452621322/1619110021129.png')
-        .setFooter(
-            'Sistema de Ticket Exclusivo da Savage Servidores',
-            'https://cdn.discordapp.com/attachments/823663459145089055/834833230452621322/1619110021129.png'
-        );
+        .setFooter({
+            text: 'Sistema de Ticket Exclusivo da Savage Servidores',
+            iconURL: 'https://cdn.discordapp.com/attachments/823663459145089055/834833230452621322/1619110021129.png'
+        });
     const row = new MessageActionRow()
         .addComponents(
             new MessageSelectMenu()
-            .setCustomId('TicketCompraPlanoOption')
-            .setPlaceholder('Nada Selecionado')
-            .addOptions(paidRoles.map((m, i) => {
-                return {
-                    label: m.toString(),
-                    value: m.toString(),
-                    emoji: emojis[i].toString()
-                }
-            }))
-            .addOptions({
-                label: 'Outros',
-                value: 'outros',
-                emoji: emojis[6].toString()
-            })
+                .setCustomId('TicketCompraPlanoOption')
+                .setPlaceholder('Nada Selecionado')
+                .addOptions(paidRoles.map((m, i) => {
+                    return {
+                        label: m.toString(),
+                        value: m.toString(),
+                        emoji: emojis[i].toString()
+                    }
+                }))
+                .addOptions({
+                    label: 'Outros',
+                    value: 'outros',
+                    emoji: emojis[6].toString()
+                })
         )
-        
-    return {embed: embed, lista: row};
+
+    return { embed: embed, lista: row };
 };
 
 exports.TicketCompraPagamentosOptions = function (user) {
     const payments = ['Mercado Pago', 'Boleto', 'Criptomoeda', 'Picpay', 'Pix', 'Paypal', 'GiftCard', 'Pagseguro', 'Saldo Steam', 'Skin', 'Cartao de Credito ou Debito']
-   
+
     const embed = new MessageEmbed()
         .setColor('36393f')
         .setTitle('Savage Servidores')
@@ -257,29 +257,29 @@ exports.TicketCompraPagamentosOptions = function (user) {
             `
         )
         .setThumbnail('https://cdn.discordapp.com/attachments/823663459145089055/834833230452621322/1619110021129.png')
-        .setFooter(
-            'Sistema de Ticket Exclusivo da Savage Servidores',
-            'https://cdn.discordapp.com/attachments/823663459145089055/834833230452621322/1619110021129.png'
-        );
+        .setFooter({
+            text: 'Sistema de Ticket Exclusivo da Savage Servidores',
+            iconURL: 'https://cdn.discordapp.com/attachments/823663459145089055/834833230452621322/1619110021129.png'
+        });
     const row = new MessageActionRow()
         .addComponents(
             new MessageSelectMenu()
-            .setCustomId('TicketCompraPagamentoOption')
-            .setPlaceholder('Nada Selecionado')
-            .addOptions(payments.map((m, i) => {
-                return {
-                    label: m.toString(),
-                    value: m.toString(),
-                    emoji: emojis[i].toString()
-                }
-            }))
+                .setCustomId('TicketCompraPagamentoOption')
+                .setPlaceholder('Nada Selecionado')
+                .addOptions(payments.map((m, i) => {
+                    return {
+                        label: m.toString(),
+                        value: m.toString(),
+                        emoji: emojis[i].toString()
+                    }
+                }))
         )
-    return {embed: embed, lista: row};
+    return { embed: embed, lista: row };
 };
 
 exports.TicketCompraPlanosMenPerOptions = function (user, plano, planoName) {
-    const {paidRoles} = require('../../configs/config_geral')
-   
+    const { paidRoles } = require('../../configs/config_geral')
+
     const embed = new MessageEmbed()
         .setColor('36393f')
         .setTitle('Savage Servidores')
@@ -290,26 +290,26 @@ exports.TicketCompraPlanosMenPerOptions = function (user, plano, planoName) {
             `
         )
         .setThumbnail('https://cdn.discordapp.com/attachments/823663459145089055/834833230452621322/1619110021129.png')
-        .setFooter(
-            'Sistema de Ticket Exclusivo da Savage Servidores',
-            'https://cdn.discordapp.com/attachments/823663459145089055/834833230452621322/1619110021129.png'
-        );
+        .setFooter({
+            text: 'Sistema de Ticket Exclusivo da Savage Servidores',
+            iconURL: 'https://cdn.discordapp.com/attachments/823663459145089055/834833230452621322/1619110021129.png'
+        });
     const row = new MessageActionRow()
         .addComponents(
             new MessageSelectMenu()
-            .setCustomId('TicketCompraPlanoOption')
-            .setPlaceholder('Nada Selecionado')
-            .addOptions({
-                label: `${planoName.toUpperCase()} Mensal = ${plano} `,
-                value: `mensal`,
-                emoji: emojis[0].toString()
-            },
-            {
-                label: `${planoName.toUpperCase()} Permanente = ${Number(plano) * 5} `,
-                value: `permanente`,
-                emoji: emojis[0].toString()
-            })
+                .setCustomId('TicketCompraPlanoOption')
+                .setPlaceholder('Nada Selecionado')
+                .addOptions({
+                    label: `${planoName.toUpperCase()} Mensal = ${plano} `,
+                    value: `mensal`,
+                    emoji: emojis[0].toString()
+                },
+                    {
+                        label: `${planoName.toUpperCase()} Permanente = ${Number(plano) * 5} `,
+                        value: `permanente`,
+                        emoji: emojis[0].toString()
+                    })
         )
-        
-    return {embed: embed, lista: row};
+
+    return { embed: embed, lista: row };
 };

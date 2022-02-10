@@ -29,7 +29,7 @@ exports.HorasLog = function (result, HourFormat, servidor, steamid, interaction)
             { name: '**Servidor**', value: servidor.toUpperCase().toString() },
             { name: '**Steamid**', value: steamid.toString() }
         )
-        .setFooter(`Horas Requisitadas pelo ${interaction.user.username}`)
+        .setFooter({ text: `Horas Requisitadas pelo ${interaction.user.username}` })
         .setTimestamp();
     return embed;
 };
@@ -39,7 +39,7 @@ exports.minhasHorasEmbed = function (serversFormatDisplay, user) {
         .setColor('36393f')
         .setTitle('Suas horas nos servidores')
         .setDescription(serversFormatDisplay.join(''))
-        .setFooter(`Requisitado pelo ${user}`)
+        .setFooter({ text: `Requisitado pelo ${user}` })
         .setTimestamp();
     return embed;
 };

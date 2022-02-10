@@ -17,7 +17,7 @@ exports.CaptchaFormat = function (user, etapa) {
     
     **Clique no botão que possui o emoji: ${emojis[randomNumber]}**`)
         .setTimestamp()
-        .setFooter('Sistema de Captcha Exclusivo da Savage Servidores')
+        .setFooter({ text: 'Sistema de Captcha Exclusivo da Savage Servidores' })
         .setThumbnail('https://cdn.discordapp.com/attachments/823663459145089055/834833230452621322/1619110021129.png')
     const row1 = new MessageActionRow()
     const row2 = new MessageActionRow()

@@ -22,7 +22,7 @@ exports.Banlog = function (nick, steamid, tempo, reason, user) {
             },
             { name: 'Motivo', value: reason }
         )
-        .setFooter(`Banido Pelo ${user.username}`);
+        .setFooter({ text: `Banido Pelo ${user.username}` });
     return embed;
 };
 

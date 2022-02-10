@@ -1,5 +1,5 @@
-const {MessageButton, MessageEmbed, MessageActionRow, MessageSelectMenu} = require('discord.js');
-const {serversInfos} = require('../../configs/config_geral')
+const { MessageButton, MessageEmbed, MessageActionRow, MessageSelectMenu } = require('discord.js');
+const { serversInfos } = require('../../configs/config_geral')
 
 exports.WrongChannel = function (user) {
     const embed = new MessageEmbed()
@@ -48,15 +48,15 @@ exports.FormStart = function (user) {
             'Sistema de Formuário Exclusivo da Savage Servidores',
             'https://cdn.discordapp.com/attachments/823663459145089055/834833230452621322/1619110021129.png'
         );
-        const row = new MessageActionRow()
+    const row = new MessageActionRow()
         .addComponents(
             new MessageButton()
-            .setCustomId('formStart')
-            .setLabel('Iniciar')
-            .setEmoji('<a:right_savage:856211226300121098>')
-            .setStyle('DANGER')
-        )    
-    return {embed: embed, lista: row};
+                .setCustomId('formStart')
+                .setLabel('Iniciar')
+                .setEmoji('<a:right_savage:856211226300121098>')
+                .setStyle('DANGER')
+        )
+    return { embed: embed, lista: row };
 };
 
 exports.ChannelCreated = function (user, canalAwait) {
@@ -69,12 +69,12 @@ exports.ChannelCreated = function (user, canalAwait) {
 };
 
 exports.FormResultOptions = function (user, result, contResult) {
-   
+
     const embed = new MessageEmbed()
-    .setTitle('Savage Servidores')
-    .setColor('36393f')
-    .setThumbnail('https://cdn.discordapp.com/attachments/823663459145089055/834833230452621322/1619110021129.png')
-    .setDescription(`__Pergunta Número ${result.message_id}__
+        .setTitle('Savage Servidores')
+        .setColor('36393f')
+        .setThumbnail('https://cdn.discordapp.com/attachments/823663459145089055/834833230452621322/1619110021129.png')
+        .setDescription(`__Pergunta Número ${result.message_id}__
 
     > ***${result.message_question}***
 
@@ -83,10 +83,10 @@ exports.FormResultOptions = function (user, result, contResult) {
     let resultAppear = []
     let emojis = ['<a:savage_1:839189109943042097>', '<a:savage_2:839189111172628550>', '<a:savage_3:839189110165995570>', '<a:savage_4:839189110630776863>']
     let cont = 0, i = 1
-    
-   while(true){
 
-        if(result[`option_${i}`].length < 52){
+    while (true) {
+
+        if (result[`option_${i}`].length < 52) {
             resultAppear[cont] = {
                 label: result[`option_${i}`],
                 value: String(i) + contResult,
@@ -97,11 +97,11 @@ exports.FormResultOptions = function (user, result, contResult) {
             let a = result[`option_${i}`]
             let b
             b = a.split(' ')
-            let c ='', d=''
+            let c = '', d = ''
             b.map((m, index) => {
-                if(index <=5){
+                if (index <= 5) {
                     c += m + ' '
-                }else {
+                } else {
                     d += m + ' '
                 }
             })
@@ -116,55 +116,55 @@ exports.FormResultOptions = function (user, result, contResult) {
             }
             cont += 2
         }
-        if(i == 4){
+        if (i == 4) {
             break;
         }
         i++
     }
-    
-    const row = new MessageActionRow()
-                .addComponents(
-                    new MessageSelectMenu()
-                    .setCustomId(`${user.id}`)
-                    .setPlaceholder('Nada Selecionado')
-                     .addOptions(resultAppear) 
-                    
-                   
-                )
 
-    return {embed: embed, lista: row};
+    const row = new MessageActionRow()
+        .addComponents(
+            new MessageSelectMenu()
+                .setCustomId(`${user.id}`)
+                .setPlaceholder('Nada Selecionado')
+                .addOptions(resultAppear)
+
+
+        )
+
+    return { embed: embed, lista: row };
 };
 
 exports.FormserverChoose = function (user, embed, resultServerFind) {
     const emojis = ['<a:savage_1:839189109943042097>', '<a:savage_2:839189111172628550>', '<a:savage_3:839189110165995570>',
-    '<a:savage_4:839189110630776863>', '<a:savage_5:839189110480306186>', '<a:savage_6:839199778172043275>', '<a:savage_7:839199778364457013>',
-    '<a:savage_8:839199778516500510>', '<a:savage_9:839199778494480394>']
+        '<a:savage_4:839189110630776863>', '<a:savage_5:839189110480306186>', '<a:savage_6:839199778172043275>', '<a:savage_7:839199778364457013>',
+        '<a:savage_8:839199778516500510>', '<a:savage_9:839199778494480394>']
 
     embed = embed.setDescription(
-            `${user},
+        `${user},
             
             > Escolha para qual servidor você deseja virar staff
 
 
             **Você tem 50 segundos para responder a essa pergunta!**
             `
-        )
-        if(!resultServerFind){
-            resultServerFind = serversInfos
-        }
-        
+    )
+    if (!resultServerFind) {
+        resultServerFind = serversInfos
+    }
+
     const row = new MessageActionRow()
         .addComponents(
             new MessageSelectMenu()
-            .setCustomId('formServerChoosed')
-            .setPlaceholder('Clique Aqui')
-            .addOptions(resultServerFind.map((m, i) => {
-                return {
-                    label: m.visualName.toString(),
-                    value: m.name.toString(),
-                    emoji: emojis[i].toString()
-                }
-            }))
+                .setCustomId('formServerChoosed')
+                .setPlaceholder('Clique Aqui')
+                .addOptions(resultServerFind.map((m, i) => {
+                    return {
+                        label: m.visualName.toString(),
+                        value: m.name.toString(),
+                        emoji: emojis[i].toString()
+                    }
+                }))
         )
-    return {embed: embed, lista: row};
+    return { embed: embed, lista: row };
 };

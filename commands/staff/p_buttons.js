@@ -63,8 +63,6 @@ module.exports = {
             )
         }
 
-        console.log(row)
-
         try {
             interaction.channel.messages.fetch(msgId).then(m => m.edit({ components: [row] }))
         } catch (err) {

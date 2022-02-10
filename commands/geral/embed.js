@@ -13,7 +13,7 @@ exports.SugestaoLog = function (interaction, sugestao) {
         .setColor('#cce336')
         .setTitle(`***${interaction.user.username} (ID${interaction.user.id})***`)
         .setDescription(`**${sugestao}**`)
-        .setFooter('/sugestao no canal <#710291543608655892> para sugerir!!');
+        .setFooter({ text: 'Comando /sugestao' });
     return embed;
 };
 
