@@ -25,12 +25,9 @@ const normalServerRoles = [''];
 
 const paidRoles = ['']
 
-const servidoresHoras = [''];
-
 module.exports = {
     serversInfos,
     normalServerRoles,
     paidRoles,
-    servidoresHoras,
     host
 };
