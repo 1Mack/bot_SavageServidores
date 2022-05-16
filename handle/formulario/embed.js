@@ -44,10 +44,10 @@ exports.FormStart = function (user) {
             \n<:blank:773345106525683753>`
         )
         .setThumbnail('https://cdn.discordapp.com/attachments/823663459145089055/834833230452621322/1619110021129.png')
-        .setFooter(
-            'Sistema de Formuário Exclusivo da Savage Servidores',
-            'https://cdn.discordapp.com/attachments/823663459145089055/834833230452621322/1619110021129.png'
-        );
+        .setFooter({
+            text: 'Sistema de Formuário Exclusivo da Savage Servidores',
+            iconURL: 'https://cdn.discordapp.com/attachments/823663459145089055/834833230452621322/1619110021129.png'
+        });
     const row = new MessageActionRow()
         .addComponents(
             new MessageButton()
@@ -150,7 +150,7 @@ exports.FormserverChoose = function (user, embed, resultServerFind) {
             `
     )
     if (!resultServerFind) {
-        resultServerFind = serversInfos
+        resultServerFind = serversInfos.filter(server => server.mostActiveServers)
     }
 
     const row = new MessageActionRow()
@@ -162,7 +162,7 @@ exports.FormserverChoose = function (user, embed, resultServerFind) {
                     return {
                         label: m.visualName.toString(),
                         value: m.name.toString(),
-                        emoji: emojis[i].toString()
+                        emoji: emojis[i]
                     }
                 }))
         )

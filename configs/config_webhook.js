@@ -16,9 +16,15 @@ const webhookVipExpirado = {
     token: '',
 };
 
+const webhookSavageStore = {
+    id: '',
+    token: '',
+};
+
 module.exports = {
     webhookCargo,
     webhookLog,
     webhookVipExpirado,
     webhookSavageLogs,
+    webhookSavageStore
 };

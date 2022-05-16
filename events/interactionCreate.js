@@ -4,7 +4,7 @@ module.exports = {
     name: 'interactionCreate',
     once: 'on',
     async execute(interaction, client) {
-        
+
         if (interaction.isButton()) {
 
             const setCargos = functionCargos[interaction.customId];
@@ -20,10 +20,9 @@ module.exports = {
             await client.commands.get(interaction.commandName).execute(client, interaction);
         } catch (error) {
 
-            interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true }).catch(() => { })
-
             console.error(error)
 
+            return interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true }).catch(() => { })
         }
     },
 };

@@ -1,4 +1,5 @@
 const { MessageEmbed } = require('discord.js');
+const { guildsInfo } = require('../../configs/config_geral');
 
 exports.SuccessCaptcha = function (interaction) {
     const embed = new MessageEmbed()
@@ -45,6 +46,6 @@ exports.ChannelCreated = function (user, m) {
     const embed = new MessageEmbed()
         .setColor('#00ff00')
         .setDescription(`<a:right_savage:856211226300121098> ${user}, sua sala já foi criada
-        [CLIQUE AQUI PARA FAZER O CAPTCHA!!!](https://discord.com/channels/343532544559546368/${m.id})`);
+        [CLIQUE AQUI PARA FAZER O CAPTCHA!!!](https://discord.com/channels/${guildsInfo.main}/${m.id})`);
     return embed;
 };

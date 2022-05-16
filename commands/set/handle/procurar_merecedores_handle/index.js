@@ -1,10 +1,11 @@
 const { MessageEmbed, MessageButton, MessageActionRow } = require('discord.js');
+const { guildsInfo } = require('../../../../configs/config_geral');
 const { UpConfirmed } = require('./upConfirmed');
 
 
 exports.Diretor_UpConfirm = async function (interaction, client) {
 
-    const guildLog = await client.guilds.cache.get('792575394271592458')
+    const guildLog = await client.guilds.cache.get(guildsInfo.log)
     await guildLog.members.fetch()
     const message = await guildLog.channels.cache.get(interaction.channelId).messages.fetch(interaction.message.id)
     const DiretorNumber = Math.floor(guildLog.members.cache.filter(m => m._roles.includes('875481156986998824')).size / 2) + 1

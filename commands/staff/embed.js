@@ -1,4 +1,5 @@
 const { MessageEmbed, MessageActionRow, MessageButton } = require('discord.js');
+const { guildsInfo } = require('../../configs/config_geral');
 
 exports.LogAdv = function (discord, adv, reason, interaction) {
     const embed = new MessageEmbed()
@@ -100,7 +101,7 @@ exports.UserSendEmbed = function (valido, interaction) {
         .setColor(valido.color)
         .setTitle(`Sua sugestão foi ${valido.title.substring(0, valido.title.length - 1) + 'a'}!`)
         .setDescription(`> Link da sua sugestão: 
-    > https://discord.com/channels/343532544559546368/778411417291980830/${interaction}`);
+    > https://discord.com/channels/${guildsInfo.main}/778411417291980830/${interaction}`);
     return embed;
 };
 
@@ -126,7 +127,7 @@ exports.FormCreated = function (user, canalCheck) {
     const embed = new MessageEmbed()
         .setColor('#00ff00')
         .setDescription(
-            `<a:right_savage:856211226300121098> ${user}, [canal criado com sucesso](https://discord.com/channels/343532544559546368/${canalCheck.id})`
+            `<a:right_savage:856211226300121098> ${user}, [canal criado com sucesso](https://discord.com/channels/${guildsInfo.main}/${canalCheck.id})`
         );
     return embed;
 };
@@ -143,7 +144,7 @@ exports.LogAprovado = function (fetchUser, servidor) {
     const embed = new MessageEmbed()
         .setColor('F0FF00')
         .setTitle(`Olá ${fetchUser.username}`)
-        .setDescription(`***Você passou para a próxima fase do recrutamento para ser staff do __${servidor}__, a qual será feita por (entrevista)[https://discord.com/channels/343532544559546368/870290174242861106]***`);
+        .setDescription(`***Você passou para a próxima fase do recrutamento para ser staff do __${servidor}__, a qual será feita por [entrevista](https://discord.com/channels/${guildsInfo.main}/947323248968859649)***`);
     return embed;
 };
 

@@ -1,8 +1,9 @@
-const { serversInfos, paidRoles, normalServerRoles } = require('../../configs/config_geral');
-const { Comprado } = require('../../handle/extras/setar/comprado');
-const { Staff } = require('../../handle/extras/setar/normal');
-const { UP_Procurar_merecedores } = require('../../handle/extras/setar/procurar_merecedores');
-const { UP_Especifico } = require('../../handle/extras/setar/up_especifico');
+const { serversInfos, serverGroups } = require('../../configs/config_geral');
+const { Comprado } = require('./handle/comprado');
+const { Comprado_Loja } = require('./handle/loja');
+const { Staff } = require('./handle/normal');
+const { UP_Procurar_merecedores } = require('./handle/procurar_merecedores');
+const { UP_Especifico } = require('./handle/up_especifico');
 
 
 module.exports = {
@@ -10,32 +11,48 @@ module.exports = {
     description: 'Setar um cargo para algum player',
     options: [
         {
-            name: 'comprado', type: 1, description: 'Para cargos comprados', options: [
-                { name: 'discord', type: 6, description: 'discord do player', required: true, choices: null },
-                { name: 'steamid', type: 3, description: 'Steamid do player', required: true, choices: null },
-                { name: 'cargo', type: 3, description: 'Escolha um cargo para o Set', required: true, choices: paidRoles.map(m => { return { name: m, value: m } }) },
-                { name: 'tempo', type: 4, description: 'Tempo em dias do set', required: true, choices: null },
-                { name: 'valor', type: 10, description: 'Valor pago pelo player', required: true, choices: null },
-                { name: 'servidor', type: 3, description: 'Escolha um Servidor para o Set', required: true, choices: serversInfos.map(m => { return { name: m.name, value: m.name } }) },
-                { name: 'observações', type: 3, description: 'Observações sobre o set', required: true, choices: null }
+            name: 'comprado', type: 2, description: 'Para cargos comprados', options: [
+                {
+                    name: 'loja', type: 1, description: 'Para cargos comprados pela loja', options: [
+                        { name: 'discord', type: 6, description: 'discord do player', required: true, choices: null },
+                        { name: 'servidor', type: 3, description: 'Escolha um Servidor para o Set', required: true, choices: serversInfos.map(m => { return { name: m.name, value: m.name } }).concat({ name: 'all', value: 'all' }) },
+                        { name: 'steamid', type: 3, description: 'Steamid do comprador', required: false, choices: null },
+                        { name: 'id_compra', type: 3, description: 'ID da compra', required: false, choices: null }
+                    ]
+                },
+                {
+                    name: 'discord', type: 1, description: 'Para cargos comprados pelo discord', options: [
+                        { name: 'discord', type: 6, description: 'discord do player', required: true, choices: null },
+                        { name: 'steamid', type: 3, description: 'Steamid do player', required: true, choices: null },
+                        {
+                            name: 'cargo', type: 3, description: 'Escolha um cargo para o Set', required: true, choices: Object.keys(serverGroups).filter(
+                                m => m.endsWith('p') || m == 'vip'
+                            ).map(
+                                m => { return { name: m, value: m } }
+                            )
+                        },
+                        { name: 'tempo', type: 4, description: 'Tempo em dias do set', required: true, choices: null },
+                        { name: 'servidor', type: 3, description: 'Escolha um Servidor para o Set', required: true, choices: serversInfos.map(m => { return { name: m.name, value: m.name } }).concat({ name: 'all', value: 'all' }) },
+                        { name: 'observações', type: 3, description: 'Observações sobre o set', required: false, choices: null }
+                    ]
+                }
             ]
         },
         {
             name: 'staff', type: 1, description: 'Para cargos normais de staff', options: [
                 { name: 'discord', type: 6, description: 'discord do player', required: true, choices: null },
                 { name: 'steamid', type: 3, description: 'Steamid do player', required: true, choices: null },
-                { name: 'cargo', type: 3, description: 'Escolha um cargo para o Set', required: true, choices: normalServerRoles.map(m => { return { name: m, value: m } }) },
+                {
+                    name: 'cargo', type: 3, description: 'Escolha um cargo para o Set', required: true, choices: Object.keys(serverGroups).filter(
+                        m => !m.endsWith('p') && m != 'vip'
+                    ).map(
+                        m => { return { name: m, value: m } }
+                    )
+                },
                 { name: 'servidor', type: 3, description: 'Escolha um Servidor para o Set', required: true, choices: serversInfos.map(m => { return { name: m.name, value: m.name } }) },
                 { name: 'observações', type: 3, description: 'Observações sobre o set', required: true, choices: null }
             ]
         },
-        /*  {
-             name: 'staff_vip', type: 1, description: 'Para cargos de staff com vip', options: [
-                 { name: 'discord', type: 6, description: 'discord do player', required: true, choices: null },
-                 { name: 'servidor', type: 3, description: 'Escolha um Servidor para o Set', required: true, choices: serversInfos.map(m => { return { name: m.name, value: m.name } }) },
-                 { name: 'observações', type: 3, description: 'Observações sobre o set', required: true, choices: null }
-             ]
-         }, */
         {
             name: 'up', type: 2, description: 'Upar um staff', options: [
                 {
@@ -64,13 +81,19 @@ module.exports = {
         const command = interaction.options.getSubcommand()
 
         switch (command) {
-            case 'comprado':
+            case 'loja':
+                Comprado_Loja(client, interaction,
+                    interaction.options.getUser('discord'),
+                    interaction.options.getString('servidor').toLowerCase(),
+                    interaction.options.getString('steamid') || interaction.options.getString('id_compra')
+                )
+                break;
+            case 'discord':
                 Comprado(client, interaction,
                     interaction.options.getUser('discord'),
                     interaction.options.getString('steamid'),
                     interaction.options.getString('cargo').toLowerCase(),
                     interaction.options.getInteger('tempo'),
-                    interaction.options.getNumber('valor'),
                     interaction.options.getString('servidor').toLowerCase(),
                     interaction.options.getString('observações')
                 )
@@ -80,13 +103,6 @@ module.exports = {
                     interaction.options.getUser('discord'),
                     interaction.options.getString('steamid'),
                     interaction.options.getString('cargo').toLowerCase(),
-                    interaction.options.getString('servidor').toLowerCase(),
-                    interaction.options.getString('observações')
-                )
-                break;
-            case 'staff_vip':
-                StaffVip(client, interaction,
-                    interaction.options.getUser('discord'),
                     interaction.options.getString('servidor').toLowerCase(),
                     interaction.options.getString('observações')
                 )

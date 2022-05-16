@@ -47,8 +47,7 @@ exports.AwaitCooldown = function (interaction, timeLeft, command) {
     const embed = new Discord.MessageEmbed()
         .setColor('#ff0000')
         .setDescription(
-            `<a:warning_savage:856210165338603531> ${
-                interaction.user
+            `<a:warning_savage:856210165338603531> ${interaction.user
             }, você só poderá usar o comando ***${command.name.toUpperCase()}*** daqui **${timeLeft.toFixed(
                 1
             )} segundos** !`

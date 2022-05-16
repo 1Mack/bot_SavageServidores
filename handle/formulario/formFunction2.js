@@ -1,8 +1,8 @@
 const { connection } = require('../../configs/config_privateInfos');
 const wait = require('util').promisify(setTimeout);
-const Discord = require('discord.js');
+const { MessageEmbed } = require('discord.js');
 const { FormserverChoose } = require('./embed');
-const { serversInfos } = require('../../configs/config_geral')
+const { serversInfos, guildsInfo } = require('../../configs/config_geral')
 async function formFunction2(user, channel, client, msg, resultForm1Check) {
     let result
 
@@ -16,7 +16,7 @@ async function formFunction2(user, channel, client, msg, resultForm1Check) {
         await con.query(`delete from form_respostas_2Etapa where discord_id = '${user.id}'`);
     }
 
-    let embed = new Discord.MessageEmbed()
+    let embed = new MessageEmbed()
         .setTitle('Segunda Etapa - Perguntas Gerais')
         .setColor('36393f')
         .setThumbnail('https://cdn.discordapp.com/attachments/823663459145089055/834833230452621322/1619110021129.png');
@@ -98,9 +98,9 @@ async function formFunction2(user, channel, client, msg, resultForm1Check) {
                 resultServerFind.push(serversInfos[index].name)
             }
         }
-        resultServerFind = serversInfos.filter(m => resultServerFind.includes(m.name))
+        resultServerFind = serversInfos.filter(m => resultServerFind.includes(m.name) && m.mostActiveServers == true)
 
-        msg.edit({ embeds: [FormserverChoose(user, embed, resultServerFind).embed], components: [FormserverChoose(user, embed, resultServerFind).lista] });
+        await msg.edit({ embeds: [FormserverChoose(user, embed, resultServerFind).embed], components: [FormserverChoose(user, embed, resultServerFind).lista] });
 
         const filter = i => {
             i.deferUpdate();
@@ -192,12 +192,12 @@ async function formFunction2(user, channel, client, msg, resultForm1Check) {
         }
 
 
-        let guild = client.guilds.cache.get('792575394271592458');
+        let guild = client.guilds.cache.get(guildsInfo.log);
         const canal = await guild.channels.cache.find(
             (channel) => channel.name == result[0].servidor && channel.parentId == '839343718016614411'
         );
 
-        const logFormDone = new Discord.MessageEmbed()
+        const logFormDone = new MessageEmbed()
             .setColor('36393f')
             .setTitle(`***${user.username}***`)
             .setDescription(

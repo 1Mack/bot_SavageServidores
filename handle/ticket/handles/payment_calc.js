@@ -40,7 +40,7 @@ exports.Payment_calc = function (plano, tipo, method) {
 
         case 'Paypal':
             plano += plano * 0.15
-            method = 'maaaaaack@outlook.com'
+            method = 'savageservidores@outlook.com'
             break;
         case 'Pix':
             method = 'savageservidores@outlook.com'
@@ -49,7 +49,7 @@ exports.Payment_calc = function (plano, tipo, method) {
             method = 'savageservidores@outlook.com'
             break;
         case 'Picpay':
-            method = '@1mack'
+            method = '@savageservidores'
             break;
         case 'GiftCard':
             plano += plano * 0.22

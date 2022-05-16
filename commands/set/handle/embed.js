@@ -1,4 +1,4 @@
-const { MessageEmbed } = require('discord.js');
+const { MessageEmbed, MessageButton, MessageActionRow } = require('discord.js');
 
 exports.NotTarget = function (interaction) {
     const embed = new MessageEmbed()
@@ -9,7 +9,7 @@ exports.NotTarget = function (interaction) {
     return embed;
 };
 
-exports.logVip = function (fetchUser, discord1, steamid, DataInicialUTC, DataFinalUTC, cargo, valor, extra, interaction) {
+exports.logVip = function (fetchUser, discord1, steamid, DataInicialUTC, DataFinalUTC, cargo, servidor, extra, interaction) {
     const embed = new MessageEmbed()
         .setColor('#0099ff')
         .setTitle(fetchUser.username.toString())
@@ -19,8 +19,8 @@ exports.logVip = function (fetchUser, discord1, steamid, DataInicialUTC, DataFin
             { name: 'Data da Compra', value: DataInicialUTC.toString() },
             { name: 'Data Final', value: DataFinalUTC == 0 ? '**PERMANENTE**' : DataFinalUTC.toString() },
             { name: 'Cargo', value: cargo },
-            { name: 'Valor', value: valor.toString() },
-            { name: 'Observações', value: extra }
+            { name: 'Servidor', value: servidor },
+            { name: 'Observações', value: extra ? extra : 'Indefinido' }
         )
         .setFooter({ text: `Setado Pelo ${interaction.user.username}` });
     return embed;
@@ -41,14 +41,6 @@ exports.vipSendMSG = function (fetchUser, cargo, tempo, servidor) {
     return embed;
 };
 
-exports.AskQuestion = function (interaction) {
-    const embed = new MessageEmbed().setColor('#cce336').setDescription(
-        `<a:warning_savage:856210165338603531> ${interaction.user},  O player que voce esta tentando setar já possui um cargo.
-        \n**Digite \`SIM\` - Para eu excluir o cargo anterior e setar o novo**
-        \n**ou**\n\n**Digite \`NAO\` - Para que eu deixe o cargo antigo e não ponha o novo**`
-    );
-    return embed;
-};
 
 exports.SetSuccess = function (interaction, fetchedUser, cargo) {
     const embed = new MessageEmbed()
@@ -80,4 +72,24 @@ exports.staffSendAllMSG = function (fetchUser, cargo, servidor) {
         .setThumbnail(fetchUser.avatarURL())
         .setTimestamp();
     return embed;
+};
+
+exports.SetAskConfirm = function (interaction) {
+    const embed = new MessageEmbed()
+        .setColor('#ffff00')
+        .setDescription(
+            `<a:warning_savage:856210165338603531> ${interaction.user} Tem certeza que quer fazer isso ?`
+        );
+    const button = new MessageActionRow()
+        .addComponents(
+            new MessageButton()
+                .setCustomId('sim')
+                .setLabel('SIM')
+                .setStyle('DANGER'),
+            new MessageButton()
+                .setCustomId('nao')
+                .setLabel('NÃO')
+                .setStyle('PRIMARY')
+        )
+    return { embed, button };
 };

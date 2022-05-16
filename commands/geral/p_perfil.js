@@ -1,11 +1,11 @@
 const SteamID = require('steamid');
-const fetch = require('node-fetch');
-const Discord = require('discord.js');
+const { MessageEmbed } = require('discord.js');
 const { PerfilInfoGenerating, PerfilWrong } = require('./embed');
+const axios = require('axios').default
 module.exports = {
     name: 'perfil',
     description: 'Ver informações do seu perfil da steam',
-    options: [{name: 'steam_url', type: 3, description: 'Link do seu perfil da steam → Exemplo: https://steamcommunity.com/id/1MaaaaaacK/', required: true, choices: null}],
+    options: [{ name: 'steam_url', type: 3, description: 'Link do seu perfil da steam → Exemplo: https://steamcommunity.com/id/1MaaaaaacK/', required: true, choices: null }],
     default_permission: true,
     cooldown: 10,
     permissions: [],
@@ -13,89 +13,81 @@ module.exports = {
         let steamURL = interaction.options.getString('steam_url')
 
         if (
-            steamURL.includes('https://steamcommunity.com/id/') == false &&
-            steamURL.includes('https://steamcommunity.com/profiles/') == false
+            ['steamcommunity.com/id/', 'steamcommunity.com/profiles/'].includes(steamURL) &&
+            ['https', 'http'].includes(steamURL)
+
         )
-            return interaction.reply({content:
-                `😫 **|** ${interaction.user} Você digitou o link do seu perfil errado!!\n\n Formato correto do link: https://steamcommunity.com/id/1MaaaaaacK/ ou https://steamcommunity.com/profiles/76561198119188837`
-                })
+            return interaction.reply({
+                content:
+                    `😫 **|** ${interaction.user} Você digitou o link do seu perfil errado!!\n\n Formato correto do link: https://steamcommunity.com/id/1MaaaaaacK/ ou https://steamcommunity.com/profiles/76561198119188837`
+            })
                 .then(() => setTimeout(() => interaction.deleteReply(), 10000));
 
-        if (steamURL.slice(-1) == '/') {
+        if (steamURL.charAt(steamURL.length - 1) == '/') {
             steamURL = steamURL.slice(0, -1);
         }
-        if (steamURL.includes('https://steamcommunity.com/profiles/')) {
-            steamURL = steamURL.slice(36);
-        } else {
-            steamURL = steamURL.slice(30);
-        }
+        steamURL = steamURL.slice(steamURL.lastIndexOf('/') + 1)
+
         let steamid64;
         try {
-            steamid64 = await fetch(
+            steamid64 = await axios.get(
                 `https://api.steampowered.com/ISteamUser/ResolveVanityURL/v1/?key=1EF908743086093E1FB911BC9BF2CCE8&vanityurl=${steamURL}`
-            ).then(async (m) => {
-                m = await m.json();
-                return m.response.steamid;
+            ).then(async ({ data }) => {
+                return data.response.steamid;
             });
         } catch (error) {
-            return interaction.reply({content: 'Erro no link'});
+            return interaction.reply({ content: 'Erro no link' });
         }
 
         if (steamid64 == undefined) {
             steamid64 = steamURL;
         }
-
-        await interaction.reply({embeds: [PerfilInfoGenerating(interaction)]});
+        await interaction.reply({ embeds: [PerfilInfoGenerating(interaction)] });
 
         let PerfilInfos;
         try {
             PerfilInfos = {
-                amigos: await fetch(
+                amigos: await axios.get(
                     `https://api.steampowered.com/ISteamUser/GetFriendList/v1/?key=1EF908743086093E1FB911BC9BF2CCE8&steamid=${steamid64}`
                 )
-                    .then(async (res) => {
-                        res = await res.json();
+                    .then(async ({ data }) => {
 
-                        return res.friendslist == undefined ? 'Privado' : res.friendslist.friends.length;
+                        return data.friendslist == undefined ? 'Privado' : data.friendslist.friends.length;
                     })
                     .catch((error) => {
-                        return interaction.editReply({embeds: [PerfilWrong(interaction)]}).then(() => setTimeout(() => interaction.deleteReply(), 8000));
+                        return 'Privado'
                     }),
-                bans: await fetch(
+                bans: await axios.get(
                     `https://api.steampowered.com/ISteamUser/GetPlayerBans/v1/?key=1EF908743086093E1FB911BC9BF2CCE8&steamids=${steamid64}`
                 )
-                    .then(async (m) => {
-                        m = await m.json();
-                        return m.players;
+                    .then(async ({ data }) => {
+                        return data.players;
                     })
-                    .catch(() => {}),
-                playerInfos: await fetch(
+                    .catch(() => { }),
+                playerInfos: await axios.get(
                     `https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v2/?key=1EF908743086093E1FB911BC9BF2CCE8&steamids=${steamid64}`
                 )
-                    .then(async (m) => {
-                        m = await m.json();
-                        return m.response.players;
+                    .then(async ({ data }) => {
+                        return data.response.players;
                     })
-                    .catch(() => {}),
-                jogos_totais: await fetch(
+                    .catch(() => { }),
+                jogos_totais: await axios.get(
                     `https://api.steampowered.com/IPlayerService/GetOwnedGames/v1/?key=1EF908743086093E1FB911BC9BF2CCE8&steamid=${steamid64}&include_appinfo=false&include_played_free_games=true`
                 )
-                    .then(async (m) => {
-                        m = await m.json();
-                        return m.response.game_count == undefined ? 'Privado' : m.response.game_count;
+                    .then(async ({ data }) => {
+                        return data.response.game_count == undefined ? 'Privado' : data.response.game_count;
                     })
-                    .catch(() => {}),
-                steam_lvl: await fetch(
+                    .catch(() => { }),
+                steam_lvl: await axios.get(
                     `https://api.steampowered.com/IPlayerService/GetSteamLevel/v1/?key=1EF908743086093E1FB911BC9BF2CCE8&steamid=${steamid64}`
                 )
-                    .then(async (m) => {
-                        m = await m.json();
-                        return m.response.player_level == undefined ? 'Privado' : m.response.player_level;
+                    .then(async ({ data }) => {
+                        return data.response.player_level == undefined ? 'Privado' : data.response.player_level;
                     })
-                    .catch(() => {}),
+                    .catch(() => { }),
                 steamid: new SteamID(steamid64).getSteam2RenderedID(true),
             };
-            const embed = new Discord.MessageEmbed()
+            const embed = new MessageEmbed()
                 .setColor('36393f')
                 .setThumbnail(PerfilInfos.playerInfos[0].avatarfull.toString())
                 .setTitle(PerfilInfos.playerInfos[0].personaname.toString())
@@ -129,7 +121,11 @@ module.exports = {
                     }
                 );
 
-            interaction.editReply({embeds: [embed]});
-        } catch (error) {}
+            interaction.editReply({ embeds: [embed] });
+        } catch (error) {
+            interaction.editReply({ embeds: [PerfilWrong(interaction)] }).then(() => setTimeout(() => {
+                interaction.deleteReply()
+            }, 5000))
+        }
     },
 };

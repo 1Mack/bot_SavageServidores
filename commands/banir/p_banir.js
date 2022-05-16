@@ -1,58 +1,70 @@
-const { connection } = require('../../configs/config_privateInfos');
-const { BanSucess, Banlog, BanError, MackNotTarget } = require('./embed');
-const { serversInfos } = require('../../configs/config_geral')
-const chalk = require('chalk');
+const { serversInfos } = require('../../configs/config_geral');
+const { BanirSolicitar } = require('./handle/banirSolicitar');
+const { BanirTemp } = require('./handle/banir')
 
 module.exports = {
     name: 'banir',
-    description: 'Banir alguém do servidor',
-    options: [{ name: 'nick', type: 3, description: 'Nick do Player', required: true, choices: null },
-    { name: 'steamid', type: 3, description: 'Steamid do Player', required: true, choices: null },
-    { name: 'servidor', type: 3, description: 'Qual servidor ele estava?', required: true, choices: serversInfos.map(m => { return { name: m.name, value: m.name } }) },
-    { name: 'tempo', type: 4, description: 'Valor em minutos', required: true, choices: null },
-    { name: 'motivo', type: 3, description: 'Motivo do Ban', required: true, choices: null }],
+    description: 'Setar um cargo para algum player',
+    options: [
+        {
+            name: 'solicitar', type: 1, description: 'Solicitar um banimento', options: [
+                { name: 'nick', type: 3, description: 'Nick do Player', required: true, choices: null },
+                { name: 'steamid', type: 3, description: 'Steamid do Player', required: true, choices: null },
+                { name: 'servidor', type: 3, description: 'Qual servidor ele estava?', required: true, choices: serversInfos.map(m => { return { name: m.name, value: m.name } }) },
+                { name: 'motivo', type: 3, description: 'Motivo do Ban', required: true, choices: null },
+                { name: 'discord', type: 6, description: 'discord do player', required: false, choices: null },
+                { name: 'file1', type: 11, description: 'Prova', required: false, choices: null },
+                { name: 'file2', type: 11, description: 'Prova', required: false, choices: null },
+                { name: 'file3', type: 11, description: 'Prova', required: false, choices: null },
+                { name: 'file4', type: 11, description: 'Prova', required: false, choices: null },
+            ]
+        },
+        {
+            name: 'temp', type: 1, description: 'Para realizar um banimento', options: [
+                { name: 'nick', type: 3, description: 'Nick do Player', required: true, choices: null },
+                { name: 'steamid', type: 3, description: 'Steamid do Player', required: true, choices: null },
+                { name: 'tempo', type: 4, description: 'Valor em minutos', required: true, choices: null },
+                { name: 'motivo', type: 3, description: 'Motivo do Ban', required: true, choices: null },
+                { name: 'discord', type: 6, description: 'discord do player', required: false, choices: null }
+            ]
+        },
+    ],
     default_permission: false,
-    cooldown: 15,
-    permissions: [{ id: '778273624305696818', type: 1, permission: true }], //Perm ban
+    cooldown: 0,
+    permissions: [{ id: '778273624305696818', type: 1, permission: true }], // Gerente
+
     async execute(client, interaction) {
-        let nick = interaction.options.getString('nick'),
-            steamid = interaction.options.getString('steamid'),
-            servidor = interaction.options.getString('servidor'),
-            tempo = interaction.options.getInteger('tempo').toString(),
-            reason = interaction.options.getString('motivo');
 
-        if (steamid.startsWith('STEAM_0')) {
-            steamid = steamid.replace('0', '1');
+        const command = interaction.options.getSubcommand()
+
+        switch (command) {
+            case 'solicitar':
+                BanirSolicitar(client, interaction,
+                    interaction.options.getString('nick'),
+                    interaction.options.getString('steamid'),
+                    interaction.options.getString('servidor').toLowerCase(),
+                    interaction.options.getString('motivo'),
+                    interaction.options.getUser('discord'),
+                    [
+                        interaction.options.getAttachment('file1'),
+                        interaction.options.getAttachment('file2'),
+                        interaction.options.getAttachment('file3'),
+                        interaction.options.getAttachment('file4'),
+                    ]
+
+                )
+                break;
+            case 'temp':
+                BanirTemp(client, interaction,
+                    interaction.options.getString('nick'),
+                    interaction.options.getString('steamid'),
+                    interaction.options.getInteger('tempo'),
+                    interaction.options.getString('motivo'),
+                    interaction.options.getUser('discord'),
+                )
+                break;
+            default:
+                break;
         }
-
-        if (steamid == 'STEAM_1:1:79461554' && interaction.user.id !== '323281577956081665')
-            return interaction.followUp({ embeds: [MackNotTarget(interaction)] }).then(() => setTimeout(() => interaction.deleteReply(), 10000));
-
-
-        let timeNow = Date.now();
-        timeNow = Math.floor(timeNow / 1000);
-        let timeEnd = timeNow + tempo * 60;
-
-        const con = connection.promise();
-        let result
-        try {
-            [result] = await con.query(`SELECT steamid, ip from mostactive_${servidor} where steamid = '${steamid}'`)
-        } catch (error) { }
-
-        if (result == '' || result == undefined) {
-            result = [{ ip: null }]
-        }
-
-        try {
-            let sqlBans = 'INSERT INTO sb_bans (ip, authid, name, created, ends, length, reason, aid, sid, country, type) VALUES ?',
-                SqlBan_VALUES = [[`${result[0].ip}`, `${steamid}`, `${nick}`, timeNow, timeEnd, tempo, reason, 22, 0, null, 0]];
-
-            await con.query(sqlBans, [SqlBan_VALUES]);
-            client.channels.cache.get('721854111741509744').send({ embeds: [Banlog(nick, steamid, tempo, reason, interaction.user)] });
-            await interaction.reply({ embeds: [BanSucess(interaction.user, nick, steamid)], ephemeral: true })
-        } catch (error) {
-            interaction.channel.send({ embeds: [BanError(interaction.user)] });
-            console.error(chalk.redBright('Erro no Banimento'), error);
-        }
-    },
-};
+    }
+}

@@ -1,6 +1,7 @@
 const { MessageActionRow, MessageButton, MessageEmbed } = require('discord.js');
 const { Components } = require('./components');
 const { connection } = require('../../configs/config_privateInfos');
+const { guildsInfo } = require('../../configs/config_geral')
 
 
 module.exports = {
@@ -39,7 +40,7 @@ module.exports = {
 
             if (alreadyGame)
                 return interaction.reply(
-                    { content: `[**Você já possui um jogo em andamento!**](https://discord.com/channels/343532544559546368/814295769699713047/${alreadyGame.id})`, ephemeral: true }
+                    { content: `[**Você já possui um jogo em andamento!**](https://discord.com/channels/${guildsInfo.main}/814295769699713047/${alreadyGame.id})`, ephemeral: true }
                 )
 
         } catch (error) { }
@@ -55,7 +56,7 @@ module.exports = {
 
         if (result == undefined) return interaction.reply({
             content: `**Esse comando é so para pessoas verificadas!!**
-            [Para verificar-se, clique aqui e siga o tutorial](https://discord.com/channels/343532544559546368/799419890481758208)`, ephemeral: true
+            [Para verificar-se, clique aqui e siga o tutorial](https://discord.com/channels/${guildsInfo.main}/799419890481758208)`, ephemeral: true
         })
 
         result = result.steamid.replace(result.steamid.substring(0, 10), '')

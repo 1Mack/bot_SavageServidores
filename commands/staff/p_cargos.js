@@ -1,93 +1,120 @@
-const { connection } = require('../../configs/config_privateInfos');
-const { PlayerDiscordNotFound, InternalServerError } = require('../../embed/geral');
+const { MessageEmbed } = require('discord.js');
 const chalk = require('chalk');
-const Discord = require('discord.js');
+
+const { connection2 } = require('../../configs/config_privateInfos');
+const { serversInfos, serverGroups } = require('../../configs/config_geral');
+
+const { InternalServerError } = require('../../embed/geral');
+
 module.exports = {
     name: 'cargos',
     description: 'Ver os cargos do player in-game',
-    options: [{name: 'discord', type: 6, description: 'discord do player', required: true, choices: null}],
+    options: [
+        { name: 'discord', type: 6, description: 'Discord do player', required: false, choices: null },
+        { name: 'steamid', type: 3, description: 'Steamid do player', required: false, choices: null }
+    ],
     default_permission: false,
     cooldown: 0,
-    permissions: [{id: '711022747081506826', type: 1, permission: true}],
+    permissions: [{ id: '711022747081506826', type: 1, permission: true }],
     async execute(client, interaction) {
-        let discord1 = interaction.options.getUser('discord')
+        let discord_steam = interaction.options.getUser('discord') || interaction.options.getString('steamid')
 
-        
+        if (!discord_steam) return interaction.reply({ content: 'Você precisa informar o discord ou a steamid do player!!', ephemeral: true })
 
-        try {
-            var fetchUser = await client.users.fetch(discord1.id);
-        } catch (error) {
-            return interaction.reply({embeds: [PlayerDiscordNotFound(interaction)]});
-        }
-        
-        let StaffFoundEmbed = new Discord.MessageEmbed().setColor('#0099ff').setTitle(fetchUser.username);
-        let StaffFoundEmbed2 = new Discord.MessageEmbed().setColor('#0099ff').setTimestamp();
+        let StaffFoundEmbed = new MessageEmbed().setColor('#0099ff')
 
         let rows;
-        const con = connection.promise();
+        const con = connection2.promise();
 
         try {
-            [rows] = await con.query(
-                `select * from vip_sets inner join vip_servers
-            on vip_sets.server_id = vip_servers.id
-            where discord_id ='${discord1.id}'`
-            );
+            if (typeof (discord_steam) == 'object') {
+                [rows] = await con.query(
+                    `SELECT * from Cargos 
+                        where playerid regexp 
+                        REPLACE(
+                            (select playerid from Cargos where discordID = '${discord_steam.id}' LIMIT 1), 
+                            SUBSTRING(
+                                (select playerid from Cargos where discordID = '${discord_steam.id}' LIMIT 1), 
+                                1, 8), 
+                                ''
+                            )
+                    `
+                );
+                StaffFoundEmbed.setTitle(`${discord_steam.username}`);
+
+            } else {
+                [rows] = await con.query(
+                    `select * from Cargos 
+                where playerid regexp '${discord_steam.slice(8)}'`
+                );
+
+                let findDiscordID = await rows.find(row => row.discordID != null)
+
+                if (findDiscordID) {
+                    StaffFoundEmbed.setTitle(`${(await interaction.guild.members.cache.get(findDiscordID.discordID)).user.username}`)
+                } else {
+                    StaffFoundEmbed.setTitle(`${discord_steam}`)
+                }
+
+            }
+
         } catch (error) {
             return (
-                interaction.reply({embeds: [InternalServerError(interaction)]}).then(() => setTimeout(() => interaction.deleteReply(), 10000)),
+                interaction.reply({ embeds: [InternalServerError(interaction)] }).then(() => setTimeout(() => interaction.deleteReply(), 10000)),
                 console.error(chalk.redBright('Erro no Banimento'), error)
             );
         }
         if (rows == '') {
-            return interaction.reply({content: `**<@${interaction.user.id}> | Não encontrei**`}).then(() => setTimeout(() => interaction.deleteReply(), 10000));
+            return interaction.reply({ content: `**${interaction.user} | Não encontrei nenhum cargo para __${discord_steam}__**` }).then(() => setTimeout(() => interaction.deleteReply(), 10000));
         }
 
-        rows.forEach((m, i) => {
-            if (i < 5) {
-                StaffFoundEmbed = StaffFoundEmbed.addField(
-                    `<a:diamante:650792674248359936> **${m.server_name}** <a:diamante:650792674248359936>`,
-                    '\u200B'
-                );
 
-                StaffFoundEmbed = StaffFoundEmbed.addFields(
+        await interaction.deferReply()
+        await interaction.followUp({ content: `**${interaction.user} | Estou te enviando os sets no seu privado!**` })
+
+        rows = rows.sort((a, b) => (
+            Object.keys(serverGroups).findIndex(key => serverGroups[key].value == `${a.flags}`)
+            >
+            Object.keys(serverGroups).findIndex(key => serverGroups[key].value == `${b.flags}`)
+        ) ? 1 : -1)
+
+        rows = await rows.map((item) => {
+
+            let cargo = Object.keys(serverGroups).find(key => serverGroups[key].value == `${item.flags}`)
+            let server = serversInfos.find(server => server.serverNumber == item.server_id)
+            server == undefined ? server = 'TODOS' : server = server.visualName
+
+
+            return (
+                [
+                    {
+                        name: `<a:diamante:650792674248359936> **${server}** <a:diamante:650792674248359936>`,
+                        value: '\u200B'
+                    },
                     { name: `\u200B`, value: `**set**`, inline: true },
                     { name: `\u200B`, value: `\u200B`, inline: true },
                     {
                         name: `\u200B`,
-                        value: `\`\`\`${`"${m.steamid}"  "@${m.cargo}" //${
-                            m.isVip == 0
-                                ? `${m.name}  (${m.discord_id})`
-                                : `${m.name} (${m.date_create} - ${m.discord_id} - ${m.date_final})`
-                        }`}\`\`\``,
+                        value: `\`\`\`${`${item.playerid}  ${cargo}${item.discordID ? ` ${item.discordID}` : ''}`}\`\`\``,
                         inline: true,
                     }
-                );
-            } else {
-                StaffFoundEmbed2 = StaffFoundEmbed2.addField(
-                    `<a:diamante:650792674248359936> **${m.server_name}** <a:diamante:650792674248359936>`,
-                    '\u200B'
-                );
-
-                StaffFoundEmbed2 = StaffFoundEmbed2.addFields(
-                    { name: `\u200B`, value: `**set**`, inline: true },
-                    { name: `\u200B`, value: `\u200B`, inline: true },
-                    {
-                        name: `\u200B`,
-                        value: `\`\`\`${`"${m.steamid}"  "@${m.cargo}" //${
-                            m.isVip == 0
-                                ? `${m.name}  (${m.discord_id})`
-                                : `${m.name} (${m.date_create} - ${m.discord_id} - ${m.date_final})`
-                        }`}\`\`\``,
-                        inline: true,
-                    }
-                );
-            }
+                ]
+            )
         });
 
-        interaction.reply({content: '**Te enviei os cargos desse staff no seu PV**'}).then(() => setTimeout(() => interaction.deleteReply(), 10000));
-        await interaction.user.send({embeds: [StaffFoundEmbed]});
-        if (StaffFoundEmbed2.fields != '') {
-            await interaction.user.send({embeds: [StaffFoundEmbed2]});
+
+        for (let i in rows) {
+            StaffFoundEmbed.addFields(
+                rows[i]
+            )
+            if (StaffFoundEmbed.fields.length == 24 || i == rows.length - 1) {
+                await interaction.user.send({ embeds: [StaffFoundEmbed] });
+                StaffFoundEmbed.fields = []
+            }
+
         }
+        interaction.editReply({ content: `Todos os sets foram enviados no seu pv!` }).then(m => setTimeout(() => {
+            m.delete()
+        }, 5000))
     },
 };

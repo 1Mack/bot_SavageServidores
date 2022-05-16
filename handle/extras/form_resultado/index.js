@@ -1,4 +1,5 @@
 const { MessageEmbed, MessageActionRow, MessageButton } = require('discord.js')
+const { guildsInfo } = require('../../../configs/config_geral')
 
 exports.Form_resultado = async function (interaction, client) {
     const resultChannel = interaction.guild.channels.cache.get('935958975558615100')
@@ -37,7 +38,7 @@ exports.Form_resultado = async function (interaction, client) {
         ],
         parent: '936310042225934408',
     }).then(async channel => {
-        interaction.reply({ content: `[Canal criado sucesso](https://discord.com/channels/343532544559546368/${channel.id})`, ephemeral: true })
+        interaction.reply({ content: `[Canal criado sucesso](https://discord.com/channels/${guildsInfo.main}/${channel.id})`, ephemeral: true })
 
         const msg = await channel.send(`${interaction.user}`)
 
@@ -64,7 +65,8 @@ exports.Form_resultado = async function (interaction, client) {
         const resultEmbed = new MessageEmbed()
         const resultButton = new MessageActionRow()
 
-        let boolError = false;
+        let loopBool = true,
+            boolError = false
 
         await channel
             .awaitMessageComponent({ filter, time: 600000, errors: ['time'] })
@@ -99,8 +101,8 @@ exports.Form_resultado = async function (interaction, client) {
                                 )
                                 .setFooter({ text: `Reprovado pelo ${interaction.user.username}` })
                                 .setTimestamp();
-
-                            interaction.guild.members.cache.get(msgInfos.discord.replace(/[<@>]/g, '')).roles.remove(`Entrevista | ${msgInfos.servidor.toUpperCase()}`).catch(() => { })
+                            let guildRole = await interaction.guild.roles.cache.find(r => r.name == `Entrevista | ${msgInfos.servidor.toUpperCase()}`)
+                            interaction.guild.members.cache.get(msgInfos.discord.replace(/[<@>]/g, '')).roles.remove(guildRole).catch(() => { })
 
                             resultButton
                                 .addComponents(
@@ -127,28 +129,38 @@ exports.Form_resultado = async function (interaction, client) {
                         ***Exeplo de STEAMID: *** __STEAM_1:1:79461554___
                         `);
 
-                    await msg.edit({ embeds: [embed], components: [], content: ' ' })
+                    do {
+                        await msg.edit({ embeds: [embed], components: [], content: ' ' })
+
+                        await channel
+                            .awaitMessages({
+                                filter,
+                                max: 1,
+                                time: 600000,
+                                errors: ['time'],
+                            })
+                            .then(async (collected) => {
+                                collected = collected.first()
+
+                                collected.delete()
+
+                                if (!collected.content.includes('STEAM_'))
+                                    return await channel.send({ content: 'Você digitou a steamid errada!!!!\n**Exemplo de STEAMID:** __STEAM_1:1:79461554___', embeds: [] })
+                                        .then(m => setTimeout(() => {
+                                            m.delete()
+                                        }, 6000))
 
 
-                    await channel
-                        .awaitMessages({
-                            filter,
-                            max: 1,
-                            time: 600000,
-                            errors: ['time'],
-                        })
-                        .then(async (collected) => {
-                            collected = collected.first()
+                                msgInfos.steamID = collected.content
 
-                            collected.delete()
-                            msgInfos.steamID = collected.content
+                                return loopBool = false;
 
-                        }).catch(() => {
+                            }).catch(() => {
+                                boolError = true
+                                loopBool = false;
+                            })
 
-                            boolError = true
-
-
-                        })
+                    } while (loopBool);
 
 
                     embed.setDescription(`${interaction.user.username}, você tem 10 minutos para responder cada pergunta
@@ -164,7 +176,7 @@ exports.Form_resultado = async function (interaction, client) {
                     `);
 
                     if (['sim', 's', 'depende'].includes(msgInfos.ajudara_mensal.toLowerCase())) {
-                        let loopBool = true
+                        loopBool = true
                         do {
                             await msg.edit({ embeds: [embed], content: ' ' })
 
@@ -194,9 +206,10 @@ exports.Form_resultado = async function (interaction, client) {
 
                                 }).catch(() => {
                                     boolError = true
+                                    loopBool = false;
                                 })
 
-                        } while (loopBool || boolError);
+                        } while (loopBool);
                     }
 
 

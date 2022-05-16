@@ -1,7 +1,7 @@
 const { MessageActionRow, MessageButton, MessageEmbed } = require('discord.js');
 const wait = require('util').promisify(setTimeout);
 const { connection } = require('../../configs/config_privateInfos');
-const { serversInfos } = require('../../configs/config_geral');
+const { serversInfos, guildsInfo } = require('../../configs/config_geral');
 const { GerenteError, PlayerDiscordNotFound } = require('../../embed/geral');
 const {
     FormAlreadyOpened,
@@ -54,7 +54,7 @@ module.exports = {
             return interaction.reply({ embeds: [FormAlreadyOpened(interaction.user)] }).then(() => setTimeout(() => interaction.deleteReply(), 10000));
         }
 
-        let logGuild = client.guilds.cache.get('792575394271592458');
+        let logGuild = client.guilds.cache.get(guildsInfo.log);
 
         let canal = logGuild.channels.cache.find(
             (channel) => channel.name == servidor && channel.parentId == '839343718016614411'

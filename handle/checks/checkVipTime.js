@@ -1,5 +1,4 @@
-const { MessageEmbed, WebhookClient } = require('discord.js');
-const fetch = require('node-fetch');
+/* const { MessageEmbed, WebhookClient } = require('discord.js');
 const { webhookVipExpirado, webhookSavageLogs } = require('../../configs/config_webhook');
 const { serversInfos } = require('../../configs/config_geral');
 const { panelApiKey, connection } = require('../../configs/config_privateInfos');
@@ -47,11 +46,11 @@ exports.Checagem = async function () {
 
         }
 
-         webhookLogs.send({
-          username: 'SavageLog',
-          avatarURL: 'https://cdn.discordapp.com/attachments/751428595536363610/795505830845743124/savage.png',
-          embeds: [logVipExpirado],
-      }); 
+        webhookLogs.send({
+            username: 'SavageLog',
+            avatarURL: 'https://cdn.discordapp.com/attachments/751428595536363610/795505830845743124/savage.png',
+            embeds: [logVipExpirado],
+        });
 
         try {
             [rows] = await con.query(`delete FROM vip_sets where discord_id = '${element.discord_id}' and server_id = ${element.server_id}`);
@@ -102,45 +101,6 @@ exports.Checagem = async function () {
         }
 
         setInfos = setInfos.join('\n');
-
-        for (let j in serverFound.identifier) {
-
-            try {
-                await fetch(
-                    `https://panel.mjsv.us/api/client/servers/${serverFound.identifier[j]}/files/write?file=%2Fcsgo%2Faddons%2Fsourcemod%2Fconfigs%2Fadmins_simple.ini`,
-                    {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'text/plain',
-                            Accept: 'application/json',
-                            Authorization: `Bearer ${panelApiKey.api}`,
-                        },
-                        body: setInfos
-                    }
-                );
-            } catch (error) {
-                console.log(error);
-                webhookChecagemLogs.send(
-                    `**Deletei os sets no servidor ${serverFound.name}, porém não consegui setá-los no servidor!**`,
-                    {
-                        username: 'SavageLogs',
-                        avatarURL:
-                            'https://cdn.discordapp.com/attachments/751428595536363610/795505830845743124/savage.png',
-                    }
-                );
-                return;
-            }
-            try {
-                fetch(`https://panel.mjsv.us/api/client/servers/${serverFound.identifier[j]}/command`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        Accept: 'application/json',
-                        Authorization: `Bearer ${panelApiKey.api}`,
-                    },
-                    body: JSON.stringify({ command: 'sm_reloadadmins' }),
-                });
-            } catch { }
-        }
     }
 }
+ */

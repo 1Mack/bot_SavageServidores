@@ -1,7 +1,6 @@
 const mysql = require('mysql2');
 
 const botConfig = {
-    prefix: '',
     token: '',
     applicationId: ''
 };
@@ -17,8 +16,22 @@ const connection = mysql.createPool({
     database: '',
 });
 
+const connection2 = mysql.createPool({
+    host: '',
+    user: '',
+    password: '',
+    database: '',
+    port: ''
+});
+
+const storePanelToken = {
+    token: ''
+}
 module.exports = {
     botConfig,
     connection,
+    connection2,
     panelApiKey,
+    storePanelToken
 };
+

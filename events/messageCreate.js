@@ -1,5 +1,6 @@
 const { checkChannels } = require('../handle/checks/checkChannels')
-const { serverStatus } = require('../handle/extras/serverStatus')
+const { CheckMemberCount } = require('../handle/extras/CheckMemberCount')
+const { ServerStatus } = require('../handle/extras/serverStatus')
 
 module.exports = {
     name: 'messageCreate',
@@ -12,11 +13,11 @@ module.exports = {
 
                 let msg = await message.channel.send('reloaded')
 
-                serverStatus(msg, client)
+                ServerStatus(msg, client)
 
                 setInterval(async () => {
-                    serverStatus(msg, client)
-
+                    ServerStatus(msg, client)
+                    CheckMemberCount(client)
                 }, 300000)
 
             }

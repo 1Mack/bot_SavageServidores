@@ -1,6 +1,6 @@
 const { MessageEmbed, MessageButton, MessageActionRow } = require('discord.js');
-const { connection } = require('../../../configs/config_privateInfos');
-const { serversInfos } = require('../../../configs/config_geral');
+const { connection, connection2 } = require('../../../configs/config_privateInfos');
+const { serversInfos, serverGroups, guildsInfo } = require('../../../configs/config_geral');
 const wait = require('util').promisify(setTimeout);
 
 exports.UP_Procurar_merecedores = async function (client, interaction, servidor) {
@@ -12,7 +12,7 @@ exports.UP_Procurar_merecedores = async function (client, interaction, servidor)
             content: `😫 **| <@${interaction.user.id}> Você não pode ter esse servidor como alvo, pois você não é gerente dele!**`, ephemeral: true
         })
 
-    const con = connection.promise();
+
 
     let canalCheck = await client.channels.cache.find((m) => m.name === `upando→${interaction.user.id}`);
 
@@ -34,7 +34,7 @@ exports.UP_Procurar_merecedores = async function (client, interaction, servidor)
         canalCheck = await client.channels.cache.find((m) => m.name === `upando→${interaction.user.id}`);
     }
     await interaction.deferReply()
-    interaction.followUp({ content: `[Canal criado com sucesso!!!](https://discord.com/channels/343532544559546368/${canalCheck.id})` }).then(m => {
+    interaction.followUp({ content: `[Canal criado com sucesso!!!](https://discord.com/channels/${guildsInfo.main}/${canalCheck.id})` }).then(m => {
         setTimeout(() => {
             m.delete()
         }, 5000);
@@ -44,20 +44,10 @@ exports.UP_Procurar_merecedores = async function (client, interaction, servidor)
 
     let msg = await canalCheck.send(`${interaction.user}`)
 
-    let [result] = await con.query(
-        `select * from mostactive_${servidor} inner join vip_sets
-            on mostactive_${servidor}.steamid = vip_sets.steamid
-            where isVip = '0'
-            and cargo != 'fundador'
-            and cargo != 'diretor'
-            and cargo != 'gerente'
-            and server_id = (select id from vip_servers where server_name = '${servidor}')`
-    ).catch(err => {
-        return (
-            console.error(err),
-            msg.edit({ content: 'Ouve um erro inesperado', embeds: [], components: [] })
-        )
-    })
+    let result, result2;
+    const con = connection.promise();
+    const con2 = connection2.promise();
+
 
     if (result == '') {
         return (
@@ -66,9 +56,32 @@ exports.UP_Procurar_merecedores = async function (client, interaction, servidor)
             canalCheck.delete()
         );
     }
+
+    try {
+        [result] = await con2.query(
+            `SELECT * FROM Cargos where flags NOT REGEXP 't' and server_id = '${serversInfosFound.serverNumber}'`
+        );
+
+
+    } catch (error) {
+        return (
+            console.error(error),
+            msg.edit({ content: 'Ouve um erro inesperado', embeds: [], components: [] })
+        );
+    }
+
+    if (result == '') {
+        return (
+            interaction.followUp({ content: '**Esse jogador não não tem set**' }).then(m => {
+                setTimeout(() => {
+                    m.delete()
+                }, 7000);
+            })
+        );
+    }
     let outloop
     for (let i in result) {
-        const logGuildUpConfirm = await client.guilds.cache.get('792575394271592458').channels.cache.get('931637295902240838')
+        const logGuildUpConfirm = await client.guilds.cache.get(guildsInfo.log).channels.cache.get('931637295902240838')
 
         const logGuildUpConfirmMessages = await logGuildUpConfirm.messages.fetch().then(m =>
             m.find(m => m.embeds[0].fields.find(a => a.name == 'DiscordID' && a.value == result[i].discord_id) && m.embeds[0].footer.text == servidor)
@@ -92,19 +105,35 @@ exports.UP_Procurar_merecedores = async function (client, interaction, servidor)
             }
         }
 
+        try {
+            [result2] = (await con.query(`select * from mostactive_${servidor} 
+            where steamid regexp '${result[i].playerid.slice(8)}'
+           `))[0]
+
+        } catch (error) {
+            return (
+                console.error(error),
+                msg.edit({ content: 'Ouve um erro inesperado', embeds: [], components: [] })
+            );
+        }
+
+        if (result2 == undefined) {
+            continue;
+        }
+
         let formMessage = new MessageEmbed()
             .setColor('#0099ff')
-            .setTitle(result[i].name.toString())
+            .setTitle(result2.playername.toString())
             .addFields(
-                { name: 'Steamid', value: result[i].steamid.toString() },
-                { name: 'DiscordID', value: `<@${result[i].discord_id}>` },
-                { name: 'Cargo', value: result[i].cargo.toString() },
-                { name: 'Último Set', value: result[i].date_create.toString() },
-                { name: `**Horas Totais**`, value: HourFormat(result[i].total) },
-                { name: `**Horas Spec**`, value: HourFormat(result[i].timeSPE) },
-                { name: `**Horas TR**`, value: HourFormat(result[i].timeTT) },
-                { name: `**Horas CT**`, value: HourFormat(result[i].timeCT) },
-                { name: `**Última conexao**`, value: new Date(result[i].last_accountuse * 1000).toLocaleDateString('en-GB') },
+                { name: 'Steamid', value: result[i].playerid.toString() },
+                { name: 'DiscordID', value: `<@${result[i].discordID}>` },
+                { name: 'Cargo', value: Object.keys(serverGroups).find(key => serverGroups[key].value === result[i].flags).toString() },
+                { name: 'Último Set', value: `${new Date(result[i].timestamp).toLocaleDateString('en-GB')}` },
+                { name: `**Horas Totais**`, value: HourFormat(result2.total) },
+                { name: `**Horas Spec**`, value: HourFormat(result2.timeSPE) },
+                { name: `**Horas TR**`, value: HourFormat(result2.timeTT) },
+                { name: `**Horas CT**`, value: HourFormat(result2.timeCT) },
+                { name: `**Última conexao**`, value: new Date(result2.last_accountuse * 1000).toLocaleDateString('en-GB') },
 
             )
             .setFooter({ text: servidor.toString() })
@@ -171,14 +200,14 @@ exports.UP_Procurar_merecedores = async function (client, interaction, servidor)
                                     { name: `**Sugerido Pelo**`, value: interaction.user.username.toString() },
                                 )
 
-                                canalCheck.send(`Staff <@${result[i].discord_id}> enviado para análise com sucesso!`).then(async m => setTimeout(() => m.delete(), 5000))
+                                canalCheck.send(`Staff <@${result[i].discordID}> enviado para análise com sucesso!`).then(async m => setTimeout(() => m.delete(), 5000))
 
                                 logGuildUpConfirm.send({ embeds: [formMessage], components: [row2] }).then(message => {
                                     let embedDiretorMSG = new MessageEmbed()
                                         .setColor('#00ff00')
-                                        .setDescription(`[Novo staff para ser upado](https://discord.com/channels/792575394271592458/931637295902240838/${message.id})`);
+                                        .setDescription(`[Novo staff para ser upado](https://discord.com/channels/${guildsInfo.log}/931637295902240838/${message.id})`);
 
-                                    interaction.guild.channels.cache.get('873396752760307742').send({ embeds: [embedDiretorMSG], content: '<@everyone>' })
+                                    interaction.guild.channels.cache.get('873396752760307742').send({ embeds: [embedDiretorMSG], content: '@everyone' })
                                 })
 
                             })

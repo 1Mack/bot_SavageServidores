@@ -5,13 +5,18 @@ const serversInfos = [
         canalAlvo: '',
         tagDoCargo: '',
         tagComprado: '',
-        tagVip: '',
         gerenteRole: '',
         serverNumber: 1,
         identifier: [''],
+        mostActiveServers: true
+
     },
-    //...
+   
 ];
+
+const serverGroups = {
+    fundador: { value: "z/a/t" },
+}
 
 const host = [
     {
@@ -19,15 +24,18 @@ const host = [
         host: '',
         port: ''
     },
-    //...
+   
 ]
-const normalServerRoles = [''];
 
-const paidRoles = ['']
+const guildsInfo = {
+    main: '',
+    log: ''
+}
+
 
 module.exports = {
     serversInfos,
-    normalServerRoles,
-    paidRoles,
-    host
+    serverGroups,
+    host,
+    guildsInfo
 };

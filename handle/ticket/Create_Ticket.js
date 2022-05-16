@@ -1,9 +1,9 @@
-const { TicketStart, ChannelCreated, TicketServerOptions } = require('./embed');
+const { TicketStart, ChannelCreated, TicketServerOptions, TicketLog } = require('./embed');
 const { Options } = require('./Options_Ticket');
 const { serversInfos } = require('../../configs/config_geral');
 exports.TicketCreate = async function (interaction, client) {
 
-    if (interaction.guild.channels.cache.filter(c => c.name.includes('ticket') && c.topic == interaction.user.id).size > 2)
+    if (interaction.guild.channels.cache.filter(c => c.parentId == '729848799421530173' && c.topic == interaction.user.id).size > 2)
         return interaction.reply({ content: `**Você já possui o máximo de tickets abertos possíveis!!**`, ephemeral: true })
 
     await interaction.guild.channels
@@ -22,17 +22,17 @@ exports.TicketCreate = async function (interaction, client) {
             ],
             parent: '729848799421530173',
         })
-        .then(async (m) => {
-            interaction.reply({ embeds: [ChannelCreated(interaction.user, m)], ephemeral: true });
-            m.send(`${interaction.user}`).then((m) => m.delete());
-            let msg = await m.send({ embeds: [TicketStart(interaction.user).embed], components: [TicketStart(interaction.user).lista] });
+        .then(async (channel) => {
+            interaction.reply({ embeds: [ChannelCreated(interaction.user, channel)], ephemeral: true });
+            channel.send(`${interaction.user}`).then((m) => m.delete());
+            let msg = await channel.send({ embeds: [TicketStart(interaction.user).embed], components: [TicketStart(interaction.user).lista] });
 
             const filter = i => {
                 i.deferUpdate();
                 return i.user.id === interaction.user.id;
             };
 
-            await m
+            await channel
                 .awaitMessageComponent({ filter, componentType: 'SELECT_MENU', time: 100000 })
                 .then(async (response) => {
 
@@ -42,14 +42,14 @@ exports.TicketCreate = async function (interaction, client) {
                         return i.user.id === interaction.user.id;
                     };
 
-                    await m
-                        .awaitMessageComponent({ filter, componentType: 'SELECT_MENU', time: 45000 })
+                    await channel
+                        .awaitMessageComponent({ filter, componentType: 'SELECT_MENU', time: 100000 })
                         .then(async (response2) => {
 
 
                             const ServerFound = serversInfos.find((f) => f.name == response2.values[0]);
 
-                            const ticketOptions = Options[response.values[0]];
+                            const ticketOptions = await Options[response.values[0]];
 
                             const roles = {
                                 servidor: ServerFound.name,
@@ -58,14 +58,43 @@ exports.TicketCreate = async function (interaction, client) {
                                 roleStaffComprado: ServerFound.tagComprado,
                             };
 
-                            ticketOptions(m, interaction.user, roles, msg);
+                            await interaction.guild.channels.cache.get('757709253766283294').messages.fetch({ limit: 100, force: false }).then(async d => {
+
+                                let fieldValue = await d.find(
+                                    f => f.embeds[0].fields.find(
+                                        m => m.name.includes('Ação')
+                                    ).value == 'Criado'
+                                        &&
+                                        f.embeds[0].fields.find(
+                                            m => m.name.includes('Ticket')
+                                        ).value.length < 20
+                                )
+
+                                let id
+
+                                if (!fieldValue) {
+                                    id = '1'
+                                } else {
+                                    fieldValue = fieldValue.embeds[0].fields.find(m => m.name.includes('Ticket')).value
+
+                                    id = Number(fieldValue.slice(fieldValue.lastIndexOf('→') + 1)) + 1
+                                }
+                                await ticketOptions(channel, interaction.user, roles, msg, id);
+                                m = await interaction.guild.channels.fetch(channel.id)
+
+                                client.channels.cache.get('757709253766283294').send({ embeds: [TicketLog(interaction.user, 'Criado', channel)] });
+
+
+                            })
+
+
                         })
                         .catch((error) => {
-                            return m.delete(), console.log(error);
+                            return channel.delete(), console.log(error);
                         });
                 })
-                .catch(() => {
-                    return m.delete();
+                .catch((error) => {
+                    return channel.delete(), console.log(error)
                 });
         });
 };

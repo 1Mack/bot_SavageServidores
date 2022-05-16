@@ -2,7 +2,7 @@ const { query } = require('gamedig');
 const { host } = require('../../configs/config_geral')
 const { MessageEmbed } = require('discord.js')
 
-exports.serverStatus = async function (msg, client) {
+exports.ServerStatus = async function (msg, client) {
 
     let Catch = [];
 
@@ -32,17 +32,23 @@ exports.serverStatus = async function (msg, client) {
 
 
     let CatchFormat = Catch.map((m, i) => {
-        return `<a:diamante:650792674248359936> **${m.name}** <a:diamante:650792674248359936>\n\n**Mapa:** ${m.mapa}\n**Players:** ${m.players}/${m.playersTotal}\n**IP:** steam://connect/${m.ip}${i + 1 == Catch.length ? '' : '\n▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂\n\n'}`
+        return `***${m.name.slice(0, m.name.indexOf('|'))}*** \n\n**Mapa:** ${m.mapa}\n**Players:** ${m.players}/${m.playersTotal}\n**IP:** steam://connect/${m.ip}${i + 1 == Catch.length ? '' : '\n▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂\n\n'}`
     })
+
+
+
     let embedImg = new MessageEmbed()
         .setColor('36393f')
         .setImage('https://cdn.discordapp.com/attachments/814295769699713047/877679866219233350/ip-dos-servidores.gif')
+
     let embed = new MessageEmbed()
         .setColor('36393f')
-        .setDescription(CatchFormat.toString())
-        .setFooter({ text: 'A lista atualizada a cada 5 minutos' })
+        .setDescription(CatchFormat.join('').toString())
+        .setFooter({ text: 'A lista atualizada a cada 5 min' })
         .setTimestamp()
+
     let cont = 0, contTotal = 0
+
     for (let i in Catch) {
         cont += Catch[i].players
         contTotal += Catch[i].playersTotal

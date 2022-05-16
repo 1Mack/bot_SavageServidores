@@ -1,6 +1,6 @@
 const { MessageEmbed, MessageButton, MessageActionRow } = require('discord.js');
-const { connection } = require('../../configs/config_privateInfos');
-const { serversInfos } = require('../../configs/config_geral');
+const { connection, connection2 } = require('../../configs/config_privateInfos');
+const { serversInfos, serverGroups, guildsInfo } = require('../../configs/config_geral');
 const wait = require('util').promisify(setTimeout);
 
 module.exports = {
@@ -16,14 +16,15 @@ module.exports = {
         let servidor = interaction.options.getString('servidor').toLowerCase()
 
         const serversInfosFound = serversInfos.find((m) => m.name === servidor);
-
+        const con = connection.promise();
+        const con2 = connection2.promise();
         if (!interaction.member.roles.cache.has(serversInfosFound.gerenteRole) && !interaction.member.roles.cache.has('831219575588388915'))
             return interaction.reply({
                 content: `😫 **| <@${interaction.user.id}> Você não pode ter esse servidor como alvo, pois você não é gerente dele!**`
             })
                 .then(() => setTimeout(() => interaction.deleteReply(), 10000));
 
-        const con = connection.promise();
+
 
         let canalCheck = await client.channels.cache.find((m) => m.name === `horasdemotar→${interaction.user.id}`);
 
@@ -54,28 +55,33 @@ module.exports = {
         await canalCheck.bulkDelete(100);
 
         let msg = await canalCheck.send(`${interaction.user}`)
+        let result, result2
+        try {
+            [result2] = await con2.query(
+                `select * from Cargos
+                where (flags not REGEXP 't' or flags = 'a/b/c/d/f/g/h/i/j/k/m/s/o/t')
+                and server_id = '${serversInfosFound.serverNumber}'`
+            );
+        } catch (error) {
 
-        let [result] = await con.query(
-            `select * from mostactive_${servidor} inner join vip_sets
-            on mostactive_${servidor}.steamid = vip_sets.steamid
-            where isVip = '0'
-            and cargo != 'fundador'
-            and cargo != 'diretor'
-            and cargo != 'gerente'
-            and total < '72000'
-            and server_id = (select id from vip_servers where server_name = '${servidor}')`
+        }
+
+        [result] = await con.query(
+            `select * from mostactive_${servidor}
+            where (total < '72000' OR total IS NULL) and (${result2.map((m) => `steamid regexp '${m.playerid.slice(8)}'`).join(' or ')})`
         );
-
-        if (result == '') {
+        if (result2 == '') {
             return (
                 await msg.edit({ content: 'Não achei ninguém com hora menor!! Deletando canal' }),
                 await wait(6000),
                 canalCheck.delete()
             );
         }
+
+
         let outloop
         for (let i in result) {
-            const logGuildDemotarConfirm = await client.guilds.cache.get('792575394271592458').channels.cache.get('914623602186395778')
+            const logGuildDemotarConfirm = await client.guilds.cache.get(guildsInfo.log).channels.cache.get('914623602186395778')
 
             const logGuildDemotarConfirmMessages = await logGuildDemotarConfirm.messages.fetch().then(m =>
                 m.find(m => m.embeds[0].fields.find(a => a.name == 'DiscordID' && a.value == result[i].discord_id) && m.embeds[0].footer.text == servidor)
@@ -98,15 +104,16 @@ module.exports = {
                     return `${hrs} horas e ${mins} minutos`
                 }
             }
+            let findCargosStaff = result2.find(m => m.playerid.slice(8) == result[i].steamid.slice(8))
 
             let formMessage = new MessageEmbed()
                 .setColor('#0099ff')
-                .setTitle(result[i].name ? result[i].name.toString() : 'Indefinido')
+                .setTitle(result[i].playername)
                 .addFields(
-                    { name: 'Steamid', value: result[i].steamid.toString() },
-                    { name: 'DiscordID', value: `<@${result[i].discord_id}>` },
-                    { name: 'Cargo', value: result[i].cargo.toString() },
-                    { name: 'Último Set', value: result[i].date_create ? result[i].date_create.toString() : 'Indefinido' },
+                    { name: 'Steamid', value: findCargosStaff.playerid.toString() },
+                    { name: 'DiscordID', value: `<@${findCargosStaff.discordID}>` },
+                    { name: 'Cargo', value: Object.keys(serverGroups).find(key => serverGroups[key].value === findCargosStaff.flags).toString() },
+                    { name: 'Último Set', value: `${new Date(findCargosStaff.timestamp).toLocaleDateString('en-GB')}` },
                     { name: `**Horas Totais**`, value: HourFormat(result[i].total) },
                     { name: `**Horas Spec**`, value: HourFormat(result[i].timeSPE) },
                     { name: `**Horas TR**`, value: HourFormat(result[i].timeTT) },
@@ -157,14 +164,14 @@ module.exports = {
 
                             );
 
-                        await canalCheck.send(`Staff <@${result[i].discord_id}> enviado para análise com sucesso!`).then(async m => setTimeout(() => m.delete(), 5000))
+                        await canalCheck.send(`Staff <@${findCargosStaff.discordID}> enviado para análise com sucesso!`).then(async m => setTimeout(() => m.delete(), 5000))
 
                         logGuildDemotarConfirm.send({ embeds: [formMessage], components: [row2] }).then(message => {
                             let embedDiretorMSG = new MessageEmbed()
                                 .setColor('#00ff00')
-                                .setDescription(`[Novo staff para ser demotado](https://discord.com/channels/792575394271592458/931637295902240838/${message.id})`);
+                                .setDescription(`[Novo staff para ser demotado](https://discord.com/channels/${guildsInfo.log}/914623602186395778/${message.id})`);
 
-                            interaction.guild.channels.cache.get('873396752760307742').send({ embeds: [embedDiretorMSG], content: '<@everyone>' })
+                            interaction.guild.channels.cache.get('873396752760307742').send({ embeds: [embedDiretorMSG], content: '@everyone' })
                         })
 
 

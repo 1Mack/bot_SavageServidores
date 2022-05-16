@@ -1,62 +1,19 @@
 const { MessageActionRow, MessageButton } = require('discord.js')
 const { TicketCreate } = require('../../ticket/Create_Ticket')
 const { FormCreate } = require('../../formulario/Create_Form')
-const { TicketClosed, TicketOpened, TicketDeleting, TicketSaved, TicketLog, ticketActionsEmbed } = require('../../ticket/embed');
+const { TicketClosed, TicketOpened, TicketDeleting, TicketLog, ticketActionsEmbed } = require('../../ticket/embed');
 const { Save } = require('../../ticket/Save_Ticket');
-const { Diretor_DemotarConfirm } = require('../demotar');
+const { Diretor_DemotarConfirm } = require('../../../commands/demotar/handle');
 const { Captcha } = require('../../protection');
-const { Diretor_UpConfirm } = require('../setar/procurar_merecedores_handle');
+const { Diretor_UpConfirm } = require('../../../commands/set/handle/procurar_merecedores_handle');
 const { Form_resultado } = require('../form_resultado');
-const { Staff } = require('../setar/normal');
-
-function buttonMessage(buttonType, type, interaction) {
-    interaction.reply({ content: `Cargo de **${buttonType}** foi **${type}** com sucesso!`, ephemeral: true })
-}
+const { Staff } = require('../../../commands/set/handle/normal');
+const { Delete_AskQuestion } = require('../../ticket/handles/delete_askQuestion');
+const { MessageEmbed } = require('discord.js');
+const { BanirTemp } = require('../../../commands/banir/handle/banir');
+const { guildsInfo } = require('../../../configs/config_geral');
 
 const functionCargos = {
-    'iBP'(interaction) {
-        if (interaction.member.roles.cache.has('808452098030829598')) {
-            interaction.member.roles.remove('808452098030829598');
-            buttonMessage('Bate Papo', 'removido', interaction)
-        } else {
-            interaction.member.roles.add('808452098030829598');
-            buttonMessage('Bate Papo', 'adicionado', interaction)
-
-        }
-    },
-    'iRules'(interaction) {
-        if (interaction.member.roles.cache.has('808452094637637682')) {
-            interaction.member.roles.remove('808452094637637682');
-            buttonMessage('Regras', 'removido', interaction)
-
-        } else {
-            interaction.member.roles.add('808452094637637682');
-            buttonMessage('Regras', 'adicionado', interaction)
-
-        }
-    },
-    'iTut'(interaction) {
-        if (interaction.member.roles.cache.has('808485962161717288')) {
-            interaction.member.roles.remove('808485962161717288');
-            buttonMessage('Tutoriais', 'removido', interaction)
-
-        } else {
-            interaction.member.roles.add('808485962161717288');
-            buttonMessage('Tutoriais', 'adicionado', interaction)
-
-        }
-    },
-    'iExtras'(interaction) {
-        if (interaction.member.roles.cache.has('808452096419823656')) {
-            interaction.member.roles.remove('808452096419823656');
-            buttonMessage('Extras', 'removido', interaction)
-
-        } else {
-            interaction.member.roles.add('808452096419823656');
-            buttonMessage('Extras', 'adicionado', interaction)
-
-        }
-    },
     'ticket'(interaction, client) {
         TicketCreate(interaction, client)
     },
@@ -71,11 +28,6 @@ const functionCargos = {
                     .setEmoji('<:unlock_savage:856225547210326046>')
                     .setStyle('PRIMARY'),
                 new MessageButton()
-                    .setCustomId('save')
-                    .setLabel('Salvar')
-                    .setEmoji('<:save_savage:856212830969659412>')
-                    .setStyle('PRIMARY'),
-                new MessageButton()
                     .setCustomId('delete')
                     .setLabel('Deletar')
                     .setEmoji('<:delete_savage:856222528997556244>')
@@ -85,7 +37,7 @@ const functionCargos = {
         interaction.channel.send({ embeds: [TicketClosed(interaction.user)], components: [rows] })
 
         interaction.guild.members.cache.get(interaction.channel.topic).send({
-            embeds: [ticketActionsEmbed('fechado', interaction.user.username, interaction.channel.name.slice(7), interaction.channel)]
+            embeds: [ticketActionsEmbed('fechado', interaction.user.username, interaction.channel)]
         })
 
 
@@ -101,7 +53,7 @@ const functionCargos = {
         if (userFind._roles.filter((m) => m == '722814929056563260' || m == '603318536798077030') == '') return interaction.reply({ content: 'Você não tem permissão para abrir o ticket', ephemeral: true });
 
         interaction.guild.members.cache.get(interaction.channel.topic).send({
-            embeds: [ticketActionsEmbed('aberto', interaction.user.username, interaction.channel.name.slice(7), interaction.channel)]
+            embeds: [ticketActionsEmbed('aberto', interaction.user.username, interaction.channel)]
         })
 
         await interaction.channel.permissionOverwrites.edit(interaction.channel.topic, {
@@ -122,37 +74,48 @@ const functionCargos = {
 
         client.channels.cache.get('757709253766283294').send({ embeds: [TicketLog(interaction.user, 'Aberto', interaction.channel)] });
     },
-    'save'(interaction, client) {
-        //save
-        let userFind = interaction.guild.members.cache.find((m) => m.id == interaction.user.id);
-
-        if (userFind._roles.filter((m) => m == '711022747081506826' || m == '603318536798077030') == '') return interaction.reply({ content: 'Você não tem permissão para salvar o ticket', ephemeral: true });
-
-        const row = new MessageActionRow()
-            .addComponents(
-                new MessageButton()
-                    .setCustomId('delete')
-                    .setLabel('Deletar')
-                    .setEmoji('<:delete_savage:856222528997556244>')
-                    .setStyle('DANGER'),
-            )
-        interaction.update({ components: [] })
-        Save(interaction, client);
-        interaction.channel.send({ embeds: [TicketSaved(interaction.user)], components: [row] });
-        client.channels.cache.get('757709253766283294').send({ embeds: [TicketLog(interaction.user, 'Salvo', interaction.channel)] });
-    },
     async 'delete'(interaction, client) {
         //delete
         if (interaction.user.id !== '323281577956081665') return interaction.reply({ content: 'Você não tem permissão para excluir o ticket', ephemeral: true }); //Mack
-        interaction.channel.send({ embeds: [TicketDeleting(interaction.user)] });
 
         interaction.update({ components: [] })
-        setTimeout(() => {
-            interaction.channel.delete();
-        }, 5000);
-        client.channels.cache
-            .get('757709253766283294')
-            .send({ embeds: [TicketLog(interaction.user, 'Deletado', interaction.channel)] });
+
+        const channel = interaction.guild.channels.cache.get(interaction.channelId)
+
+
+        Delete_AskQuestion(interaction, channel).then(async message => {
+            interaction.channel.send({ embeds: [TicketDeleting(interaction.user)] });
+
+            if (message != null) {
+                let userDM = await client.users.cache.get(channel.topic).createDM()
+
+                userDM_messages = await userDM.messages.fetch({ limit: 15 })
+
+                userDM_messages = userDM_messages.find(f => f.embeds.find(embed => embed.title.includes(`${channel.name.slice(channel.name.lastIndexOf('→') + 1)}`)))
+
+
+                userDM_messages.embeds[0].fields.push({ name: 'Considerações Finais', value: `\`\`\`\n${message}\`\`\``, inline: false })
+
+                userDM_messages.edit({ embeds: [userDM_messages.embeds[0]] })
+
+                const embed = new MessageEmbed().setColor('36393f').setDescription(`Seu ticket foi encerrado! [Confira o resumo dele clicando aqui](https://discord.com/channels/@me/${userDM.id}/${userDM_messages.id})`)
+
+                userDM_messages.reply({ embeds: [embed] })
+            }
+
+
+            client.channels.cache
+                .get('757709253766283294')
+                .send({ embeds: [TicketLog(interaction.user, 'Deletado', interaction.channel)] });
+
+            Save(interaction, client)
+
+            setTimeout(() => {
+                interaction.channel.delete();
+            }, 5000);
+        })
+
+
     },
     'formulario'(interaction, client) {
         FormCreate(interaction, client)
@@ -177,7 +140,7 @@ const functionCargos = {
     },
     async 'verform_resultado_aprovado'(interaction, client) {
 
-        await Staff(
+        Staff(
             client,
             interaction,
             interaction.guild.members.cache.get(interaction.message.embeds[0].fields.find(f => f.name.includes('Discord')).value.replace(/[<@>]/g, '')),
@@ -185,21 +148,53 @@ const functionCargos = {
             'trial',
             interaction.message.embeds[0].fields.find(f => f.name.includes('Servidor')).value,
             'formulário'
-        )
-        interaction.message.embeds[0].title = `APROVADO`
+        ).then(m => {
+            if (m) {
+                interaction.message.embeds[0].title = `APROVADO`
 
-        interaction.message.edit({ components: [], embeds: [interaction.message.embeds[0]] })
+                interaction.message.edit({ components: [], embeds: [interaction.message.embeds[0]] })
+            }
+        })
+
     },
-    'verform_resultado_reprovado'(interaction, client) {
+    async 'verform_resultado_reprovado'(interaction, client) {
 
         interaction.message.embeds[0].footer.text = `Reprovado pelo ${interaction.user.username} na parte do SET`
         interaction.message.embeds[0].title = `REPROVADO NA HORA DO SET`
 
         interaction.message.edit({ components: [], embeds: [interaction.message.embeds[0]] })
-        interaction.member.guild.members.cache.get(interaction.message.embeds[0].fields.find(f => f.name.includes('Discord')).value.replace(/[<@>]/g, ''))
-            .send(`**Você foi reprovado pelo ${interaction.user.username} na hora da setagem!**\n[Qualquer dúvida abra um ticket](https://discord.com/channels/343532544559546368/855200110685585419/927000168933511219)`)
+
+        const member = interaction.guild.members.cache.get(interaction.message.embeds[0].fields.find(f => f.name.includes('Discord')).value.replace(/[<@>]/g, ''))
+
+        member.send(`**Você foi reprovado pelo ${interaction.user.username} na hora da setagem!**\n[Qualquer dúvida abra um ticket](https://discord.com/channels/${guildsInfo.main}/855200110685585419/927000168933511219)`)
+
+        member.roles.set(member._roles.filter(m => m != member.roles.cache.get(interaction.member.guild.roles.cache.get())))
+
+        let guildRole = await interaction.guild.roles.cache.find(r => r.name == `Entrevista | ${interaction.message.embeds[0].fields.find(f => f.name.includes('Servidor')).value.toUpperCase()}`)
+
+        member.roles.remove(guildRole).catch(() => { })
 
     },
+    async 'banirSolicitado'(interaction, client) {
+        let message = interaction.message.embeds
+        for (let i in message) {
+            message[i].color = '57F287'
+        }
+        message[0].title = `Banido pelo ${interaction.user.username}`
+        let banirMSG = message[0].fields
+
+        await BanirTemp(client, interaction, banirMSG[0].value, banirMSG[1].value, '0', banirMSG[3].value, banirMSG[4] ? banirMSG[4].value : undefined)
+        interaction.message.edit({ embeds: message, components: [] })
+    },
+    'cancelarSolicitado'(interaction, client) {
+        let message = interaction.message.embeds
+        for (let i in message) {
+            message[i].color = 'ED4245'
+        }
+        message[0].title = `Negado pelo ${interaction.user.username}`
+
+        interaction.message.edit({ embeds: message, components: [] })
+    }
 };
 
 
