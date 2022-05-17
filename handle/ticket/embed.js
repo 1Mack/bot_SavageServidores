@@ -1,5 +1,5 @@
 const { MessageEmbed, MessageActionRow, MessageSelectMenu } = require('discord.js');
-const { guildsInfo } = require('../../configs/config_geral')
+const { serversInfos, guildsInfo } = require('../../configs/config_geral')
 const emojis = ['<a:savage_1:839189109943042097>', '<a:savage_2:839189111172628550>', '<a:savage_3:839189110165995570>',
     '<a:savage_4:839189110630776863>', '<a:savage_5:839189110480306186>', '<a:savage_6:839199778172043275>', '<a:savage_7:839199778364457013>',
     '<a:savage_8:839199778516500510>', '<a:savage_9:839199778494480394>', '<a:savage_1:839189109943042097><a:savage_0:839199778415837254>',
@@ -78,7 +78,6 @@ exports.ChannelCreated = function (user, m) {
 };
 
 exports.TicketServerOptions = function (user) {
-    const { serversInfos, guildsInfo, guildsInfo, guildsInfo } = require('../../configs/config_geral')
 
     const embed = new MessageEmbed()
         .setColor('36393f')
