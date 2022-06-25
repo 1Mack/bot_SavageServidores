@@ -3,7 +3,7 @@ const { BanSucess, Banlog, BanError, MackNotTarget } = require('./embed');
 const chalk = require('chalk');
 const { MessageAttachment, MessageEmbed, MessageActionRow, MessageButton } = require('discord.js');
 
-exports.BanirSolicitar = async function (client, interaction, nick, steamid, servidor, motivo, userDiscord, files) {
+exports.BanirSolicitar = async function (client, interaction, nick, steamid, servidor, motivo, userDiscord, files, link) {
 
     if (steamid.startsWith('STEAM_0')) {
         steamid = steamid.replace('0', '1');
@@ -11,18 +11,19 @@ exports.BanirSolicitar = async function (client, interaction, nick, steamid, ser
 
     if (steamid == 'STEAM_1:1:79461554' && interaction.user.id !== '323281577956081665')
         return interaction.reply({ embeds: [MackNotTarget(interaction)], ephemeral: true })
-
     let attachments = []
     files.forEach(file => {
-        if (file) {
+        if (file == null) return;
+        if (typeof (file) == 'object') {
+
+
             attachments.push(new MessageAttachment(file.attachment))
         }
     })
 
-    if (attachments.length == 0)
+    if (attachments.length == 0 && !link)
         return interaction.reply({ content: '**Você deve enviar ao menos 1 prova!!**', ephemeral: true })
 
-    interaction.reply({ content: '**Sugestão de banimento enviada com sucesso!**', ephemeral: true })
 
     let embeds = [new MessageEmbed().setTitle('Nova sugestão de ban').setColor('36393f').setFields(
         { name: 'Nick', value: nick },
@@ -33,6 +34,9 @@ exports.BanirSolicitar = async function (client, interaction, nick, steamid, ser
     if (userDiscord) {
         embeds[0].addField('Discord', `${userDiscord}`)
     }
+    if (link) {
+        embeds[0].setDescription(`[Clique aqui para ver o vídeo](${link})`)
+    }
 
     const button = new MessageActionRow().addComponents(
         new MessageButton()
@@ -40,14 +44,20 @@ exports.BanirSolicitar = async function (client, interaction, nick, steamid, ser
             .setLabel('CANCELAR')
             .setStyle('PRIMARY'),
         new MessageButton()
+            .setCustomId('banidoSolicitado')
+            .setLabel('JÁ FOI BANIDO')
+            .setStyle('SECONDARY'),
+        new MessageButton()
             .setCustomId('banirSolicitado')
             .setLabel('BANIR')
             .setStyle('DANGER')
 
     )
     attachments.forEach(att => {
-        embeds.push(new MessageEmbed().setColor('36393f').setImage(att.attachment))
+        embeds.push(new MessageEmbed().setColor('36393f').setImage(typeof (att) == 'string' ? att : att.attachment))
     })
     interaction.guild.channels.cache.get('876903682279608351').send({ embeds: embeds, components: [button] })
+
+    interaction.reply({ content: '**Sugestão de banimento enviada com sucesso!**', ephemeral: true })
 
 };

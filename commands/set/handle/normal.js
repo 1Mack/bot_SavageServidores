@@ -55,16 +55,17 @@ exports.Staff = async function (client, interaction, discord1, steamid, cargo, s
 
     let rows;
     const con = connection2.promise();
-
-    try {
-        [rows] = await con.query(
-            `select * from Cargos where playerid regexp "${steamid.slice(8)}" AND server_id = "${serversInfosFound.serverNumber}"`
-        );
-    } catch (error) {
-        return (
-            interaction.followUp({ embeds: [InternalServerError(interaction)], ephemeral: true }),
-            console.error(chalk.redBright('Erro no Select'), error)
-        );
+    if (serversInfosFound) {
+        try {
+            [rows] = await con.query(
+                `select * from Cargos where playerid regexp "${steamid.slice(8)}" AND server_id = "${serversInfosFound.serverNumber}"`
+            );
+        } catch (error) {
+            return (
+                interaction.followUp({ embeds: [InternalServerError(interaction)], ephemeral: true }),
+                console.error(chalk.redBright('Erro no Select'), error)
+            );
+        }
     }
     let opa = undefined;
     if (rows != '') {
@@ -106,7 +107,7 @@ exports.Staff = async function (client, interaction, discord1, steamid, cargo, s
     dataInicial = Math.floor(dataInicial / 1000);
 
     try {
-        if (opa === 's' && !serverGroups[cargo].value.endsWith('p') && serverGroups[cargo].value != 'vip') {
+        if (opa === 's' && !serverGroups[cargo].value.endsWith('p') && serverGroups[cargo].value != 'vip' && serversInfosFound) {
             await con.query(
                 `UPDATE Cargos SET 
                 discordID = '${discord1.id}', 
@@ -116,7 +117,7 @@ exports.Staff = async function (client, interaction, discord1, steamid, cargo, s
         } else if (opa === undefined || serverGroups[cargo].value.endsWith('p') || serverGroups[cargo].value != 'vip') {
             await con.query(`
                 INSERT IGNORE INTO Cargos (Id, timestamp, playerid, enddate, flags, server_id, discordID) 
-                VALUES (NULL, NULL, '${steamid}', (DATE_ADD(CURRENT_TIMESTAMP, INTERVAL 3650 DAY)), '${serverGroups[cargo].value}', '${serversInfosFound.serverNumber}', '${discord1.id}')
+                VALUES (NULL, NULL, '${steamid}', (DATE_ADD(CURRENT_TIMESTAMP, INTERVAL 3650 DAY)), '${serverGroups[cargo].value}', '${serversInfosFound ? `${serversInfosFound.serverNumber}` : '0'}', '${discord1.id}')
             `
             );
         } else return opa;
@@ -130,25 +131,33 @@ exports.Staff = async function (client, interaction, discord1, steamid, cargo, s
     interaction.editReply({ embeds: [SetSuccess(interaction, fetchedUser.user, cargo)] }).then(m => setTimeout(() => {
         m.delete()
     }, 5000))
+
     try {
-        if (!fetchedUser.roles.cache.has(serversInfosFound.tagDoCargo)) {
-            fetchedUser.roles.add(serversInfosFound.tagDoCargo)
-        }
-        if (!fetchedUser.roles.cache.has('722814929056563260')) {
-            fetchedUser.roles.add('722814929056563260')
-        }
-        let formRole = await fetchedUser.roles.cache.find(m => m.name == `Entrevista | ${(servidor).toUpperCase()}`)
 
-        if (formRole) {
-            fetchedUser.roles.remove(formRole)
+        if (serversInfosFound) {
+            if (!fetchedUser.roles.cache.has(serversInfosFound.tagDoCargo)) {
+                fetchedUser.roles.add(serversInfosFound.tagDoCargo)
+            }
+            if (!fetchedUser.roles.cache.has('722814929056563260')) {
+                fetchedUser.roles.add('722814929056563260')
+            }
+            let formRole = await fetchedUser.roles.cache.find(m => m.name == `Entrevista | ${(servidor).toUpperCase()}`)
+
+            if (formRole) {
+                fetchedUser.roles.remove(formRole)
+            }
+
+        } else {
+            fetchedUser.roles.add(serversInfos.map(m => m.tagDoCargo).concat('722814929056563260'))
+
         }
-
-        fetchedUser.setNickname('Savage | ' + fetchedUser.user.username);
-
 
     } catch (error) {
-        interaction.followUp({ content: `${interaction.user} **| Não consegui setar o cargo/Renomear o player, faça isso manualmente!!**`, ephemeral: true })
+        interaction.followUp({ content: `${interaction.user} **| Não consegui setar o cargo do player, faça isso manualmente!!**` })
     }
+
+
+    fetchedUser.setNickname('Savage | ' + fetchedUser.user.username).catch(() => { })
 
     canal.send({ embeds: [logStaff] });
     client.channels.cache.get('710288627103563837').send({ embeds: [staffSendAllMSG(fetchedUser.user, cargo, servidor)] });

@@ -26,7 +26,7 @@ module.exports = {
                         { name: 'steamid', type: 3, description: 'Steamid do player', required: true, choices: null },
                         {
                             name: 'cargo', type: 3, description: 'Escolha um cargo para o Set', required: true, choices: Object.keys(serverGroups).filter(
-                                m => m.endsWith('p') || m == 'vip'
+                                m => m.endsWith('p') || m == 'vip' || m == 'gerente'
                             ).map(
                                 m => { return { name: m, value: m } }
                             )
@@ -44,12 +44,12 @@ module.exports = {
                 { name: 'steamid', type: 3, description: 'Steamid do player', required: true, choices: null },
                 {
                     name: 'cargo', type: 3, description: 'Escolha um cargo para o Set', required: true, choices: Object.keys(serverGroups).filter(
-                        m => !m.endsWith('p') && m != 'vip'
+                        m => !m.endsWith('p') && m != 'vip' && m != 'gerente'
                     ).map(
                         m => { return { name: m, value: m } }
                     )
                 },
-                { name: 'servidor', type: 3, description: 'Escolha um Servidor para o Set', required: true, choices: serversInfos.map(m => { return { name: m.name, value: m.name } }) },
+                { name: 'servidor', type: 3, description: 'Escolha um Servidor para o Set', required: true, choices: serversInfos.map(m => { return { name: m.name, value: m.name } }).concat({ name: 'all', value: 'all' }) },
                 { name: 'observações', type: 3, description: 'Observações sobre o set', required: true, choices: null }
             ]
         },

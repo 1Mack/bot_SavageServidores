@@ -11,7 +11,6 @@ const serversInfos = [
         mostActiveServers: true
 
     },
-   
 ];
 
 const serverGroups = {
@@ -24,7 +23,6 @@ const host = [
         host: '',
         port: ''
     },
-   
 ]
 
 const guildsInfo = {

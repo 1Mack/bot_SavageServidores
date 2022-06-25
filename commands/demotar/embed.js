@@ -91,8 +91,8 @@ exports.DemotedInfo = function (rows, user) {
                 .addOptions(
                     rows.map((m, i) => {
                         return {
-                            label: `${m.serverFind.visualName.toUpperCase()} | ${m.cargo}`,
-                            value: `${m.serverFind.serverNumber}_${i}`
+                            label: `${m.serverFind ? m.serverFind.visualName.toUpperCase() : m.row.server_id == '0' ? 'TODOS' : 'Desconhecido'} | ${m.cargo}`,
+                            value: `${m.serverFind ? m.serverFind.serverNumber : m.row.server_id}_${i}`
                         }
                     })
                 )

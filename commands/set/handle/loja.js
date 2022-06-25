@@ -4,6 +4,7 @@ const { serverGroups, serversInfos, guildsInfo } = require("../../../configs/con
 const { connection2 } = require("../../../configs/config_privateInfos");
 const { webhookSavageStore } = require("../../../configs/config_webhook");
 const { InternalServerError } = require("../../../embed/geral");
+const { Desbanir } = require("../../ban/handle/desbanir");
 const webhookSavageLogs = new WebhookClient({ id: webhookSavageStore.id, token: webhookSavageStore.token });
 
 exports.Comprado_Loja = async function (client, interaction, discord, servidor, idOrSteam) {
@@ -109,10 +110,15 @@ exports.Comprado_Loja = async function (client, interaction, discord, servidor, 
                             }).catch(() => {
                                 return EndBool = true
                             })
+                    } else if (['UNBAN', 'UNMUTE', 'UNGAG'].includes(pacote)) {
+                        if (pacote == 'UNBAN') {
+
+                            await Desbanir(client, interaction, steamid, 'comprou unban')
+                        }
                     } else {
                         pacote = pacote.replace(/[()]/g, '').split(' ')
                         let cargo = { allServers: false }
-                        if (pacote[0] == '[ALL]') {
+                        if (pacote[0] == '[TODOS]') {
                             cargo.allServers = true
                             cargo.cargo = Object.keys(serverGroups).find(m => pacote[1].replace('+', 'PLUSP') == m.toUpperCase())
                             cargo.tempo = pacote[2]
@@ -124,7 +130,7 @@ exports.Comprado_Loja = async function (client, interaction, discord, servidor, 
 
                         cargo.flags = serverGroups[cargo.cargo]
 
-                        console.log(cargo)
+
 
 
                         let serversInfosFound = serversInfos.find(sv => sv.name == servidor)
@@ -146,16 +152,16 @@ exports.Comprado_Loja = async function (client, interaction, discord, servidor, 
                             if (!cargo.allServers && findRow && findRow.server_id == serversInfosFound.serverNumber) {
                                 await con.query(
                                     `UPDATE Cargos SET 
-                                      discordID = '${discord.id}', 
-                                      flags = '${cargo.flags}', 
-                                      enddate = (DATE_ADD(CURRENT_TIMESTAMP, INTERVAL ${cargo.tempo == 'PERMANENTE' ? '3850' : cargo.tempo} DAY))
-                                      WHERE (playerid regexp '${steamid.slice(8)}') AND server_id = "${serversInfosFound.serverNumber}"`
+                                                              discordID = '${discord.id}', 
+                                                              flags = '${cargo.flags.value}', 
+                                                              enddate = (DATE_ADD(CURRENT_TIMESTAMP, INTERVAL ${cargo.tempo == 'PERMANENTE' ? '3850' : cargo.tempo} DAY))
+                                                              WHERE (playerid regexp '${steamid.slice(8)}') AND server_id = "${serversInfosFound.serverNumber}"`
                                 );
                             } else {
                                 await con.query(`
-                                      INSERT IGNORE INTO Cargos (Id, timestamp, playerid, enddate, flags, server_id, discordID) 
-                                      VALUES (NULL, NULL, '${steamid}', (DATE_ADD(CURRENT_TIMESTAMP, INTERVAL ${cargo.tempo == 'PERMANENTE' ? '3850' : cargo.tempo} DAY)), '${cargo.flags}', ${!cargo.allServers ? `${serversInfosFound.serverNumber}` : '0'}, '${discord.id}')
-                                  `
+                                                              INSERT IGNORE INTO Cargos (Id, timestamp, playerid, enddate, flags, server_id, discordID) 
+                                                              VALUES (NULL, NULL, '${steamid}', (DATE_ADD(CURRENT_TIMESTAMP, INTERVAL ${cargo.tempo == 'PERMANENTE' ? '3850' : cargo.tempo} DAY)), '${cargo.flags.value}', ${!cargo.allServers ? `${serversInfosFound.serverNumber}` : '0'}, '${discord.id}')
+                                                          `
                                 );
                             }
                         } catch (error) {

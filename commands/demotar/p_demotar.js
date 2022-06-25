@@ -65,10 +65,11 @@ module.exports = {
         const discordUser = rows.find(dc => dc.discordID != null)
 
         let msgFunction;
-
+        //console.log(serversInfosFound)
         msgFunction = DemotedInfo(serversInfosFound, steamid)
 
         let msg = await interaction.followUp({ embeds: [msgFunction.embed], components: [msgFunction.selectMenu] })
+
 
         const filter = i => {
             i.deferUpdate();
@@ -77,9 +78,15 @@ module.exports = {
 
         await interaction.channel.awaitMessageComponent({ filter, componentType: 'SELECT_MENU', time: 60000 })
             .then(async ({ values }) => {
+
                 values = await values.map(value => value.substring(0, value.indexOf('_')))
 
-                serversInfosFound = serversInfosFound.filter(info => values.includes(info.serverFind.serverNumber.toString()))
+                serversInfosFound = serversInfosFound.filter(info => {
+                    if (info['serverFind']) {
+                        return values.includes(info.serverFind.serverNumber.toString())
+                    } else return values.includes(info.row.server_id.toString())
+
+                })
 
                 msgFunction = DemotedAskConfirm(interaction)
 
@@ -101,9 +108,10 @@ module.exports = {
                             try {
                                 await con.query(
                                     `DELETE FROM Cargos WHERE playerid regexp '${steamid.slice(8)}' and 
-                                    (${serversInfosFound.map(server => `server_id = '${server.serverFind.serverNumber}' and flags = '${serverGroups[server.cargo].value}'`
+                                     (${serversInfosFound.map(server =>
+                                        `server_id = '${server.serverFind ? server.serverFind.serverNumber : server.row.server_id}' and flags = '${serverGroups[server.cargo].value}'`
                                     ).join(' or ')})
-                                    `
+                                     `
                                 );
                             } catch (error) {
                                 return (
@@ -119,7 +127,7 @@ module.exports = {
 
                             serversInfosFound.forEach(async item => {
 
-                                if (item.serverFind.cargo != 'vip') {
+                                if (item.cargo != 'vip') {
 
                                     const DemotedMsgAll = new MessageEmbed()
                                         .setColor('ff0000')
@@ -127,7 +135,7 @@ module.exports = {
                                         .addFields(
                                             { name: 'Jogador', value: fetchedUser ? fetchedUser.user.toString() : 'Indefinido' },
                                             { name: 'Cargo', value: item.cargo.toUpperCase() },
-                                            { name: 'Servidor', value: item.serverFind.name.toUpperCase() }
+                                            { name: 'Servidor', value: item.serverFind ? item.serverFind.name.toUpperCase() : 'Desconhecido' }
                                         )
                                         .setFooter({ text: `Demotado pelo ${interaction.user.username}` })
                                         .setTimestamp();
@@ -135,13 +143,13 @@ module.exports = {
                                     client.channels.cache.get('710288627103563837').send({ embeds: [DemotedMsgAll] })
                                 }
 
-                                client.guilds.cache.get(guildsInfo.log).channels.cache.get('792576104681570324').send({ embeds: [DemotedLog(fetchedUser ? fetchedUser.user : 'Indefinido', item.row.playerid, extra, interaction, item.serverFind.name)] });
+                                client.guilds.cache.get(guildsInfo.log).channels.cache.get('792576104681570324').send({ embeds: [DemotedLog(fetchedUser ? fetchedUser.user : 'Indefinido', item.row.playerid, extra, interaction, item.serverFind ? item.serverFind.name : 'Desconhecido ou TODOS')] });
 
 
                             })
 
 
-                            await msg.edit({ content: `**${interaction.user} | ${fetchedUser ? fetchedUser.user : steamid} Demotado com sucesso ${serversInfosFound.size > 1 ? 'dos servidores' : 'do servidor'} ${serversInfosFound.map(m => m.serverFind.visualName)}!!**`, embeds: [], components: [] })
+                            await msg.edit({ content: `**${interaction.user} | ${fetchedUser ? fetchedUser.user : steamid} Demotado com sucesso ${serversInfosFound.size > 1 ? 'dos servidores' : 'do servidor'} ${serversInfosFound.map(m => m.serverFind ? m.serverFind.visualName : 'desconhecido')}!!**`, embeds: [], components: [] })
 
                             setTimeout(() => {
                                 msg.delete()
@@ -149,30 +157,30 @@ module.exports = {
 
                             if (fetchedUser) {
 
-                                fetchedUser.send({ embeds: [DemotedSendMSG(fetchedUser ? fetchedUser.user : 'Indefinido', item.row.playerid, item.serverFind.name, extra)] }).catch(() => { })
+                                fetchedUser.send({ embeds: [DemotedSendMSG(fetchedUser ? fetchedUser.user : 'Indefinido', item.row.playerid, item.serverFind ? item.serverFind.name : 'desconhecido', extra)] }).catch(() => { })
 
-                                let findStaffRoles = await rows.filter(m => m.flags != 'a/t' && values.includes(m.server_id)).map(m => m.server_id),
-                                    rolesToRemove = []
-
-                                if (findStaffRoles.length) {
-                                    let staffRoles = serversInfosFound.filter(m => findStaffRoles.includes(m.serverNumber)).flatMap(m => [m.tagComprado, m.tagDoCargo]),
-                                        staffAllRoles = fetchedUser._roles.filter(m => serversInfos.flatMap(f => [f.tagComprado, f.tagDoCargo]).includes(m))
-
-                                    if (staffAllRoles.length == 1 && staffAllRoles.find(m => staffRoles.includes(m))) {
-
-                                        rolesToRemove.push(staffRoles, '722814929056563260')
-
-                                        if (fetchedUser.nickname.includes('Savage')) {
-                                            fetchedUser.setNickname(fetchedUser.user.username).catch(() => { });
-                                        }
-
-                                    } else {
-
-                                        rolesToRemove.push(staffRoles)
-                                    }
-                                }
-
-                                await fetchedUser.roles.remove(rolesToRemove.flatMap(m => m))
+                                /*  let findStaffRoles = await rows.filter(m => m.flags != 'a/t' && values.includes(m.server_id)).map(m => m.server_id),
+                                     rolesToRemove = []
+ 
+                                 if (findStaffRoles.length) {
+                                     let staffRoles = serversInfosFound.filter(m => findStaffRoles.includes(m.serverNumber)).flatMap(m => [m.tagComprado, m.tagDoCargo]),
+                                         staffAllRoles = fetchedUser._roles.filter(m => serversInfos.flatMap(f => [f.tagComprado, f.tagDoCargo]).includes(m))
+ 
+                                     if (staffAllRoles.length == 1 && staffAllRoles.find(m => staffRoles.includes(m))) {
+ 
+                                         rolesToRemove.push(staffRoles, '722814929056563260')
+ 
+                                         if (fetchedUser.nickname.includes('Savage')) {
+                                             fetchedUser.setNickname(fetchedUser.user.username).catch(() => { });
+                                         }
+ 
+                                     } else {
+ 
+                                         rolesToRemove.push(staffRoles)
+                                     }
+                                 }
+ 
+                                 await fetchedUser.roles.remove(rolesToRemove.flatMap(m => m)) */
                             }
 
 

@@ -4,6 +4,8 @@ const chalk = require('chalk');
 
 exports.BanirTemp = async function (client, interaction, nick, steamid, tempo, reason, userDiscord) {
 
+    if (!interaction.member.roles.cache.has('778273624305696818')) return interaction.reply({ content: 'voce nao pode usar esse comando', ephemeral: true })
+
     if (steamid.startsWith('STEAM_0')) {
         steamid = steamid.replace('0', '1');
     }

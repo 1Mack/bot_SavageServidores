@@ -10,8 +10,8 @@ const { Form_resultado } = require('../form_resultado');
 const { Staff } = require('../../../commands/set/handle/normal');
 const { Delete_AskQuestion } = require('../../ticket/handles/delete_askQuestion');
 const { MessageEmbed } = require('discord.js');
-const { BanirTemp } = require('../../../commands/banir/handle/banir');
 const { guildsInfo } = require('../../../configs/config_geral');
+const { Solicitado_banirCancelar } = require('./handle/banir_cancelarSolicitado');
 
 const functionCargos = {
     'ticket'(interaction, client) {
@@ -175,25 +175,16 @@ const functionCargos = {
         member.roles.remove(guildRole).catch(() => { })
 
     },
-    async 'banirSolicitado'(interaction, client) {
-        let message = interaction.message.embeds
-        for (let i in message) {
-            message[i].color = '57F287'
-        }
-        message[0].title = `Banido pelo ${interaction.user.username}`
-        let banirMSG = message[0].fields
-
-        await BanirTemp(client, interaction, banirMSG[0].value, banirMSG[1].value, '0', banirMSG[3].value, banirMSG[4] ? banirMSG[4].value : undefined)
-        interaction.message.edit({ embeds: message, components: [] })
+    'banirSolicitado'(interaction, client) {
+        Solicitado_banirCancelar(interaction, client, 'banirSolicitado')
     },
     'cancelarSolicitado'(interaction, client) {
-        let message = interaction.message.embeds
-        for (let i in message) {
-            message[i].color = 'ED4245'
-        }
-        message[0].title = `Negado pelo ${interaction.user.username}`
+        Solicitado_banirCancelar(interaction, client, 'cancelarSolicitado')
 
-        interaction.message.edit({ embeds: message, components: [] })
+    },
+    'banidoSolicitado'(interaction, client) {
+        Solicitado_banirCancelar(interaction, client, 'banidoSolicitado')
+
     }
 };
 
