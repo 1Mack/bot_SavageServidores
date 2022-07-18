@@ -1,41 +1,41 @@
-const { MessageActionRow, MessageButton } = require('discord.js');
+const { ActionRowBuilder, ButtonBuilder } = require('discord.js');
 
 exports.Components = function (matriz, bombMatriz, bool) {
-  let row = [new MessageActionRow(), new MessageActionRow(), new MessageActionRow(), new MessageActionRow(), new MessageActionRow()]
+  let row = [new ActionRowBuilder(), new ActionRowBuilder(), new ActionRowBuilder(), new ActionRowBuilder(), new ActionRowBuilder()]
 
   for (let i = 0; i < 5; i++) {
     for (let x = 0; x < 5; x++) {
       if (matriz[i][x] == '<a:diamante:650792674248359936>') {
         row[i].addComponents(
-          new MessageButton()
+          new ButtonBuilder()
             .setCustomId(`${i}${x}`)
             .setDisabled(true)
             .setEmoji('<a:diamante:650792674248359936>')
-            .setStyle('SUCCESS')
+            .setStyle(ButtonStyle.Success)
         )
       } else if (matriz[i][x] == '<a:fogo_savage:779863770843447316>') {
         row[i].addComponents(
-          new MessageButton()
+          new ButtonBuilder()
             .setCustomId(`${i}${x}`)
             .setDisabled(true)
             .setEmoji('<a:fogo_savage:779863770843447316>')
-            .setStyle('DANGER')
+            .setStyle(ButtonStyle.Danger)
         )
       } else {
         if (bool) {
           row[i].addComponents(
-            new MessageButton()
+            new ButtonBuilder()
               .setCustomId(`${i}${x}`)
               .setEmoji('<a:warning_savage:856210165338603531>')
-              .setStyle('PRIMARY')
+              .setStyle(ButtonStyle.Primary)
               .setDisabled(true)
           )
         } else {
           row[i].addComponents(
-            new MessageButton()
+            new ButtonBuilder()
               .setCustomId(`${i}${x}`)
               .setEmoji('<a:warning_savage:856210165338603531>')
-              .setStyle('PRIMARY')
+              .setStyle(ButtonStyle.Primary)
           )
         }
       }

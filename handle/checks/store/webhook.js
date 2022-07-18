@@ -1,4 +1,4 @@
-const { WebhookClient, MessageEmbed } = require('discord.js');
+const { WebhookClient, EmbedBuilder } = require('discord.js');
 const { webhookSavageStore } = require('../../../configs/config_webhook');
 const { currentDateFormatted } = require('./utils');
 
@@ -6,7 +6,7 @@ const { currentDateFormatted } = require('./utils');
 const client = new WebhookClient({ id: webhookSavageStore.id, token: webhookSavageStore.token });
 
 function broadcast(text, fields, error = false) {
-  const embed = new MessageEmbed()
+  const embed = new EmbedBuilder()
   if (text) {
     embed.setDescription(text)
   } else {
