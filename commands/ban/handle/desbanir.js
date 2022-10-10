@@ -33,17 +33,19 @@ exports.Desbanir = async function (client, interaction, steamid, motivo) {
   }
 
   serversInfos.forEach(m => {
-    try {
-      axios.post(`https://panel.mjsv.us/api/client/servers/${m.identifier[0]}/command`,
-        JSON.stringify({ command: `removeid STEAM_1:1:79461554` }),
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': `Bearer ${panelApiKey.api}`,
-          }
-        })
-    } catch { }
+    m.identifier.forEach(id => {
+      try {
+        axios.post(`https://panel.mjsv.us/api/client/servers/${id}/command`,
+          JSON.stringify({ command: `removeid STEAM_1:${steamid.slice(8)}; removeid STEAM_0:${steamid.slice(8)}` }),
+          {
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+              'Authorization': `Bearer ${panelApiKey.api}`,
+            }
+          })
+      } catch { }
+    })
   })
 
 };

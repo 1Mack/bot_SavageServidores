@@ -45,7 +45,7 @@ exports.Solicitado_banirCancelar = async function (interaction, client, type) {
           message[0].title = `Banido pelo ${interaction.user.username}`
           let banirMSG = message[0].fields
 
-          await BanirTemp(client, interaction, banirMSG[0].value, banirMSG[1].value, '0', banirMSG[3].value, banirMSG[4] ? banirMSG[4].value : undefined)
+          await BanirTemp(client, interaction, banirMSG[0].value, banirMSG[1].value, '0', banirMSG[5].value, banirMSG[3])
           interaction.message.edit({ embeds: message })
           msg.delete()
         } else if (type == 'cancelarSolicitado') {

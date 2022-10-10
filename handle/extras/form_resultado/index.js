@@ -1,4 +1,4 @@
-const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ChannelType, PermissionFlagsBits } = require('discord.js')
+const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ChannelType, PermissionFlagsBits, ButtonStyle } = require('discord.js')
 const { guildsInfo } = require('../../../configs/config_geral')
 
 exports.Form_resultado = async function (interaction, client) {
@@ -127,7 +127,7 @@ exports.Form_resultado = async function (interaction, client) {
                         
                         **Ele disse que o link do perfil dele era esse:** __${msgInfos.steamLink}__
 
-                        ***Exeplo de STEAMID: *** __STEAM_1:1:79461554___
+                        ***Exeplo de STEAMID: *** STEAM_1:1:79461554
                         `);
 
           do {
@@ -142,7 +142,6 @@ exports.Form_resultado = async function (interaction, client) {
               })
               .then(async (collected) => {
                 collected = collected.first()
-
                 collected.delete()
 
                 if (!collected.content.includes('STEAM_'))

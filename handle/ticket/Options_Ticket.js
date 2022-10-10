@@ -104,6 +104,14 @@ const Options = {
         allow: [PermissionFlagsBits.ViewChannel], //user
       },
       {
+        id: '800826968417108028',
+        allow: [PermissionFlagsBits.ViewChannel],
+      },
+      {
+        id: '778273624305696818',
+        allow: [PermissionFlagsBits.ViewChannel],
+      },
+      {
         id: guildsInfo.main, //everyone
         allow: [PermissionFlagsBits.SendMessages],
         deny: [PermissionFlagsBits.ViewChannel],

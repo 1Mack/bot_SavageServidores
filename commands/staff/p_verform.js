@@ -1,4 +1,4 @@
-const { ActionRowBuilder, ButtonBuilder, EmbedBuilder, ApplicationCommandOptionType, ChannelType, PermissionFlagsBits, ComponentType } = require('discord.js');
+const { ActionRowBuilder, ButtonBuilder, EmbedBuilder, ApplicationCommandOptionType, ChannelType, PermissionFlagsBits, ComponentType, ButtonStyle } = require('discord.js');
 const wait = require('util').promisify(setTimeout);
 const { connection } = require('../../configs/config_privateInfos');
 const { serversInfos, guildsInfo } = require('../../configs/config_geral');
@@ -92,8 +92,8 @@ module.exports = {
       let formMessage = new EmbedBuilder()
         .setColor('#0099ff')
         .setTitle(`${canal[x].embeds[0].title} → ${discord_id}`);
-      let formMessage2 = new EmbedBuilder().setColor('#0099ff').setTitle(``);
-      let formMessage3 = new EmbedBuilder().setColor('#0099ff').setTitle(``);
+      let formMessage2 = new EmbedBuilder().setColor('#0099ff')
+      let formMessage3 = new EmbedBuilder().setColor('#0099ff')
 
       let cont = 1;
 

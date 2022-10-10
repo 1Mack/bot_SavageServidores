@@ -5,6 +5,7 @@ const { serversInfos, serverGroups, guildsInfo } = require('../../../configs/con
 const { NotTarget, SetSuccess, isDono, staffSendAllMSG, SetAskConfirm } = require('./embed');
 const { PlayerDiscordNotFound, InternalServerError } = require('../../../embed/geral');
 const chalk = require('chalk');
+const { ReloadRolesAndTags } = require('../../../handle/checks/reloadRolesAndTags');
 
 
 exports.Staff = async function (client, interaction, discord1, steamid, cargo, servidor, extra) {
@@ -127,6 +128,9 @@ exports.Staff = async function (client, interaction, discord1, steamid, cargo, s
       console.error(chalk.redBright('Erro no Insert'), error)
     );
   }
+
+  ReloadRolesAndTags(serversInfosFound.identifier)
+
 
   interaction.editReply({ embeds: [SetSuccess(interaction, fetchedUser.user, cargo)] }).then(m => setTimeout(() => {
     m.delete()

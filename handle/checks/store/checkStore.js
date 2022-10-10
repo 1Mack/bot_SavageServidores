@@ -1,8 +1,11 @@
-const { connection2, storePanelToken } = require("../../../configs/config_privateInfos");
+const { serversInfos } = require("../../../configs/config_geral");
+const { connection2, connection, storePanelToken } = require("../../../configs/config_privateInfos");
+const { ReloadRolesAndTags } = require("../reloadRolesAndTags");
 
 const api = require("./api");
 const webhook = require("./webhook");
 const con = connection2.promise();
+const con2 = connection.promise();
 
 exports.RunStore = function () {
   console.log("> FIVE-M.STORE");
@@ -75,16 +78,24 @@ async function processSale(sale, type) {
     let newArray = []
 
     sale.commands.map((m, i) => {
+
       m[2] = [m[2]]
 
       if (i == 0) {
         newArray.push(m)
+
       } else if (newArray.find(m2 => (m2[0] == m[0]) && m2[1] != 'null')) {
+
         let position = newArray.findIndex(m2 => m2[0] == m[0])
+
         if (!newArray[position][2].includes(m[2].join(''))) {
 
           newArray[position][2].push(m[2].join(''))
+
+        } else if (newArray[position][0] == 'creditos') {
+          newArray[position][1] = Number(newArray[position][1]) + Number(m[1])
         }
+
       } else {
         newArray.push(m)
 
@@ -99,43 +110,96 @@ async function processSale(sale, type) {
         { name: `Pacote ${cont}`, value: `${sale.products[index]}`, inline: true },
         { name: `Servidor ${cont}`, value: `[${mainArray[2]}]`, inline: true },
       )
-      if (!['creditos', 'unmute', 'ungag', 'unban', 'staff'].includes(mainArray[0])) {
 
+      if (!['unmute', 'ungag', 'unban', 'staff', 'skin_exclusiva'].includes(mainArray[0])) {
 
-        mainArray[2].forEach(async (command) => {
-          command == 'todos' ? command = '0' : command
-          let res
+        if (['creditos'].includes(mainArray[0])) {
+          sale.commands = `UPDATE store_players set credits = credits + ${mainArray[1]} where authid REGEXP '${sale.player.slice(8)}'`
           try {
-            [res] = await con.query(
-              `SELECT * FROM Cargos 
-                          WHERE playerid like '%${sale.player.slice(8)}' 
-                          AND server_id = ${command} 
-                          AND flags = '${mainArray[0]}'`);
-          } catch (error) {
-            return console.log(error)
-          }
+            con2.query(sale.commands);
 
-
-
-
-
-          if (res.length > 0) {
-            sale.commands = `UPDATE Cargos SET enddate = (DATE_ADD(\`enddate\`, INTERVAL ${mainArray[1]} DAY)) WHERE playerid REGEXP '${sale.player}' AND server_id = ${command} AND flags = '${mainArray[0]}'`
-          } else {
-            sale.commands = `INSERT IGNORE INTO Cargos (Id, timestamp, playerid, enddate, flags, server_id) VALUES (NULL, NULL, '${sale.player}', (DATE_ADD(CURRENT_TIMESTAMP, INTERVAL ${mainArray[1]} DAY)), '${mainArray[0]}', '${command}')`
-          }
-
-          try {
-
-            await con.query(sale.commands);
           } catch (ex) {
             console.log(ex)
             return sale.id
           }
-        })
+        } else if (mainArray[0] == 'skin') {
+          async function setSkin() {
+
+            let row, row2;
+            try {
+              [row] = await con2.query(`SELECT id FROM store_players where authid REGEXP '${sale.player.slice(8)}'`)
+
+              if (row.length === 0) throw new Error('Player não encontrado!')
+
+            } catch (error) {
+              console.log(error)
+              return sale.id
+            }
+
+            try {
+              [row2] = await con2.query(`SELECT unique_id FROM store_items where player_id = '${row[0].id}' AND unique_id = '${mainArray[1]}'`)
+
+              if (row2.length > 0) throw new Error('Esse player já possui essa skin!')
+
+              let dateNow = Date.now().toString().slice(0, -3)
+
+              sale.commands = `INSERT INTO store_items (player_id, type, unique_id, date_of_purchase, date_of_expiration, price_of_purchase) VALUES ('${row[0].id}', 'playerskin', '${mainArray[1]}', ${dateNow}, '0', '0')`
+
+            } catch (error) {
+              console.log(error)
+              return sale.id
+            }
+            try {
+              con2.query(sale.commands);
+
+            } catch (ex) {
+              console.log(ex)
+              return sale.id
+            }
+          }
+          setSkin()
+        } else {
+
+          mainArray[2].forEach(async (command) => {
+
+            command == 'todos' ? command = '0' : command
+            let res
+            try {
+              [res] = await con.query(
+                `SELECT * FROM Cargos 
+                              WHERE playerid like '%${sale.player.slice(8)}' 
+                              AND server_id = ${command} 
+                              AND flags = '${mainArray[0]}'`);
+            } catch (error) {
+              return console.log(error)
+            }
+
+            if (res.length > 0) {
+              sale.commands = `UPDATE Cargos SET enddate = (DATE_ADD(\`enddate\`, INTERVAL ${mainArray[1]} DAY)) WHERE playerid REGEXP '${sale.player.slice(8)}' AND server_id = ${command} AND flags = '${mainArray[0]}'`
+            } else {
+              sale.commands = `INSERT IGNORE INTO Cargos (Id, timestamp, playerid, enddate, flags, server_id) VALUES (NULL, NULL, '${sale.player}', (DATE_ADD(CURRENT_TIMESTAMP, INTERVAL ${mainArray[1]} DAY)), '${mainArray[0]}', '${command}')`
+            }
+
+            try {
+              await con.query(sale.commands);
+              let serverFind = serversInfos.find(server => server.serverNumber == command)
+              serverFind == undefined ? serversInfos.forEach(servers => {
+                ReloadRolesAndTags(servers.identifier)
+              }) : ReloadRolesAndTags(serverFind.identifier)
+
+
+            } catch (ex) {
+              console.log(ex)
+              return sale.id
+            }
+          })
+
+        }
+
+
       } else {
         msg.push(
-          { name: `Resgatado  ${cont}`, value: 'nao', inline: true }
+          { name: `Resgatado ${cont}`, value: 'nao', inline: true }
         )
       }
 

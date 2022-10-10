@@ -1,4 +1,4 @@
-const { ActionRowBuilder, ButtonBuilder } = require('discord.js');
+const { ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 
 exports.Components = function (matriz, bombMatriz, bool) {
   let row = [new ActionRowBuilder(), new ActionRowBuilder(), new ActionRowBuilder(), new ActionRowBuilder(), new ActionRowBuilder()]

@@ -5,7 +5,9 @@ const { Staff } = require('./handle/normal');
 const { UP_Procurar_merecedores } = require('./handle/procurar_merecedores');
 const { UP_Especifico } = require('./handle/up_especifico');
 
-const { ApplicationCommandOptionType } = require('discord.js')
+const { ApplicationCommandOptionType } = require('discord.js');
+const { Store_Skins } = require('./handle/store_skins');
+const { Store_Credits } = require('./handle/store_credits');
 
 module.exports = {
   name: 'setar',
@@ -73,6 +75,37 @@ module.exports = {
 
       ]
     },
+    {
+      name: 'store', type: ApplicationCommandOptionType.SubcommandGroup, description: 'Dar algum item na loja', options: [
+        {
+          name: 'creditos', type: ApplicationCommandOptionType.Subcommand, description: 'Dar creditos', options: [
+            { name: 'steamid', type: ApplicationCommandOptionType.String, description: 'steamid do player', required: true, choices: null },
+            { name: 'total_creditos', type: ApplicationCommandOptionType.Integer, description: 'Valor de creditos', required: true, choices: null },
+          ]
+        },
+        {
+          name: 'skins', type: ApplicationCommandOptionType.Subcommand, description: 'Dar skins', options: [
+            { name: 'steamid', type: ApplicationCommandOptionType.String, description: 'steamid do player', required: true, choices: null },
+            {
+              name: 'skin', type: ApplicationCommandOptionType.String, description: 'Selecionar Skin', required: true, choices: [
+                { name: 'ET', value: 'uid_model_et' },
+                { name: 'Homem Aranha', value: 'uid_model_homem_aranha' },
+                { name: 'Miyu', value: 'uid_model_miyu' },
+                { name: 'Batman', value: 'uid_model_batman' },
+                { name: 'Jett', value: 'uid_model_jett' },
+                { name: 'hutao', value: 'uid_model_hutao' },
+                { name: 'Nekopara', value: 'uid_model_homem_nekopara' },
+                { name: 'KillJoy', value: 'uid_model_killjoy' },
+                { name: 'Putin', value: 'uid_model_putin' },
+                { name: 'DeadPool', value: 'uid_model_deadpool' },
+
+              ]
+            },
+          ]
+        }
+
+      ]
+    },
   ],
   default_permission: false,
   cooldown: 0,
@@ -121,7 +154,18 @@ module.exports = {
           interaction.options.getString('servidor').toLowerCase(),
         )
         break;
-
+      case 'creditos':
+        Store_Credits(client, interaction,
+          interaction.options.getString('steamid').toLowerCase(),
+          interaction.options.getInteger('total_creditos')
+        )
+        break;
+      case 'skins':
+        Store_Skins(client, interaction,
+          interaction.options.getString('steamid').toLowerCase(),
+          interaction.options.getString('skin')
+        )
+        break;
       default:
         break;
     }

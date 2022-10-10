@@ -12,16 +12,16 @@ module.exports = {
     client.user.setActivity('Savage Servidores');
     await client.guilds.cache.get(guildsInfo.main).members.fetch()
     console.log('Membros Carregados')
-    
+
     let channel = await client.channels.fetch('717331699125714986')
 
     await channel.bulkDelete(100)
 
-       await channel.send({ embeds: (await ServerStatus(client)) }).then(msg => {
-        setInterval(async () => {
-          msg.edit({ embeds: (await ServerStatus(client)) })
-          CheckMemberCount(client)
-        }, 300000)
-      }) 
+    await channel.send({ embeds: (await ServerStatus(client)) }).then(msg => {
+      setInterval(async () => {
+        msg.edit({ embeds: (await ServerStatus(client)) })
+        CheckMemberCount(client)
+      }, 300000)
+    })
   },
 };

@@ -9,7 +9,7 @@ exports.ServerStatus = async function (client) {
   for (let i in host) {
     await query({
       type: 'csgo',
-      host: host[i].host,
+      host: '131.196.196.197',
       port: host[i].port,
       maxAttempts: 7
     })
@@ -25,7 +25,6 @@ exports.ServerStatus = async function (client) {
       })
       .catch((error) => {
         Catch[i] = { name: 'off', mapa: 'off', players: 0, playersTotal: 0, ip: 'off' };
-
       });
   }
 

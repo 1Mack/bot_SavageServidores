@@ -77,9 +77,10 @@ module.exports = {
       logStaffFind.addFields(
         rows[i]
       )
-      if (logStaffFind.fields.length == 24 || i == rows.length - 1) {
+      
+      if (logStaffFind.data.fields.length == 24 || i == rows.length - 1) {
         await interaction.user.send({ embeds: [logStaffFind] });
-        logStaffFind.fields = []
+        logStaffFind.data.fields = []
       }
 
     }

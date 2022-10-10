@@ -93,7 +93,7 @@ exports.Comprado_Loja = async function (client, interaction, discord, servidor, 
             fields = embedLogCompra.embeds[0].fields,
             EndBool = false
 
-          fields = embedLogCompraFields.filter(f => f.name != `Resgatado  ${customId}`)
+          fields = embedLogCompraFields.filter(f => f.name != `Resgatado ${customId}`)
 
           let findSteamid = await fields.findIndex(f => f.name == 'SteamID')
 
@@ -101,7 +101,7 @@ exports.Comprado_Loja = async function (client, interaction, discord, servidor, 
           fields[findSteamid].name = 'SteamID/DiscordID'
           fields[findSteamid + 1].name = `${fields[findSteamid + 1].name}/${discord.id}`
 
-          embedLogCompra.embeds[0].fields = fields
+          embedLogCompra.embeds[0].data.fields = fields
 
           if (pacote.includes('¢')) {
             embed.setDescription(`Você selecionou um plano especial, o qual é **${pacote}**\n\nVocê terá 10 minutos para resolver tudo, após isso clique no botão ***Resolvido***`)
@@ -166,7 +166,7 @@ exports.Comprado_Loja = async function (client, interaction, discord, servidor, 
                 );
               }
             }
-            let findRow = rows.find(row => Object.keys(serverGroups).find(key => serverGroups[key].value === row.flags) == cargo.cargo)
+            let findRow = rows ? rows.find(row => Object.keys(serverGroups).find(key => serverGroups[key].value === row.flags) == cargo.cargo) : undefined
 
             try {
               if (!cargo.allServers && findRow && findRow.server_id == serversInfosFound.serverNumber) {

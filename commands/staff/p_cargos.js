@@ -106,7 +106,6 @@ module.exports = {
       StaffFoundEmbed.addFields(
         rows[i]
       )
-      console.log(StaffFoundEmbed)
       if (StaffFoundEmbed.data.fields.length == 24 || i == rows.length - 1) {
         await interaction.user.send({ embeds: [StaffFoundEmbed] });
         StaffFoundEmbed.data.fields = []

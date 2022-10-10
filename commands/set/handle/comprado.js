@@ -8,6 +8,7 @@ const {
   InternalServerError,
 } = require('../../../embed/geral');
 const chalk = require('chalk');
+const { ReloadRolesAndTags } = require('../../../handle/checks/reloadRolesAndTags');
 
 
 exports.Comprado = async function (client, interaction, discord1, steamid, cargo, tempo, servidor, extra) {
@@ -130,6 +131,9 @@ exports.Comprado = async function (client, interaction, discord1, steamid, cargo
         console.error(chalk.redBright('Erro no Insert'), error)
       );
     }
+
+    ReloadRolesAndTags(serversInfosFound.identifier)
+
 
     interaction.editReply({ embeds: [SetSuccess(interaction, fetchedUser.user, cargo)], ephemeral: true })
       ||

@@ -12,6 +12,8 @@ const { Delete_AskQuestion } = require('../../ticket/handles/delete_askQuestion'
 const { EmbedBuilder } = require('discord.js');
 const { guildsInfo } = require('../../../configs/config_geral');
 const { Solicitado_banirCancelar } = require('./handle/banir_cancelarSolicitado');
+const { Telando_handle_ban } = require('../../../commands/telar/handle/telando_handle_ban');
+const { Telando_handle_cancel } = require('../../../commands/telar/handle/telando_handle_cancel');
 
 const functionCargos = {
   'ticket'(interaction, client) {
@@ -180,11 +182,19 @@ const functionCargos = {
   },
   'cancelarSolicitado'(interaction, client) {
     Solicitado_banirCancelar(interaction, client, 'cancelarSolicitado')
-
   },
   'banidoSolicitado'(interaction, client) {
     Solicitado_banirCancelar(interaction, client, 'banidoSolicitado')
+  },
+  'telando_banir'(interaction, client) {
+    if (!interaction.member._roles.includes('800826968417108028')) return;
 
+    Telando_handle_ban(interaction)
+  },
+  'telando_cancelar'(interaction, client) {
+    if (!interaction.member._roles.includes('800826968417108028')) return;
+
+    Telando_handle_cancel(interaction)
   }
 };
 

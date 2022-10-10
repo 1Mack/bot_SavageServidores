@@ -1,4 +1,4 @@
-const { EmbedBuilder, ButtonBuilder, ActionRowBuilder, ChannelType, PermissionFlagsBits } = require('discord.js');
+const { EmbedBuilder, ButtonBuilder, ActionRowBuilder, ChannelType, PermissionFlagsBits, ButtonStyle } = require('discord.js');
 const { connection, connection2 } = require('../../../configs/config_privateInfos');
 const { serversInfos, serverGroups, guildsInfo } = require('../../../configs/config_geral');
 const wait = require('util').promisify(setTimeout);
@@ -85,7 +85,7 @@ exports.UP_Procurar_merecedores = async function (client, interaction, servidor)
     const logGuildUpConfirm = await client.guilds.cache.get(guildsInfo.log).channels.cache.get('931637295902240838')
 
     const logGuildUpConfirmMessages = await logGuildUpConfirm.messages.fetch().then(m =>
-      m.find(m => m.embeds[0].fields.find(a => a.name == 'DiscordID' && a.value == result[i].discord_id) && m.embeds[0].footer.text == servidor)
+      m.find(m => m.embeds[0].data.fields.find(a => a.name == 'DiscordID' && a.value == result[i].discord_id) && m.embeds[0].footer.text == servidor)
     )
 
     if (logGuildUpConfirmMessages) {

@@ -1,30 +1,30 @@
 const webhookCargo = {
-    id: '',
-    token: '',
+  id: '',
+  token: '',
 };
 const webhookLog = {
-    id: '',
-    token: '',
+  id: '',
+  token: '',
 };
 const webhookSavageLogs = {
-    id: '',
-    token: '',
+  id: '',
+  token: '',
 };
 
 const webhookVipExpirado = {
-    id: '',
-    token: '',
+  id: '',
+  token: '',
 };
 
 const webhookSavageStore = {
-    id: '',
-    token: '',
+  id: '',
+  token: '',
 };
 
 module.exports = {
-    webhookCargo,
-    webhookLog,
-    webhookVipExpirado,
-    webhookSavageLogs,
-    webhookSavageStore
+  webhookCargo,
+  webhookLog,
+  webhookVipExpirado,
+  webhookSavageLogs,
+  webhookSavageStore
 };

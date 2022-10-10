@@ -1,4 +1,4 @@
-const { EmbedBuilder, ActionRowBuilder, ButtonBuilder } = require('discord.js');
+const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const { guildsInfo } = require('../../configs/config_geral');
 
 exports.LogAdv = function (discord, adv, reason, interaction) {

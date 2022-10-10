@@ -1,4 +1,4 @@
-const { EmbedBuilder, ButtonBuilder, ActionRowBuilder } = require('discord.js');
+const { EmbedBuilder, ButtonBuilder, ActionRowBuilder, ButtonStyle } = require('discord.js');
 const { guildsInfo } = require('../../../configs/config_geral');
 const { HorasDemotarConfirm } = require('./horasDemotar');
 

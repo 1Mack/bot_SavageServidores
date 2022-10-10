@@ -17,33 +17,55 @@ module.exports = {
   name: 'demotar',
   description: 'Demotar algéum do servidor',
   options: [
-    { name: 'steamid', type: ApplicationCommandOptionType.String, description: 'steamid do player', required: true, choices: null },
-    { name: 'motivo', type: ApplicationCommandOptionType.String, description: 'Motivo do Demoted', required: true, choices: null }
+    { name: 'motivo', type: ApplicationCommandOptionType.String, description: 'Motivo do Demoted', required: true, choices: null },
+    { name: 'steamid', type: ApplicationCommandOptionType.String, description: 'steamid do player', required: false, choices: null },
+    { name: 'discord', type: ApplicationCommandOptionType.User, description: 'discord do player', required: false, choices: null },
   ],
   default_permission: false,
   cooldown: 0,
   async execute(client, interaction) {
     let steamid = interaction.options.getString('steamid'),
+      discord = interaction.options.getUser('discord'),
       extra = interaction.options.getString('motivo');
 
     await interaction.deferReply()
 
-    if (steamid.startsWith('STEAM_0')) {
+    if (!steamid && !discord) return interaction.followUp('Você deve fornecer a steamid ou o discord').then(() => setTimeout(() => interaction.deleteReply(), 10000));
+
+    if (steamid && steamid.startsWith('STEAM_0')) {
       steamid = steamid.replace('STEAM_0', 'STEAM_1');
     }
 
-    if (steamid == 'STEAM_1:1:79461554' && interaction.user.id !== '323281577956081665')
+    if (steamid && steamid == 'STEAM_1:1:79461554' && interaction.user.id !== '323281577956081665')
       return interaction.followUp({ embeds: [MackNotTarget(interaction)] }).then(() => setTimeout(() => interaction.deleteReply(), 10000));
 
 
     const con = connection2.promise();
     let rows
-    try {
-      [rows] = await con.query(
-        `select * from Cargos where playerid regexp '${steamid.slice(8)}'`
-      );
 
-    } catch (error) {
+    try {
+
+      if (!steamid) {
+        [rows] = await con.query(
+          `SELECT * from Cargos 
+                      where playerid regexp 
+                      REPLACE(
+                          (select playerid from Cargos where discordID = '${discord.id}' LIMIT 1), 
+                          SUBSTRING(
+                              (select playerid from Cargos where discordID = '${discord.id}' LIMIT 1), 
+                              1, 8), 
+                              ''
+                          )
+                  `
+        );
+      } else {
+        [rows] = await con.query(
+          `select * from Cargos where playerid regexp '${steamid.slice(8)}'`
+        );
+
+      }
+    }
+    catch (error) {
       return (
         interaction.followUp({ embeds: [InternalServerError(interaction)] }).then(() => setTimeout(() => interaction.deleteReply(), 10000)),
         console.error(chalk.redBright('Erro no Select'), error)
@@ -61,9 +83,10 @@ module.exports = {
 
       return { row, serverFind, cargo }
     })
-    const discordUser = rows.find(dc => dc.discordID != null)
+    const discordUser = rows.find(dc => dc.discordID != null) || { discordID: discord.id }
 
     let msgFunction;
+    
     msgFunction = DemotedInfo(serversInfosFound, steamid)
 
     let msg = await interaction.followUp({ embeds: [msgFunction.embed], components: [msgFunction.selectMenu] })
@@ -112,13 +135,34 @@ module.exports = {
               )
             } else {
               try {
-                await con.query(
-                  `DELETE FROM Cargos WHERE playerid regexp '${steamid.slice(8)}' and 
-                                     (${serversInfosFound.map(server =>
-                    `server_id = '${server.serverFind ? server.serverFind.serverNumber : server.row.server_id}' and flags = '${serverGroups[server.cargo].value}'`
-                  ).join(' or ')})
-                                     `
-                );
+                if (steamid) {
+
+                  await con.query(
+                    `DELETE FROM Cargos WHERE playerid regexp '${steamid.slice(8)}' and 
+                                       (${serversInfosFound.map(server =>
+                      `server_id = '${server.serverFind ? server.serverFind.serverNumber : server.row.server_id}' and flags = '${serverGroups[server.cargo].value}'`
+                    ).join(' or ')})
+                                       `
+                  );
+                } else {
+                  await con.query(`DELETE FROM Cargos 
+                  WHERE Id IN (
+                    SELECT c.Id FROM (
+                    SELECT Id from Cargos 
+                    where playerid regexp 
+                    REPLACE(
+                        (select playerid from Cargos where discordID = '${discord.id}' LIMIT 1), 
+                        SUBSTRING(
+                            (select playerid from Cargos where discordID = '${discord.id}' LIMIT 1), 
+                            1, 8), 
+                            ''
+                      ) AND (${serversInfosFound.map(server =>
+                        `server_id = '${server.serverFind ? server.serverFind.serverNumber : server.row.server_id}' and flags = '${serverGroups[server.cargo].value}'`
+                      ).join(' or ')})
+                    ) as c
+                  )
+              `)
+                }
               } catch (error) {
                 return (
                   msg.edit({ embeds: [InternalServerError(interaction)] }).then(() => setTimeout(() => msg.delete(), 10000)),

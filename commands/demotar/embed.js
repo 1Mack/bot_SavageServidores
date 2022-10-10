@@ -76,6 +76,14 @@ exports.DemotedAskConfirm = function (interaction) {
 
 exports.DemotedInfo = function (rows, user) {
 
+  rows = rows.filter((value, index, self) =>
+    index === self.findIndex((t) => (
+      t.serverFind ?
+        t.serverFind.serverNumber === value.serverFind.serverNumber && t.cargo === value.cargo :
+        t.row.server_id === value.row.server_id && t.cargo === value.cargo
+    ))
+  )
+
   const embed = new EmbedBuilder()
     .setColor('#0099ff')
     .setDescription(`Você quer demotar o player com a steamid **${user}** em quais servidores?

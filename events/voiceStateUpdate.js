@@ -13,8 +13,10 @@ module.exports = {
           .messages.fetch()
           .then((m) => {
             let channelFind = m.find((c) => c.content.includes(oldMember.channelId));
-            channelFind.delete();
-            channel.delete();
+            if (channelFind) {
+              channelFind.delete();
+            }
+            channel.delete()
 
           });
       }

@@ -53,6 +53,20 @@ exports.UpConfirmed = async function (message, client, reactionPerson) {
   await con.query(`update Cargos set flags = '${serverGroups[cargo].value}' where playerid regexp '${steamid.slice(8)}'
     and server_id = '${serversInfosFound.serverNumber}'`);
 
+  /*  if (!serverGroups[cargo].value.endsWith('p') && serverGroups[cargo].value != 'vip' && serversInfosFound) {
+     await con.query(
+       `UPDATE Cargos SET 
+                   discordID = '${discord1.id}', 
+                   flags = '${serverGroups[cargo].value}'
+                   WHERE playerid regexp '${steamid.slice(8)}' AND server_id = '${serversInfosFound.serverNumber}'`
+     );
+   } else if (opa === undefined || serverGroups[cargo].value.endsWith('p') || serverGroups[cargo].value != 'vip') {
+     await con.query(`
+                   INSERT IGNORE INTO Cargos (Id, timestamp, playerid, enddate, flags, server_id, discordID) 
+                   VALUES (NULL, NULL, '${steamid}', (DATE_ADD(CURRENT_TIMESTAMP, INTERVAL 3650 DAY)), '${serverGroups[cargo].value}', '${serversInfosFound ? `${serversInfosFound.serverNumber}` : '0'}', '${discord1.id}')
+               `
+     );
+   } */
 
   const logUp = new EmbedBuilder()
     .setColor('#0099ff')

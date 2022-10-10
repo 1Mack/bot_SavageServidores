@@ -1,4 +1,4 @@
-const { EmbedBuilder, ButtonBuilder, ActionRowBuilder, ApplicationCommandOptionType, ChannelType, PermissionFlagsBits } = require('discord.js');
+const { EmbedBuilder, ButtonBuilder, ActionRowBuilder, ApplicationCommandOptionType, ChannelType, PermissionFlagsBits, ButtonStyle } = require('discord.js');
 const { connection, connection2 } = require('../../configs/config_privateInfos');
 const { serversInfos, serverGroups, guildsInfo } = require('../../configs/config_geral');
 const wait = require('util').promisify(setTimeout);
