@@ -1,4 +1,4 @@
-const { EmbedBuilder, ActionRowBuilder, SelectMenuBuilder } = require('discord.js');
+const { EmbedBuilder, ActionRowBuilder, StringSelectMenuBuilder } = require('discord.js');
 const { serversInfos, guildsInfo } = require('../../configs/config_geral')
 const emojis = ['<a:savage_1:839189109943042097>', '<a:savage_2:839189111172628550>', '<a:savage_3:839189110165995570>',
   '<a:savage_4:839189110630776863>', '<a:savage_5:839189110480306186>', '<a:savage_6:839199778172043275>', '<a:savage_7:839199778364457013>',
@@ -33,7 +33,7 @@ exports.TicketStart = function (user) {
     });
   const row = new ActionRowBuilder()
     .addComponents(
-      new SelectMenuBuilder()
+      new StringSelectMenuBuilder()
         .setCustomId('TicketFirstOption')
         .setPlaceholder('Nada Selecionado')
         .addOptions([
@@ -62,6 +62,13 @@ exports.TicketStart = function (user) {
             description: 'Está com alguma dúvida? Clique aqui!',
             value: 'duvida',
             emoji: '🆘'
+
+          },
+          {
+            label: 'Compras',
+            description: 'Deseja comprar algum plano? Clique aqui!',
+            value: 'compras',
+            emoji: '🪙'
 
           },
         ])
@@ -95,7 +102,7 @@ exports.TicketServerOptions = function (user) {
     });
   const row = new ActionRowBuilder()
     .addComponents(
-      new SelectMenuBuilder()
+      new StringSelectMenuBuilder()
         .setCustomId('TicketSecondOption')
         .setPlaceholder('Nada Selecionado')
         .addOptions(serversInfos.map((m, i) => {

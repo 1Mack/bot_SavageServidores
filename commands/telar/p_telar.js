@@ -15,7 +15,11 @@ module.exports = {
 
     let findChannel = await interaction.guild.channels.cache.find(ch => ch.name === `telando→${discordID.id}`)
 
-    if (findChannel) return interaction.reply({ content: `[Já existe um canal de telagem para esse usuário](https://discord.com/channels/${guildsInfo.main}/${findChannel.id})`, ephemeral: true })
+    if (findChannel)
+      return interaction.reply({ content: `[Já existe um canal de telagem para esse usuário](https://discord.com/channels/${guildsInfo.main}/${findChannel.id})`, ephemeral: true })
+        .then(() => setTimeout(() => {
+          interaction.webhook.deleteMessage('@original')
+        }, 5000))
 
     await interaction.guild.channels
       .create({
@@ -43,7 +47,9 @@ module.exports = {
           content:
             `[Canal criado com sucesso](https://discord.com/channels/${guildsInfo.main}/${voiceChannel.id})\n**Obs: Você tem 30 segundos para entrar no canal, caso contrário ele será excluído!!**`,
           ephemeral: true
-        })
+        }).then(() => setTimeout(() => {
+          interaction.webhook.deleteMessage('@original')
+        }, 5000))
 
         discordID.send({ content: `Ei ${discordID}, sua sala para telagem ja foi criada → https://discord.com/channels/${guildsInfo.main}/${voiceChannel.id}` })
 

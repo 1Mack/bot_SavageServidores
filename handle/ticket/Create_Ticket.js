@@ -5,7 +5,9 @@ const { ChannelType, PermissionFlagsBits, ComponentType } = require('discord.js'
 exports.TicketCreate = async function (interaction, client) {
 
   if (interaction.guild.channels.cache.filter(c => c.parentId == '729848799421530173' && c.topic == interaction.user.id).size > 2)
-    return interaction.reply({ content: `**Você já possui o máximo de tickets abertos possíveis!!**`, ephemeral: true })
+    return interaction.reply({ content: `**Você já possui o máximo de tickets abertos possíveis!!**`, ephemeral: true }).then(() => setTimeout(() => {
+      interaction.webhook.deleteMessage('@original')
+    }, 5000))
 
   await interaction.guild.channels
     .create({
@@ -25,7 +27,9 @@ exports.TicketCreate = async function (interaction, client) {
       parent: '729848799421530173',
     })
     .then(async (channel) => {
-      interaction.reply({ embeds: [ChannelCreated(interaction.user, channel)], ephemeral: true });
+      interaction.reply({ embeds: [ChannelCreated(interaction.user, channel)], ephemeral: true }).then(() => setTimeout(() => {
+        interaction.webhook.deleteMessage('@original')
+      }, 5000))
       channel.send(`${interaction.user}`).then((m) => m.delete());
       let msg = await channel.send({ embeds: [TicketStart(interaction.user).embed], components: [TicketStart(interaction.user).lista] });
 

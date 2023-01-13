@@ -48,10 +48,10 @@ module.exports = {
     switch (command) {
       case 'solicitar':
         BanirSolicitar(client, interaction,
-          interaction.options.getString('nick'),
-          interaction.options.getString('steamid'),
+          interaction.options.getString('nick').trim(),
+          interaction.options.getString('steamid').trim(),
           interaction.options.getString('servidor').toLowerCase(),
-          interaction.options.getString('motivo'),
+          interaction.options.getString('motivo').trim(),
           interaction.options.getUser('discord'),
           interaction.options.getString('anydesk'),
           [
@@ -59,23 +59,23 @@ module.exports = {
             interaction.options.getAttachment('arquivo2'),
             interaction.options.getAttachment('arquivo3'),
           ],
-          interaction.options.getString('link')
+          interaction.options.getString('link') ? interaction.options.getString('link').trim() : null
 
         )
         break;
       case 'temp':
         BanirTemp(client, interaction,
-          interaction.options.getString('nick'),
-          interaction.options.getString('steamid'),
+          interaction.options.getString('nick').trim(),
+          interaction.options.getString('steamid').trim(),
           interaction.options.getInteger('tempo'),
-          interaction.options.getString('motivo'),
+          interaction.options.getString('motivo').trim(),
           interaction.options.getUser('discord'),
         )
         break;
       case 'remover':
         Desbanir(client, interaction,
-          interaction.options.getString('steamid'),
-          interaction.options.getString('motivo'),
+          interaction.options.getString('steamid').trim(),
+          interaction.options.getString('motivo').trim(),
         )
         break;
       default:

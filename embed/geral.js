@@ -1,14 +1,14 @@
-const Discord = require('discord.js');
+const { EmbedBuilder } = require('discord.js');
 
 exports.PlayerDiscordNotFound = function (interaction) {
-  const embed = new Discord.EmbedBuilder()
+  const embed = new EmbedBuilder()
     .setColor('#ff0000')
     .setDescription(`<a:warning_savage:856210165338603531> ${interaction.user}, Não achei o discord desse player !`);
   return embed;
 };
 
 exports.InternalServerError = function (interaction) {
-  const embed = new Discord.EmbedBuilder()
+  const embed = new EmbedBuilder()
     .setColor('#ff0000')
     .setDescription(
       `<a:warning_savage:856210165338603531> ${interaction.user}, Houve um erro interno, contate o 1mack !`
@@ -17,7 +17,7 @@ exports.InternalServerError = function (interaction) {
 };
 
 exports.GerenteError = function (user) {
-  const embed = new Discord.EmbedBuilder()
+  const embed = new EmbedBuilder()
     .setColor('#ff0000')
     .setDescription(
       `<a:warning_savage:856210165338603531> ${user}, você não pode ter esse servidor como alvo, pois não é o gerente dele !`
@@ -26,7 +26,7 @@ exports.GerenteError = function (user) {
 };
 
 exports.RenameError = function (interaction) {
-  const embed = new Discord.EmbedBuilder()
+  const embed = new EmbedBuilder()
     .setColor('#ff0000')
     .setDescription(
       `<a:warning_savage:856210165338603531> ${interaction.user}, não consegui renomear o player, faça isso manualmente !`
@@ -35,7 +35,7 @@ exports.RenameError = function (interaction) {
 };
 
 exports.MissinPermissions = function (interaction) {
-  const embed = new Discord.EmbedBuilder()
+  const embed = new EmbedBuilder()
     .setColor('#ff0000')
     .setDescription(
       `<a:warning_savage:856210165338603531> ${interaction.user}, você não tem permissão para usar esse comando !`
@@ -44,7 +44,7 @@ exports.MissinPermissions = function (interaction) {
 };
 
 exports.AwaitCooldown = function (interaction, timeLeft, command) {
-  const embed = new Discord.EmbedBuilder()
+  const embed = new EmbedBuilder()
     .setColor('#ff0000')
     .setDescription(
       `<a:warning_savage:856210165338603531> ${interaction.user

@@ -30,7 +30,9 @@ module.exports = {
           .setLabel('NAO')
           .setStyle(ButtonStyle.Primary),
       )
-    await interaction.reply({ embeds: [AskQuestion(interaction)], components: [buttons], ephemeral: true })
+    await interaction.reply({ embeds: [AskQuestion(interaction)], components: [buttons], ephemeral: true }).then(() => setTimeout(() => {
+      interaction.webhook.deleteMessage('@original')
+    }, 5000))
 
     const filter = i => {
       i.deferUpdate();

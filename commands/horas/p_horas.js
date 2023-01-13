@@ -13,7 +13,7 @@ module.exports = {
   cooldown: 0,
   async execute(client, interaction) {
 
-    let steamid = interaction.options.getString('steamid'),
+    let steamid = interaction.options.getString('steamid').trim(),
       servidor = interaction.options.getString('servidor').toLowerCase()
 
     const serversInfosFound = serversInfos.find((m) => m.name === servidor);
@@ -24,10 +24,12 @@ module.exports = {
     const con = connection.promise();
 
     try {
-      let [result] = await con.query(`SELECT * FROM mostactive_${servidor} WHERE steamid = '${steamid}'`);
+      let [result] = await con.query(`SELECT * FROM mostactive_${servidor} WHERE steamid = '${steamid.slice(8)}'`);
 
       if (result == '') {
-        return interaction.reply({ embeds: [StaffHoursNotFound(interaction)], ephemeral: true })
+        return interaction.reply({ embeds: [StaffHoursNotFound(interaction)], ephemeral: true }).then(() => setTimeout(() => {
+          interaction.webhook.deleteMessage('@original')
+        }, 5000))
       }
 
       function HourFormat(duration) {

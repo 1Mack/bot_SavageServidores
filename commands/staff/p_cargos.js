@@ -16,9 +16,13 @@ module.exports = {
   default_permission: false,
   cooldown: 0,
   async execute(client, interaction) {
-    let discord_steam = interaction.options.getUser('discord') || interaction.options.getString('steamid')
+    let discord_steam = interaction.options.getUser('discord') ?
+      interaction.options.getUser('discord') :
+      interaction.options.getString('steamid').trim()
 
-    if (!discord_steam) return interaction.reply({ content: 'Você precisa informar o discord ou a steamid do player!!', ephemeral: true })
+    if (!discord_steam) return interaction.reply({ content: 'Você precisa informar o discord ou a steamid do player!!', ephemeral: true }).then(() => setTimeout(() => {
+      interaction.webhook.deleteMessage('@original')
+    }, 5000))
 
     let StaffFoundEmbed = new EmbedBuilder().setColor('#0099ff')
 

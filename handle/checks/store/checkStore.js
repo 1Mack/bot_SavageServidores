@@ -1,5 +1,6 @@
 const { serversInfos } = require("../../../configs/config_geral");
 const { connection2, connection, storePanelToken } = require("../../../configs/config_privateInfos");
+const { CheckDatabaseRole } = require("../checkDatabaseRole");
 const { ReloadRolesAndTags } = require("../reloadRolesAndTags");
 
 const api = require("./api");
@@ -30,7 +31,7 @@ exports.RunStore = function () {
 
 
     const packages = await asyncOnlineFilter(await api.packages());
-    const refunds = await asyncOnlineFilter(await api.refunds());
+    // const refunds = await asyncOnlineFilter(await api.refunds());
 
     for (let pkg of packages) {
       let checkProcess = await processSale(pkg, "Aprovado")
@@ -41,15 +42,15 @@ exports.RunStore = function () {
       }
 
     }
-    for (let pkg of refunds) processSale(pkg, "Reembolso");
+    // for (let pkg of refunds) processSale(pkg, "Reembolso");
 
     if (packages.length) await api.delivery(packages.map((s) => s.id));
-    if (refunds.length) await api.punish(refunds.map((s) => s.id));
+    //if (refunds.length) await api.punish(refunds.map((s) => s.id));
 
   };
 
   check();
-  setInterval(check, 60000);
+  setInterval(check, 120000);
 }
 
 async function processSale(sale, type) {
@@ -163,31 +164,14 @@ async function processSale(sale, type) {
           mainArray[2].forEach(async (command) => {
 
             command == 'todos' ? command = '0' : command
-            let res
-            try {
-              [res] = await con.query(
-                `SELECT * FROM Cargos 
-                              WHERE playerid like '%${sale.player.slice(8)}' 
-                              AND server_id = ${command} 
-                              AND flags = '${mainArray[0]}'`);
-            } catch (error) {
-              return console.log(error)
-            }
 
-            if (res.length > 0) {
-              sale.commands = `UPDATE Cargos SET enddate = (DATE_ADD(\`enddate\`, INTERVAL ${mainArray[1]} DAY)) WHERE playerid REGEXP '${sale.player.slice(8)}' AND server_id = ${command} AND flags = '${mainArray[0]}'`
-            } else {
-              sale.commands = `INSERT IGNORE INTO Cargos (Id, timestamp, playerid, enddate, flags, server_id) VALUES (NULL, NULL, '${sale.player}', (DATE_ADD(CURRENT_TIMESTAMP, INTERVAL ${mainArray[1]} DAY)), '${mainArray[0]}', '${command}')`
-            }
 
             try {
-              await con.query(sale.commands);
+              await CheckDatabaseRole(sale.player, command, true, mainArray[0], mainArray[1])
               let serverFind = serversInfos.find(server => server.serverNumber == command)
               serverFind == undefined ? serversInfos.forEach(servers => {
                 ReloadRolesAndTags(servers.identifier)
               }) : ReloadRolesAndTags(serverFind.identifier)
-
-
             } catch (ex) {
               console.log(ex)
               return sale.id

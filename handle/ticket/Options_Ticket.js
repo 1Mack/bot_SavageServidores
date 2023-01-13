@@ -158,6 +158,29 @@ const Options = {
     );
     msg.edit({ embeds: [TicketTypeChoosed(user, 'Dúvidas', roles.servidor)], components: [row] })
   },
+  async 'compras'(m, user, roles, msg, id) {
+    //Dúvidas
+    m.permissionOverwrites.set([
+      {
+        id: '780582159731130378', //manager
+        allow: [PermissionFlagsBits.ViewChannel],
+      },
+      {
+        id: user.id,
+        allow: [PermissionFlagsBits.ViewChannel], //user
+      },
+      {
+        id: guildsInfo.main, //everyone
+        allow: [PermissionFlagsBits.SendMessages],
+        deny: [PermissionFlagsBits.ViewChannel],
+      },
+    ]);
+    await m.setName(`compras→${id}`)
+    m.send({ content: `<@&780582159731130378>,` }).then((m) =>
+      m.delete()
+    );
+    msg.edit({ embeds: [TicketTypeChoosed(user, 'Compras', roles.servidor)], components: [row] })
+  },
 };
 
 module.exports = { Options };

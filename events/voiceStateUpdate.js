@@ -6,7 +6,7 @@ module.exports = {
     const channel = client.channels.cache.get(oldMember.channelId);
     if (channel == undefined) return;
 
-    if (channel.parentId == '936310042225934408') {
+    if (channel.parentId == '936310042225934408' && !channel.name.startsWith('telando')) {
       if (channel.members.map((a) => a.id) == '') {
         client.channels.cache
           .get('840936627839828068')

@@ -1,181 +1,287 @@
-const { ActionRowBuilder, ComponentType, ButtonBuilder, ButtonStyle, EmbedBuilder } = require("discord.js");
-const { serversInfos } = require("../../../configs/config_geral");
 const { BanirSolicitar } = require("../../ban/handle/banirSolicitar");
-const { ModalForm } = require("./modalForm");
 const { Verification } = require("./verifications");
+const { TelandoButtons } = require('./buttons');
+const { EmbedBuilder, ComponentType, AttachmentBuilder } = require("discord.js");
 const wait = require('util').promisify(setTimeout);
 
-exports.Telando_handle_ban = async function (interaction) {
+exports.Telando_handle_ban = async function (interaction, isFromCancelled) {
 
-  let findChannel = interaction.guild.channels.cache.get(interaction.channelId),
-    [, targetDiscord, teladorDiscord] = findChannel.name.split('→')
+  const telandoButtons = TelandoButtons()
 
+  interaction.message.delete()
+  interaction.reply({ content: 'Deseja prosseguir com essa ação?', components: [telandoButtons.confirm] })
 
-  ModalForm(interaction).then(async ({ nick, steamid, servidor, anydesk, observacoes, i }) => {
+  let filter = i => {
+    i.deferUpdate();
+    return i.user.id == interaction.user.id && i.channelId == interaction.channelId;
+  };
 
-    const button = new ActionRowBuilder().addComponents(
-      new ButtonBuilder()
-        .setCustomId('apenas link')
-        .setLabel('APENAS LINK')
-        .setStyle(ButtonStyle.Primary),
-      new ButtonBuilder()
-        .setCustomId('apenas arquivos')
-        .setLabel('APENAS ARQUIVOS')
-        .setStyle(ButtonStyle.Primary),
-      new ButtonBuilder()
-        .setCustomId('arquivos e link')
-        .setLabel('ARQUIVOS E LINK')
-        .setStyle(ButtonStyle.Primary)
+  let { customId } = await interaction.channel
+    .awaitMessageComponent({ filter, time: 100000, errors: ['time'] }).catch((err) => {
+      console.log(err)
+      interaction.message.delete()
+      interaction.channel.send({ content: '<:blank:773345106525683753>', components: [telandoButtons.banOrCancel] })
+      return interaction.channel.send('Você não respondeu a tempo...voltando ao painel inicial!').then(() => setTimeout((m) => {
+        m.delete()
+      }, 5000))
+    })
+  interaction.deleteReply()
 
-    )
-
-    await i.reply(
-      {
-        content: `
-          Leia os dados à seguir com atenção, se algum deles estiver errado, basta guardar 30 segundos para poder responder novamente!!
-
-          nick: ${nick}
-          steamid: ${steamid}
-          servidor: ${servidor['name']}
-          ${anydesk ? `anydesk: ${anydesk}` : ''}
-          ${observacoes ? `observacoes: ${observacoes}` : ''}
+  if (customId === 'nao') {
+    return interaction.channel.send({ content: '<:blank:773345106525683753>', components: [telandoButtons.banOrCancel] })
+  }
 
 
-          ***${interaction.user} Clique no botão abaixo correspondente a quais provas você quer salvar!***`,
-        components: [button]
+  let findChannel = interaction.guild.channels.cache.get(interaction.channelId)
+  let [, targetDiscord, teladorDiscord] = findChannel.name.split('→')
+
+  const embed = new EmbedBuilder().setAuthor({ name: `Nova Telagem Realizada` }).setColor('36393f').setFields(
+    { name: 'Telador', value: `<@${teladorDiscord}>` },
+    { name: 'Nick', value: '\u200B' },
+    { name: 'SteamID', value: '\u200B' },
+    { name: 'Servidor', value: '\u200B' },
+    { name: 'Discord', value: `<@${targetDiscord}>` },
+    { name: 'AnyDesk', value: '\u200B' },
+    { name: 'Observações', value: '\u200B' },
+    { name: 'Arquivos', value: '\u200B' },
+  )
+  let msg = await findChannel.send({ embeds: [embed], components: [telandoButtons.banFields, telandoButtons.evidences] })
+
+  let loopBool = true, interactionLoop, allowSendToBan = false
+
+  const filter2 = msg => {
+
+    return msg.author.id === interaction.user.id
+  };
+  filter = i => {
+    return i.user.id == interaction.user.id && i.channelId == interaction.channelId;
+  };
+
+  let banInfos = {
+    link: '',
+    attachments: [],
+    nick: '',
+    steamid: '',
+    anydesk: '',
+    servidor: '',
+    observacoes: '',
+  }
+
+  while (loopBool) {
+
+    interactionLoop = await msg.channel.awaitMessageComponent({ filter, time: 100000, componentType: ComponentType.Button, errors: ['time'] }).catch(() => { })
+
+    if (!interactionLoop) {
+
+      interaction.message.delete()
+      interaction.channel.send({ content: '<:blank:773345106525683753>', components: [telandoButtons.banOrCancel] })
+      interaction.channel.send('Você não respondeu a tempo...voltando ao painel inicial!')
+      return interaction.channel.send({ content: '<:blank:773345106525683753>', components: [telandoButtons.banOrCancel] })
+
+    }
+
+    msg.components.map(m => m.components.map(x => x.data.disabled = true))
+
+    switch (interactionLoop.customId) {
+      case 'nick':
+        await getButton('**Informe o Nick do player**', 'nick', 'nick')
+        break;
+      case 'steamid':
+        await getButton('**Informe o Link do Perfil do player**', 'steamid', 'steamid')
+        break;
+      case 'anydesk':
+        await getButton('**Informe o ANYDESK do player**', 'anydesk', 'anydesk')
+        break;
+      case 'servidor':
+        await getButton('**Informe o SERVIDOR**', 'servidor', 'servidor')
+        break;
+      case 'observacoes':
+        await getButton('**Informe as OBSERVAÇÕES**', 'observacoes', 'observações')
+        break;
+      case 'file':
+        await getButton('**Envie o arquivo**', 'file')
+        break;
+      case 'link':
+        await getButton('**Informe o link**', 'link', 'link')
+        break;
+      case 'send':
+        await getButton('**Enviando para o telados!**', 'send')
+        break;
+    }
+  }
+
+  async function getButton(replyMessage, componentID, fieldID) {
+
+    msg.edit({ components: msg.components })
+
+
+
+    if (componentID === 'servidor') {
+
+      await interactionLoop.reply({ components: [telandoButtons.ServersMenu] })
+
+      let menuSelectinteraction = await interactionLoop.
+        channel.awaitMessageComponent({ filter, time: 100000, componentType: ComponentType.StringSelect, errors: ['time'] }).catch(() => { })
+      interactionLoop.deleteReply()
+
+      if (!menuSelectinteraction) {
+        reloadButtons()
+
+        return msg.edit({ components: msg.components })
+      } else {
+
+        banInfos.servidor = menuSelectinteraction.values[0]
+
+        msg.embeds[0].data.fields.find(f => f.name.toLowerCase() === fieldID).value = menuSelectinteraction.values[0]
       }
-    )
-    const filter2 = i => {
-      i.deferUpdate();
-      return i.user.id === interaction.user.id;
-    };
-
-    await interaction.channel.awaitMessageComponent({ filter2, componentType: ComponentType.Button, time: 60000 })
-      .then(async ({ customId }) => {
-
-        await i.editReply({
-          components: [], content: `Você selecionou ${customId}!! \nLembre-se, ${customId.includes('apenas') ?
-            customId.includes('link') ?
-              'envie apenas **UMA mensagem** contendo **um link**' :
-              'envie até no máximo **3 imagens** em apenas **UMA mensagem**' :
-            'envie apenas **UMA mensagem** contendo **um link** E até no máximo **3 imagens**'
-            }`
-        })
 
 
-        const filter = response => {
-          return interaction.user.id === response.author.id
-        };
-        let loopCount = 0, evidences = {}
-        while (loopCount < 3) {
+    } else if (componentID === 'send') {
 
-          await interaction.channel.awaitMessages({ filter, max: 1, time: 30000, errors: ['time'] })
-            .then(async message => {
+      await interactionLoop.reply(replyMessage)
 
-              message = message.first()
-              message.delete()
+      if (isFromCancelled) {
+        loopBool = false
+        msg.delete()
 
-              if (customId === 'apenas link') {
-                if (message.content.startsWith('http') && !message.content.slice(5).includes('http')) {
-                  evidences.link = message.content
-                  return loopCount = 4
-                }
-              } else if (customId === 'apenas arquivos') {
-                if (message.attachments.size > 0) {
-                  evidences.attachments = message.attachments.map(m => m)
-                  return loopCount = 4
-                }
-              } else {
-                if (message.content.startsWith('http') && !message.content.slice(5).includes('http') && message.attachments.size > 0 && message.attachments.size <= 3) {
-                  evidences.link = message.content
-                  evidences.attachments = message.attachments.map(m => m)
-                  return loopCount = 4
-                }
-              }
+        interaction.guild.channels.cache.get('903453341944791041').send({ embeds: msg.embeds })
+        interactionLoop.editReply('***Enviado para o telados com sucesso***')
+        await wait(5000)
+        return findChannel.delete()
 
-              await i.editReply({
-                content: `***LEIA COM ATENÇÃO, VOCÊ ERROU O ENVIO DA MENSAGEM ANTERIOR***\n\nVocê selecionou ${customId}!! \nLembre-se, ${customId.includes('apenas') ?
-                  customId.includes('link') ?
-                    'envie apenas **UMA mensagem** contendo **um link**' :
-                    'envie até no máximo **3 imagens** em apenas **UMA mensagem**' :
-                  'envie apenas **UMA mensagem** contendo **um link** E até no máximo **3 imagens**'
-                  }`
-              })
-              loopCount++
-            })
-        }
-
-        if (loopCount != 4) {
-          await i.editReply('Você errou as 3 tentativas, voltando para mensagem inicial')
-          await wait(5000)
-
-          const buttonFinal = new ActionRowBuilder().addComponents(
-            new ButtonBuilder()
-              .setCustomId('telando_cancelar')
-              .setLabel('ENCERRAR SALA')
-              .setStyle(ButtonStyle.Primary),
-            new ButtonBuilder()
-              .setCustomId('telando_banir')
-              .setLabel('BANIR')
-              .setStyle(ButtonStyle.Danger)
-
-          )
-          await findChannel.bulkDelete(100)
-
-          return findChannel.send({ content: '<:blank:773345106525683753>', components: [buttonFinal] })
-        }
-
-        const embed = new EmbedBuilder().setAuthor({ name: `Nova Telagem Realizada` }).setColor('911010').setFields(
-          { name: 'Telador', value: `<@${teladorDiscord}>` },
-          { name: 'Nick', value: nick },
-          { name: 'SteamID', value: steamid },
-          { name: 'Servidor', value: servidor.name },
-          { name: 'Discord', value: `<@${targetDiscord}>` },
-          { name: 'AnyDesk', value: anydesk ? anydesk : '\u200B' },
-          { name: 'Observações', value: observacoes ? observacoes : '\u200B' },
-        )
-        interaction.guild.channels.cache.get('903453341944791041').send({ embeds: [embed] })
+      } else {
 
         let ban = await BanirSolicitar(
           null,
           interaction,
-          nick,
-          steamid,
-          servidor.name,
+          banInfos.nick,
+          banInfos.steamid,
+          banInfos.servidor,
           'Algo foi encontrado na telagem!',
           targetDiscord,
-          anydesk ? anydesk : '\u200B',
-          evidences['attachments'] ? evidences.attachments : [],
-          evidences['link'] ? evidences.link : undefined
+          banInfos.anydesk.length > 0 ? banInfos.anydesk : '\u200B',
+          banInfos.attachments,
+          banInfos.link.length > 0 ? banInfos.link : undefined
         )
 
         if (ban == 'sucesso') {
-          i.editReply('***Sugestão de banimento concluída com sucesso...excluindo sala***')
+          loopBool = false
+
+          msg.delete()
+          interactionLoop.editReply('***Sugestão de banimento concluída com sucesso...excluindo sala***')
+          interaction.guild.channels.cache.get('903453341944791041').send({ embeds: msg.embeds })
           await wait(5000)
           return findChannel.delete()
+
         } else {
-          await i.editReply(`***${ban}***`)
+          loopBool = false
+
+          await interactionLoop.editReply(`***${ban}***`)
           await wait(5000)
-          throw new Error('Error')
+          return findChannel.send({ content: '<:blank:773345106525683753>', components: [TelandoButtons().banFields] })
+
         }
 
-      }).catch(async err => {
+      }
 
-        const buttonFinal = new ActionRowBuilder().addComponents(
-          new ButtonBuilder()
-            .setCustomId('telando_cancelar')
-            .setLabel('ENCERRAR SALA')
-            .setStyle(ButtonStyle.Primary),
-          new ButtonBuilder()
-            .setCustomId('telando_banir')
-            .setLabel('BANIR')
-            .setStyle(ButtonStyle.Danger)
+    } else {
 
-        )
-        await findChannel.bulkDelete(100)
+      await interactionLoop.reply(replyMessage)
 
-        return findChannel.send({ content: '<:blank:773345106525683753>', components: [buttonFinal] })
-      });
-  })
+      let interactionMessage = await interactionLoop.channel
+        .awaitMessages({ filter: filter2, time: 100000, max: 1, errors: ['time'] }).catch(() => { })
+      interactionLoop.deleteReply()
 
+      if (!interactionMessage) {
+        reloadButtons()
+        return msg.edit({ components: msg.components })
+      } else {
+
+
+        interactionMessage = interactionMessage.first()
+        if (componentID === 'link') {
+
+          msg.embeds[0].data.description = `***Links disponíveis***\n\n${interactionMessage.content}`
+          banInfos.link = interactionMessage.content
+
+        } else if (componentID === 'file') {
+
+          if (interactionMessage.attachments.size > 3) return interactionMessage.channel.send('**Você só pode enviar até 3 arquivos!**').then(async m => {
+            interactionMessage.delete()
+            reloadButtons()
+            await wait(5000)
+            m.delete()
+            return msg.edit({ components: msg.components })
+          })
+
+          let msgFileLog = await interaction.guild.channels.cache.get('1056947300229984256').send({ files: await interactionMessage.attachments.map(att => new AttachmentBuilder(att.attachment)) })
+
+          banInfos.attachments = msgFileLog.attachments.map(m => m)
+
+          msg.embeds[0].data.fields.find(f => f.name.toLowerCase() === 'arquivos').value = `${banInfos.attachments.map(m => m.attachment).join(', ')}`
+
+
+        } else if (componentID === 'steamid') {
+          interactionMessage.delete()
+          let steamidFormat = await Verification(interactionMessage.content)
+
+          if (steamidFormat.startsWith('Erro')) {
+            interactionMessage.channel.send(steamidFormat).then(async m => {
+              await wait(5000)
+              m.delete()
+            })
+            reloadButtons()
+            return msg.edit({ components: msg.components })
+
+          } else {
+            msg.embeds[0].data.fields.find(f => f.name.toLowerCase() === fieldID).value = `[${steamidFormat}](${interactionMessage.content})`
+            banInfos[componentID] = steamidFormat
+          }
+
+        } else {
+          msg.embeds[0].data.fields.find(f => f.name.toLowerCase() === fieldID).value = interactionMessage.content
+          banInfos[componentID] = interactionMessage.content
+        }
+      }
+
+
+      interactionMessage.delete()
+
+    }
+    if (isFromCancelled) {
+      if (banInfos.servidor.length > 0 &&
+        banInfos.steamid.length > 0 &&
+        banInfos.nick.length > 0) {
+        allowSendToBan = true
+      }
+    } else {
+      if (
+        !(banInfos.link.length === 0 && banInfos.attachments.length === 0) &&
+        banInfos.servidor.length > 0 &&
+        banInfos.steamid.length > 0 &&
+        banInfos.nick.length > 0
+      ) {
+        allowSendToBan = true
+      }
+    }
+
+    reloadButtons()
+
+    return msg.edit({ components: msg.components, embeds: msg.embeds })
+
+  }
+  function reloadButtons() {
+    msg.components.map(m => m.components.map(x => {
+      if (x.data.custom_id === 'send') {
+        if (allowSendToBan) {
+          x.data.disabled = false
+        } else {
+          x.data.disabled = true
+        }
+      } else {
+        x.data.disabled = false
+      }
+    }))
+    return msg
+  }
 }

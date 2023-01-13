@@ -6,6 +6,7 @@ const { NotTarget, SetSuccess, isDono, staffSendAllMSG, SetAskConfirm } = requir
 const { PlayerDiscordNotFound, InternalServerError } = require('../../../embed/geral');
 const chalk = require('chalk');
 const { ReloadRolesAndTags } = require('../../../handle/checks/reloadRolesAndTags');
+const { CheckDatabaseRole } = require('../../../handle/checks/checkDatabaseRole');
 
 
 exports.Staff = async function (client, interaction, discord1, steamid, cargo, servidor, extra) {
@@ -23,7 +24,9 @@ exports.Staff = async function (client, interaction, discord1, steamid, cargo, s
     (steamid == 'STEAM_1:1:79461554' || ['fundador', 'diretor', 'gerente'].includes(cargo)) &&
     interaction.user.id !== '323281577956081665'
   )
-    return interaction.followUp({ embeds: [NotTarget(interaction)], ephemeral: true })
+    return interaction.followUp({ embeds: [NotTarget(interaction)], ephemeral: true }).then(() => setTimeout(() => {
+      interaction.webhook.deleteMessage('@original')
+    }, 5000))
 
 
   const serversInfosFound = serversInfos.find((m) => m.name === servidor);
@@ -54,82 +57,18 @@ exports.Staff = async function (client, interaction, discord1, steamid, cargo, s
 
   const canal = guild.channels.cache.find((channel) => channel.id === '792576052144373760');
 
-  let rows;
   const con = connection2.promise();
-  if (serversInfosFound) {
-    try {
-      [rows] = await con.query(
-        `select * from Cargos where playerid regexp "${steamid.slice(8)}" AND server_id = "${serversInfosFound.serverNumber}"`
-      );
-    } catch (error) {
-      return (
-        interaction.followUp({ embeds: [InternalServerError(interaction)], ephemeral: true }),
-        console.error(chalk.redBright('Erro no Select'), error)
-      );
-    }
-  }
-  let opa = undefined;
-  if (rows != '') {
-
-    let msgFunction = SetAskConfirm(interaction)
-
-    await interaction.followUp({ embeds: [msgFunction.embed], components: [msgFunction.button] }).then(async (m) => {
-
-      const filter = i => {
-        i.deferUpdate();
-        return i.user.id === interaction.user.id;
-      };
-
-      await interaction.channel.awaitMessageComponent({ filter, componentType: ComponentType.Button, time: 60000 })
-        .then(async ({ customId }) => {
-
-          if (customId == 'nao') {
-
-            return (opa = interaction.editReply({ content: '**Abortando Comando** <a:savage_loading:837104765338910730>', embeds: [] })
-              .then(() => setTimeout(() => interaction.deleteReply(), 10000)));
-          } else {
-            return (opa = 's');
-
-          }
-        })
-        .catch(() => {
-          return (opa = interaction.editReply({
-            content:
-              '**Você não respondeu a tempo!!! lembre-se, você tem apenas 15 segundos para responder!** \n***Abortando Comando*** <a:savage_loading:837104765338910730>',
-            embeds: []
-          })
-            .then(() => setTimeout(() => interaction.deleteReply(), 10000)));
-        });
-      m.delete()
-    });
-  }
-
-  let dataInicial = Date.now();
-  dataInicial = Math.floor(dataInicial / 1000);
-
   try {
-    if (opa === 's' && !serverGroups[cargo].value.endsWith('p') && serverGroups[cargo].value != 'vip' && serversInfosFound) {
-      await con.query(
-        `UPDATE Cargos SET 
-                discordID = '${discord1.id}', 
-                flags = '${serverGroups[cargo].value}'
-                WHERE playerid regexp '${steamid.slice(8)}' AND server_id = '${serversInfosFound.serverNumber}'`
-      );
-    } else if (opa === undefined || serverGroups[cargo].value.endsWith('p') || serverGroups[cargo].value != 'vip') {
-      await con.query(`
-                INSERT IGNORE INTO Cargos (Id, timestamp, playerid, enddate, flags, server_id, discordID) 
-                VALUES (NULL, NULL, '${steamid}', (DATE_ADD(CURRENT_TIMESTAMP, INTERVAL 3650 DAY)), '${serverGroups[cargo].value}', '${serversInfosFound ? `${serversInfosFound.serverNumber}` : '0'}', '${discord1.id}')
-            `
-      );
-    } else return opa;
+
+    await CheckDatabaseRole(steamid, serversInfosFound ? serversInfosFound.serverNumber : '0', false, serverGroups[cargo].value, '3650', discord1.id)
   } catch (error) {
-    return (
-      interaction.editReply({ embeds: [InternalServerError(interaction)], ephemeral: true }),
-      console.error(chalk.redBright('Erro no Insert'), error)
-    );
+    interaction.editReply({ embeds: [InternalServerError(interaction)], ephemeral: true })
+    return console.error(chalk.redBright('Erro no Insert'), error)
   }
 
-  ReloadRolesAndTags(serversInfosFound.identifier)
+  serversInfosFound == undefined ? serversInfos.forEach(servers => {
+    ReloadRolesAndTags(servers.identifier)
+  }) : ReloadRolesAndTags(serversInfosFound.identifier)
 
 
   interaction.editReply({ embeds: [SetSuccess(interaction, fetchedUser.user, cargo)] }).then(m => setTimeout(() => {

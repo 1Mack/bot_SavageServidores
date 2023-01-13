@@ -5,24 +5,25 @@ exports.Form_resultado = async function (interaction, client) {
   const resultChannel = interaction.guild.channels.cache.get('935958975558615100')
   let { embeds: msgEmbed, components } = interaction.message
   msgEmbed = msgEmbed[0]
-
-
+  components = components[0]
+  
   const msgInfos = {
-    discord: `<@${msgEmbed.fields.find(m => m.name.includes('ID')).value}>`,
-    servidor: await msgEmbed.fields.find(m => m.name.includes('Servidor')).value,
+    discord: `<@${msgEmbed.data.fields.find(m => m.name.includes('ID')).value}>`,
+    servidor: await msgEmbed.data.fields.find(m => m.name.includes('Servidor')).value,
     steamID: null,
-    steamLink: await msgEmbed.fields.find(m => m.name.includes('Link do Perfil')).value,
-    ajudara_mensal: msgEmbed.fields.find(m => m.name.includes('Ajudará Mensalmente?')).value,
+    steamLink: await msgEmbed.data.fields.find(m => m.name.includes('Link do Perfil')).value,
+    ajudara_mensal: msgEmbed.data.fields.find(m => m.name.includes('Ajudará Mensalmente?')).value,
     mensalMoney: {
       date: null,
       value: null
     },
-    age: await msgEmbed.fields.find(m => m.name.includes('Idade')).value,
+    age: await msgEmbed.data.fields.find(m => m.name.includes('Idade')).value,
   }
-  msgEmbed.title = 'Sendo Averiguado'
-  components[0].components[0].disabled = true
 
-  interaction.message.edit({ embeds: [msgEmbed], components: [components[0]] })
+  msgEmbed.data.title = 'Sendo Averiguado'
+  components.components[0].data.disabled = true
+
+  interaction.message.edit({ embeds: [msgEmbed], components: [components] })
 
   await interaction.guild.channels.create({
     name: `recrutando→${interaction.user.id}`,
@@ -250,9 +251,9 @@ exports.Form_resultado = async function (interaction, client) {
     if (boolError) {
       await channel.bulkDelete(50)
       channel.send('Você nao respondeu a tempo ou houve algum erro inesperado, deletando canal...')
-      components[0].components[0].disabled = false
-      msgEmbed.title = 'Novo Candidato'
-      interaction.message.edit({ components: [components[0]], embeds: [msgEmbed] })
+      components.components[0].data.disabled = false
+      msgEmbed.data.title = 'Novo Candidato'
+      interaction.message.edit({ components: [components], embeds: [msgEmbed] })
 
       return (
         setTimeout(() => {
@@ -265,7 +266,7 @@ exports.Form_resultado = async function (interaction, client) {
 
     await msg.edit({ content: '**Averiguação concluída, sala de Recrutamento sendo excluída em 10s!**', embeds: [] })
 
-    msgEmbed.title = 'Averiguado com Sucesso'
+    msgEmbed.data.title = 'Averiguado com Sucesso'
     interaction.message.edit({ embeds: [msgEmbed] })
     resultChannel.send({ components: [resultButton], embeds: [resultEmbed] })
 

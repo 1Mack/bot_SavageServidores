@@ -32,7 +32,7 @@ exports.BanirSolicitar = async function (client, interaction, nick, steamid, ser
     { name: 'Motivo', value: motivo }
   ).setFooter({ text: `Solicitado pelo ${interaction.user.username} (${interaction.user.id})` })]
   if (link) {
-    embeds[0].setDescription(`[Clique aqui para ver o vídeo](${link})`)
+    embeds[0].setDescription(`***Links disponíveis***\n\n${link}`)
   }
 
   const button = new ActionRowBuilder().addComponents(

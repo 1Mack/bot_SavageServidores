@@ -29,7 +29,7 @@ module.exports = {
             { name: 'steamid', type: ApplicationCommandOptionType.String, description: 'Steamid do player', required: true, choices: null },
             {
               name: 'cargo', type: ApplicationCommandOptionType.String, description: 'Escolha um cargo para o Set', required: true, choices: Object.keys(serverGroups).filter(
-                m => m.endsWith('p') || m == 'vip' || m == 'gerente'
+                m => m.endsWith('p') || m == 'vip' || m == 'gerente' || m == 'princesa'
               ).map(
                 m => { return { name: m, value: m } }
               )
@@ -47,7 +47,7 @@ module.exports = {
         { name: 'steamid', type: ApplicationCommandOptionType.String, description: 'Steamid do player', required: true, choices: null },
         {
           name: 'cargo', type: ApplicationCommandOptionType.String, description: 'Escolha um cargo para o Set', required: true, choices: Object.keys(serverGroups).filter(
-            m => !m.endsWith('p') && m != 'vip' && m != 'gerente'
+            m => !m.endsWith('p') && m != 'vip' && m != 'gerente' && m!= 'princesa'
           ).map(
             m => { return { name: m, value: m } }
           )
@@ -116,16 +116,20 @@ module.exports = {
 
     switch (command) {
       case 'loja':
+
         Comprado_Loja(client, interaction,
+
           interaction.options.getUser('discord'),
           interaction.options.getString('servidor').toLowerCase(),
-          interaction.options.getString('steamid') || interaction.options.getString('id_compra')
+          interaction.options.getString('steamid') ?
+            interaction.options.getString('steamid').trim() :
+            interaction.options.getString('id_compra')
         )
         break;
       case 'discord':
         Comprado(client, interaction,
           interaction.options.getUser('discord'),
-          interaction.options.getString('steamid'),
+          interaction.options.getString('steamid').trim(),
           interaction.options.getString('cargo').toLowerCase(),
           interaction.options.getInteger('tempo'),
           interaction.options.getString('servidor').toLowerCase(),
@@ -135,7 +139,7 @@ module.exports = {
       case 'staff':
         Staff(client, interaction,
           interaction.options.getUser('discord'),
-          interaction.options.getString('steamid'),
+          interaction.options.getString('steamid').trim(),
           interaction.options.getString('cargo').toLowerCase(),
           interaction.options.getString('servidor').toLowerCase(),
           interaction.options.getString('observações')
@@ -145,8 +149,9 @@ module.exports = {
         UP_Especifico(client, interaction,
           interaction.options.getString('servidor').toLowerCase(),
           interaction.options.getString('motivo'),
-          interaction.options.getUser('discord'),
-          interaction.options.getString('steamid')
+          interaction.options.getUser('discord') || interaction.options.getString('steamid') ?
+            interaction.options.getString('steamid').trim() :
+            null
         )
         break;
       case 'procurar_merecedores':
@@ -156,13 +161,13 @@ module.exports = {
         break;
       case 'creditos':
         Store_Credits(client, interaction,
-          interaction.options.getString('steamid').toLowerCase(),
+          interaction.options.getString('steamid').trim().toLowerCase(),
           interaction.options.getInteger('total_creditos')
         )
         break;
       case 'skins':
         Store_Skins(client, interaction,
-          interaction.options.getString('steamid').toLowerCase(),
+          interaction.options.getString('steamid').trim().toLowerCase(),
           interaction.options.getString('skin')
         )
         break;

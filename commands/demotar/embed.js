@@ -1,4 +1,4 @@
-const { ActionRowBuilder, EmbedBuilder, SelectMenuBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
+const { ActionRowBuilder, EmbedBuilder, StringSelectMenuBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 
 exports.MackNotTarget = function (interaction) {
   const embed = new EmbedBuilder()
@@ -92,7 +92,7 @@ exports.DemotedInfo = function (rows, user) {
 
   const selectMenu = new ActionRowBuilder()
     .addComponents(
-      new SelectMenuBuilder()
+      new StringSelectMenuBuilder()
         .setCustomId('demoted_selectMenu')
         .setMaxValues(rows.length)
         .setMinValues(1)

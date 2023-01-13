@@ -54,11 +54,11 @@ module.exports = {
       row.addComponents(new ButtonBuilder()
         .setLabel(buttonName[i] ? buttonName[i] : '')
         .setCustomId(buttonId[i])
-        .setEmoji(buttonEmoji[i] ? buttonEmoji[i] : '')
-        .setURL(buttonURL[i] ? buttonURL[i] : '')
+        .setEmoji(buttonEmoji[i] ? buttonEmoji[i] : {})
         .setDisabled(buttonDisabled ? buttonDisabled : false)
         .setStyle(buttonStyle)
       )
+      if (buttonURL[i]) row.components[i].url = buttonURL[i]
     }
 
     try {

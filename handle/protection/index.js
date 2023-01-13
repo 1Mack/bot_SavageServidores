@@ -25,7 +25,9 @@ exports.Captcha = async function (interaction, client) {
     })
   }
 
-  interaction.reply({ embeds: [ChannelCreated(interaction.user, channel)], ephemeral: true })
+  interaction.reply({ embeds: [ChannelCreated(interaction.user, channel)], ephemeral: true }).then(() => setTimeout(() => {
+    interaction.webhook.deleteMessage('@original')
+  }, 5000))
 
   let count = 0, captchaTries = 0, logChannel = await interaction.guild.channels.cache.get('770401787537522738').send({ content: `${interaction.user} iniciou o captcha` })
   await channel.bulkDelete(50)

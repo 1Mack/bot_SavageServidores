@@ -9,7 +9,7 @@ module.exports = {
   default_permission: true,
   cooldown: 10,
   async execute(client, interaction) {
-    let steamURL = interaction.options.getString('steam_url')
+    let steamURL = interaction.options.getString('steam_url').trim()
 
     if (
       ['steamcommunity.com/id/', 'steamcommunity.com/profiles/'].includes(steamURL) &&

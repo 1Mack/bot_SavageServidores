@@ -32,13 +32,17 @@ module.exports = {
 
     if (!steamid && !discord) return interaction.followUp('Você deve fornecer a steamid ou o discord').then(() => setTimeout(() => interaction.deleteReply(), 10000));
 
-    if (steamid && steamid.startsWith('STEAM_0')) {
-      steamid = steamid.replace('STEAM_0', 'STEAM_1');
+    if (steamid) {
+      if (steamid.startsWith('STEAM_0')) {
+        steamid = steamid.trim().replace('STEAM_0', 'STEAM_1');
+      } else {
+        steamid = steamid.trim()
+      }
+
+      if (steamid == 'STEAM_1:1:79461554' && interaction.user.id !== '323281577956081665')
+        return interaction.followUp({ embeds: [MackNotTarget(interaction)] }).then(() => setTimeout(() => interaction.deleteReply(), 10000));
+
     }
-
-    if (steamid && steamid == 'STEAM_1:1:79461554' && interaction.user.id !== '323281577956081665')
-      return interaction.followUp({ embeds: [MackNotTarget(interaction)] }).then(() => setTimeout(() => interaction.deleteReply(), 10000));
-
 
     const con = connection2.promise();
     let rows
@@ -86,7 +90,7 @@ module.exports = {
     const discordUser = rows.find(dc => dc.discordID != null) || { discordID: discord.id }
 
     let msgFunction;
-    
+
     msgFunction = DemotedInfo(serversInfosFound, steamid)
 
     let msg = await interaction.followUp({ embeds: [msgFunction.embed], components: [msgFunction.selectMenu] })
@@ -157,8 +161,8 @@ module.exports = {
                             1, 8), 
                             ''
                       ) AND (${serversInfosFound.map(server =>
-                        `server_id = '${server.serverFind ? server.serverFind.serverNumber : server.row.server_id}' and flags = '${serverGroups[server.cargo].value}'`
-                      ).join(' or ')})
+                    `server_id = '${server.serverFind ? server.serverFind.serverNumber : server.row.server_id}' and flags = '${serverGroups[server.cargo].value}'`
+                  ).join(' or ')})
                     ) as c
                   )
               `)

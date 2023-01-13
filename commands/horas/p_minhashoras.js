@@ -50,7 +50,9 @@ module.exports = {
     if (serversFormatDisplay.length > 0) {
       interaction.reply({ embeds: [minhasHorasEmbed(serversFormatDisplay, interaction.user.username)] })
     } else {
-      interaction.reply({ content: 'Nenhuma hora encontrada!!', ephemeral: true })
+      interaction.reply({ content: 'Nenhuma hora encontrada!!', ephemeral: true }).then(() => setTimeout(() => {
+        interaction.webhook.deleteMessage('@original')
+      }, 5000))
     }
   },
 };

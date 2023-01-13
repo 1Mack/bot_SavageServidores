@@ -30,8 +30,7 @@ exports.HorasDemotarConfirm = async function (user, message, client) {
   }
 
   await con2.query(`delete from Cargos where playerid regexp '${infos.steamid.slice(8)}'
-    and server_id = '${serversInfosFound.serverNumber}'`);
-  await con.query(`delete from mostactive_${infos.servidor} where steamid regexp '${infos.steamid.slice(8)}'`).catch(() => { })
+    and server_id = '${serversInfosFound.serverNumber}' and flags NOT REGEXP ('t') OR flags = 'a/b/c/d/f/g/h/i/j/k/m/s/o/t' `);
 
   const logDemoted = new EmbedBuilder()
     .setColor('#0099ff')
@@ -86,7 +85,7 @@ exports.HorasDemotarConfirm = async function (user, message, client) {
       .setColor('ff0000')
       .setTitle('***Staff Demotado***')
       .addFields(
-        { name: 'Jogador', value: fetchUser.user.toString() || infos.name.toString() },
+        { name: 'Jogador', value: fetchUser ? fetchUser.user.toString() : infos.name.toString() },
         { name: 'Cargo', value: infos.cargo.toString().toUpperCase() },
         { name: 'Servidor', value: infos.servidor.toString().toUpperCase() }
       )

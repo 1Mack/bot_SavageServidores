@@ -7,7 +7,10 @@ const chalk = require('chalk');
 
 exports.Desbanir = async function (client, interaction, steamid, motivo) {
 
-  if (!interaction.member.roles.cache.has('778273624305696818')) return interaction.reply({ content: 'voce nao pode usar esse comando', ephemeral: true })
+  if (!interaction.member.roles.cache.has('778273624305696818'))
+    return interaction.reply({ content: 'voce nao pode usar esse comando', ephemeral: true }).then(() => setTimeout(() => {
+      interaction.webhook.deleteMessage('@original')
+    }, 5000))
 
   let timeNow = Date.now();
   timeNow = Math.floor(timeNow / 1000);
@@ -34,17 +37,25 @@ exports.Desbanir = async function (client, interaction, steamid, motivo) {
 
   serversInfos.forEach(m => {
     m.identifier.forEach(id => {
-      try {
-        axios.post(`https://panel.mjsv.us/api/client/servers/${id}/command`,
-          JSON.stringify({ command: `removeid STEAM_1:${steamid.slice(8)}; removeid STEAM_0:${steamid.slice(8)}` }),
-          {
-            headers: {
-              'Content-Type': 'application/json',
-              'Accept': 'application/json',
-              'Authorization': `Bearer ${panelApiKey.api}`,
-            }
-          })
-      } catch { }
+      axios.post(`https://panel.mjsv.us/api/client/servers/${id}/command`,
+        JSON.stringify({ command: `removeid STEAM_1:${steamid.slice(8)}` }),
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${panelApiKey.api}`,
+          }
+        }).catch(() => { })
+
+      axios.post(`https://panel.mjsv.us/api/client/servers/${id}/command`,
+        JSON.stringify({ command: `removeid STEAM_0:${steamid.slice(8)}` }),
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${panelApiKey.api}`,
+          }
+        }).catch(() => { })
     })
   })
 

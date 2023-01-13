@@ -18,13 +18,17 @@ module.exports = {
 
     if (steamid) {
       if (steamid.startsWith('STEAM_0')) {
-        steamid = steamid.replace('0', '1');
+        steamid = steamid.trim().replace('0', '1');
+      } else {
+        steamid = steamid.trim()
       }
     }
     const serversInfosFound = serversInfos.find(m => m.serverNumber == servidor);
 
     if (!interaction.member._roles.find(m => m == serversInfosFound.gerenteRole))
-      return interaction.reply({ embeds: [GerenteError(interaction)], ephemeral: true })
+      return interaction.reply({ embeds: [GerenteError(interaction)], ephemeral: true }).then(() => setTimeout(() => {
+        interaction.webhook.deleteMessage('@original')
+      }, 5000))
 
     let rows;
     const con = connection2.promise();
@@ -36,12 +40,16 @@ module.exports = {
       );
     } catch (error) {
       return (
-        interaction.reply({ embeds: [InternalServerError(interaction)], ephemeral: true }),
+        interaction.reply({ embeds: [InternalServerError(interaction)], ephemeral: true }).then(() => setTimeout(() => {
+          interaction.webhook.deleteMessage('@original')
+        }, 5000)),
         console.error(chalk.redBright('Erro no Select'), error)
       );
     }
     if (rows == '') {
-      return interaction.reply({ embeds: [SteamIdNotFound(interaction, steamid)], ephemeral: true })
+      return interaction.reply({ embeds: [SteamIdNotFound(interaction, steamid)], ephemeral: true }).then(() => setTimeout(() => {
+        interaction.webhook.deleteMessage('@original')
+      }, 5000))
     }
 
     await interaction.deferReply()
@@ -77,7 +85,7 @@ module.exports = {
       logStaffFind.addFields(
         rows[i]
       )
-      
+
       if (logStaffFind.data.fields.length == 24 || i == rows.length - 1) {
         await interaction.user.send({ embeds: [logStaffFind] });
         logStaffFind.data.fields = []

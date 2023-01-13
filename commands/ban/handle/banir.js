@@ -4,7 +4,10 @@ const chalk = require('chalk');
 
 exports.BanirTemp = async function (client, interaction, nick, steamid, tempo, reason, userDiscord) {
 
-  if (!interaction.member.roles.cache.has('778273624305696818')) return interaction.reply({ content: 'voce nao pode usar esse comando', ephemeral: true })
+  if (!interaction.member.roles.cache.has('778273624305696818'))
+    return interaction.reply({ content: 'voce nao pode usar esse comando', ephemeral: true }).then(() => setTimeout(() => {
+      interaction.webhook.deleteMessage('@original')
+    }, 5000))
 
   if (steamid.startsWith('STEAM_0')) {
     steamid = steamid.replace('0', '1');
@@ -34,10 +37,12 @@ exports.BanirTemp = async function (client, interaction, nick, steamid, tempo, r
 
     await con.query(sqlBans, [SqlBan_VALUES]);
 
-    client.channels.cache.get('721854111741509744').send({ embeds: [Banlog(nick, steamid, tempo, reason, interaction.user)] });
-    await interaction.reply({ embeds: [BanSucess(interaction.user, nick, steamid)] }).then(() => setTimeout(() => interaction.deleteReply(), 10000));
+
   } catch (error) {
     interaction.channel.send({ embeds: [BanError(interaction.user)] }).then(() => setTimeout(() => interaction.deleteReply(), 10000));
-    console.error(chalk.redBright('Erro no Banimento'), error);
+    return console.error(chalk.redBright('Erro no Banimento'), error);
   }
+
+  interaction.guild.channels.cache.get('721854111741509744').send({ embeds: [Banlog(nick, steamid, tempo, reason, interaction.user)] });
+  await interaction.reply({ embeds: [BanSucess(interaction.user, nick, steamid)] }).then(() => setTimeout(() => interaction.deleteReply(), 10000));
 };

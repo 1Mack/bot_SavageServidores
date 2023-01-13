@@ -9,7 +9,7 @@ module.exports = {
   cooldown: 30,
   async execute(client, interaction) {
 
-    let sugestao = interaction.options.getString('sugestao')
+    let sugestao = interaction.options.getString('sugestao').trim()
 
 
 
@@ -20,7 +20,9 @@ module.exports = {
         await message.react('778432828148023297')
         await message.react('778432818862227526')
       });
-    interaction.reply({ content: '<a:right_savage:856211226300121098> **Sugestão enviada com sucesso!**', ephemeral: true })
+    interaction.reply({ content: '<a:right_savage:856211226300121098> **Sugestão enviada com sucesso!**', ephemeral: true }).then(() => setTimeout(() => {
+      interaction.webhook.deleteMessage('@original')
+    }, 5000))
 
   },
 };

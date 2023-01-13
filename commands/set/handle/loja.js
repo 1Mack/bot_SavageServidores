@@ -18,8 +18,9 @@ exports.Comprado_Loja = async function (client, interaction, discord, servidor, 
     msg.embeds[0].fields.find(f => f.name.includes('Resgatado'))
   )
 
-  if (embedLogCompra.size == 0) return interaction.reply({ content: 'Não encontrei nenhum registro!', ephemeral: true })
-
+  if (embedLogCompra.size == 0) return interaction.reply({ content: 'Não encontrei nenhum registro!', ephemeral: true }).then(() => setTimeout(() => {
+    interaction.webhook.deleteMessage('@original')
+  }, 5000))
 
   let cont = 0
 
@@ -126,32 +127,34 @@ exports.Comprado_Loja = async function (client, interaction, discord, servidor, 
               await Desbanir(client, interaction, steamid, 'comprou unban')
             }
           } else {
-            pacote = pacote.replace(/[()]/g, '').split(' ')
+            let newPacote = pacote.replace(/[()]/g, '').split(' ')
+            
             let cargo = { allServers: false }
 
-            if (pacote[0] == '[TODOS]') {
+            if (pacote.toLowerCase().includes('todos') ) {
               cargo.allServers = true
               cargo.cargo = Object.keys(serverGroups).find(m => {
-                if (pacote[1].includes('+')) {
-                  return pacote[1].replace('+', 'PLUSP') == m.toUpperCase()
+                if (newPacote[0].includes('+')) {
+                  return newPacote[0].replace('+', 'PLUSP') == m.toUpperCase()
                 } else {
-                  return pacote[1] + 'P' == m.toUpperCase()
+                  return newPacote[0] + 'P' == m.toUpperCase()
                 }
               })
-              cargo.tempo = pacote[2]
+              cargo.tempo = newPacote[1]
 
             } else {
               cargo.cargo = Object.keys(serverGroups).find(m => {
-                if (pacote[0].includes('+')) {
-                  return pacote[0].replace('+', 'PLUSP') == m.toUpperCase()
+                if (newPacote[0].includes('+')) {
+                  return newPacote[0].replace('+', 'PLUSP') == m.toUpperCase()
                 } else {
-                  return pacote[0] + 'P' == m.toUpperCase()
+                  return newPacote[0] + 'P' == m.toUpperCase()
                 }
               })
-              cargo.tempo = pacote[1]
+              cargo.tempo = newPacote[1]
             }
 
             cargo.flags = serverGroups[cargo.cargo]
+            
 
             let serversInfosFound = serversInfos.find(sv => sv.name == servidor)
             if (!cargo.allServers) {
@@ -167,7 +170,7 @@ exports.Comprado_Loja = async function (client, interaction, discord, servidor, 
               }
             }
             let findRow = rows ? rows.find(row => Object.keys(serverGroups).find(key => serverGroups[key].value === row.flags) == cargo.cargo) : undefined
-
+            
             try {
               if (!cargo.allServers && findRow && findRow.server_id == serversInfosFound.serverNumber) {
                 await con.query(
@@ -225,6 +228,7 @@ exports.Comprado_Loja = async function (client, interaction, discord, servidor, 
           msgAsk.edit({ content: '***Setado/Resolvido com sucesso!!***', embeds: [], components: [] }).then(m => setTimeout(() => {
             m.delete()
           }, 5000))
+          interaction.channel.send(`**<@${interaction.channel.topic}> | Você acabou de receber o seu plano. Caso tenha comprado cargo de staff, não se esqueça de olhar as <#714319209580199946> e os <#592397300991655940>**`)
         })
     })
 }

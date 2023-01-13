@@ -1,6 +1,6 @@
 const { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType } = require('discord.js')
 const { TicketCreate } = require('../../ticket/Create_Ticket')
-const { FormCreate } = require('../../formulario/Create_Form')
+const { FormCreate } = require('../../formulario/index')
 const { TicketClosed, TicketOpened, TicketDeleting, TicketLog, ticketActionsEmbed } = require('../../ticket/embed');
 const { Save } = require('../../ticket/Save_Ticket');
 const { Diretor_DemotarConfirm } = require('../../../commands/demotar/handle');
@@ -21,7 +21,11 @@ const functionCargos = {
   },
   async 'lock'(interaction, client) {
     //lock
-    if (!interaction.member.roles.cache.has('711022747081506826') && !interaction.member.roles.cache.has('722814929056563260')) return interaction.reply({ content: 'Você não tem permissão para fechar o ticket', ephemeral: true });
+    if (!interaction.member.roles.cache.has('711022747081506826') && !interaction.member.roles.cache.has('722814929056563260'))
+      return interaction.reply({ content: 'Você não tem permissão para fechar o ticket', ephemeral: true }).then(() => setTimeout(() => {
+        interaction.webhook.deleteMessage('@original')
+      }, 5000))
+
     const rows = new ActionRowBuilder()
       .addComponents(
         new ButtonBuilder()
@@ -40,7 +44,7 @@ const functionCargos = {
 
     interaction.guild.members.cache.get(interaction.channel.topic).send({
       embeds: [ticketActionsEmbed('fechado', interaction.user.username, interaction.channel)]
-    })
+    }).catch(() => { })
 
 
     interaction.channel.permissionOverwrites.edit(interaction.channel.topic, {
@@ -52,11 +56,14 @@ const functionCargos = {
     //unlock
     let userFind = interaction.guild.members.cache.find((m) => m.id == interaction.user.id);
 
-    if (userFind._roles.filter((m) => m == '722814929056563260' || m == '603318536798077030') == '') return interaction.reply({ content: 'Você não tem permissão para abrir o ticket', ephemeral: true });
+    if (userFind._roles.filter((m) => m == '722814929056563260' || m == '603318536798077030') == '')
+      return interaction.reply({ content: 'Você não tem permissão para abrir o ticket', ephemeral: true }).then(() => setTimeout(() => {
+        interaction.webhook.deleteMessage('@original')
+      }, 5000))
 
     interaction.guild.members.cache.get(interaction.channel.topic).send({
       embeds: [ticketActionsEmbed('aberto', interaction.user.username, interaction.channel)]
-    })
+    }).catch(() => { })
 
     await interaction.channel.permissionOverwrites.edit(interaction.channel.topic, {
       ViewChannel: true,
@@ -78,7 +85,10 @@ const functionCargos = {
   },
   async 'delete'(interaction, client) {
     //delete
-    if (interaction.user.id !== '323281577956081665') return interaction.reply({ content: 'Você não tem permissão para excluir o ticket', ephemeral: true }); //Mack
+    if (interaction.user.id !== '323281577956081665')
+      return interaction.reply({ content: 'Você não tem permissão para excluir o ticket', ephemeral: true }).then(() => setTimeout(() => {
+        interaction.webhook.deleteMessage('@original')
+      }, 5000))
 
     interaction.update({ components: [] })
 
@@ -168,7 +178,7 @@ const functionCargos = {
 
     const member = interaction.guild.members.cache.get(interaction.message.embeds[0].fields.find(f => f.name.includes('Discord')).value.replace(/[<@>]/g, ''))
 
-    member.send(`**Você foi reprovado pelo ${interaction.user.username} na hora da setagem!**\n[Qualquer dúvida abra um ticket](https://discord.com/channels/${guildsInfo.main}/855200110685585419/927000168933511219)`)
+    member.send(`**Você foi reprovado pelo ${interaction.user.username} na hora da setagem!**\n[Qualquer dúvida abra um ticket](https://discord.com/channels/${guildsInfo.main}/855200110685585419/927000168933511219)`).catch(() => { })
 
     member.roles.set(member._roles.filter(m => m != member.roles.cache.get(interaction.member.guild.roles.cache.get())))
 
@@ -187,15 +197,39 @@ const functionCargos = {
     Solicitado_banirCancelar(interaction, client, 'banidoSolicitado')
   },
   'telando_banir'(interaction, client) {
-    if (!interaction.member._roles.includes('800826968417108028')) return;
+    if (!interaction.member._roles.includes('800826968417108028'))
+      return interaction.reply({ content: 'Somente quem tem a tag de telador pode clicar nesse botão', ephemeral: true }).then(() => setTimeout(() => {
+        interaction.webhook.deleteMessage('@original')
+      }, 5000))
+
 
     Telando_handle_ban(interaction)
   },
   'telando_cancelar'(interaction, client) {
-    if (!interaction.member._roles.includes('800826968417108028')) return;
+    if (!interaction.member._roles.includes('800826968417108028'))
+      return interaction.reply({ content: 'Somente quem tem a tag de telador pode clicar nesse botão', ephemeral: true }).then(() => setTimeout(() => {
+        interaction.webhook.deleteMessage('@original')
+      }, 5000))
 
     Telando_handle_cancel(interaction)
-  }
+  },
+  /* 'acharInativosStaff'(interaction, client) {
+
+    const fs = require('fs');
+    let data = JSON.parse(fs.readFileSync('./cache.json', { encoding: 'utf8' }))
+
+    if (!data.find(m => m == interaction.user.id)) {
+      interaction.guild.channels.cache.get('951236136678871040').send(`${interaction.user} clicou no botao de nv`)
+      return interaction.reply(`${interaction.user} |Voce não esta na database ou ja clicou no botão!`)
+    }
+
+    let findData = data.filter(m => m != interaction.user.id)
+
+    fs.writeFileSync('./cache.json', JSON.stringify(findData))
+
+    interaction.reply({ content: `${interaction.user} | Voce clicou com sucesso e nao sera demotado!`, ephemeral: true })
+    interaction.guild.channels.cache.get('951236136678871040').send(`${interaction.user} se registrou`)
+  } */
 };
 
 

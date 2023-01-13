@@ -61,15 +61,15 @@ module.exports = {
                 where (flags not REGEXP 't' or flags = 'a/b/c/d/f/g/h/i/j/k/m/s/o/t')
                 and server_id = '${serversInfosFound.serverNumber}'`
       );
+      [result] = await con.query(
+        `select * from mostactive_${servidor}
+              where (total < '72000' OR total IS NULL) and steamid regexp '(${result2.map((m) => m.playerid.slice(8)).join('|')})'`
+      );
     } catch (error) {
 
     }
 
-    [result] = await con.query(
-      `select * from mostactive_${servidor}
-            where (total < '72000' OR total IS NULL) and (${result2.map((m) => `steamid regexp '${m.playerid.slice(8)}'`).join(' or ')})`
-    );
-    if (result2 == '') {
+    if (result == '') {
       return (
         await msg.edit({ content: 'Não achei ninguém com hora menor!! Deletando canal' }),
         await wait(6000),
@@ -79,8 +79,9 @@ module.exports = {
 
 
     let outloop
+    const logGuildDemotarConfirm = await client.guilds.cache.get(guildsInfo.log).channels.cache.get('914623602186395778')
+
     for (let i in result) {
-      const logGuildDemotarConfirm = await client.guilds.cache.get(guildsInfo.log).channels.cache.get('914623602186395778')
 
       const logGuildDemotarConfirmMessages = await logGuildDemotarConfirm.messages.fetch().then(m =>
         m.find(m => m.embeds[0].fields.find(a => a.name == 'DiscordID' && a.value == result[i].discord_id) && m.embeds[0].footer.text == servidor)

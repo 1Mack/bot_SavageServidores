@@ -175,9 +175,8 @@ exports.LogAprovadoChannel = function (user, fetchUser, result) {
 exports.logInfos = function (fetchUser, result) {
   const embed = new EmbedBuilder()
     .setColor('36393f')
-    .setTitle(fetchUser.username)
+    .setTitle(typeof fetchUser == 'object' ? `${fetchUser.username} (${fetchUser.id})` : fetchUser.toString())
     .addFields(
-      { name: 'ID', value: fetchUser.id },
       { name: 'Nome', value: result[0].awnser },
       { name: 'Idade', value: result[1].awnser },
       { name: 'STEAM', value: result[2].awnser },

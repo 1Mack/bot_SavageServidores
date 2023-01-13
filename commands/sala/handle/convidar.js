@@ -32,7 +32,9 @@ exports.Sala_Convidar = async function (interaction, client, discordMention) {
         .then(() => setTimeout(() => interaction.deleteReply(), 10000));
     }
 
-    interaction.reply({ content: `<a:right_savage:856211226300121098> **O ${discordMention.username} foi convidado com sucesso!**`, ephemeral: true })
+    interaction.reply({ content: `<a:right_savage:856211226300121098> **O ${discordMention.username} foi convidado com sucesso!**`, ephemeral: true }).then(() => setTimeout(() => {
+      interaction.webhook.deleteMessage('@original')
+    }, 5000))
       ||
       interaction.editReply({ content: `<a:right_savage:856211226300121098> **O ${discordMention.username} foi convidado com sucesso!**` })
         .then(() => interaction.deleteReply(), 10000)

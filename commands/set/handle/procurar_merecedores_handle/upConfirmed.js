@@ -2,16 +2,16 @@ const { EmbedBuilder } = require('discord.js');
 const { connection2 } = require('../../../../configs/config_privateInfos');
 const { serversInfos, serverGroups, guildsInfo } = require('../../../../configs/config_geral');
 
-
 exports.UpConfirmed = async function (message, client, reactionPerson) {
   let servidor = message.embeds[0].footer.text,
     cargo = Object.keys(serverGroups)[Object.keys(serverGroups).indexOf(message.embeds[0].fields.find(m => m.name.includes('Cargo')).value) - 2],
+    oldRole = serverGroups[message.embeds[0].fields.find(m => m.name.includes('Cargo')).value].value,
     discord_id = message.embeds[0].fields.find(m => m.name.includes('DiscordID')).value.replace(/[<@>]/g, ''),
     discordName = message.embeds[0].title,
     steamid = message.embeds[0].fields.find(m => m.name.includes('Steamid')).value,
     upReason = message.embeds[0].fields.find(m => m.name.includes('Motivo')).value,
     suggestedBy = message.embeds[0].fields.find(m => m.name.includes('Sugerido')).value
-
+  cargo == 'gerente' ? cargo = 'supervisor' : cargo
   if (cargo == undefined) {
     return (message.edit({ content: `Esse staff já esta no cargo mais alto possível ou ele não tem set no servidor ${servidor}`, embeds: [], components: [] }).then(m => setTimeout(() => {
       m.delete()
@@ -46,12 +46,8 @@ exports.UpConfirmed = async function (message, client, reactionPerson) {
     }))
   )
 
-  let dataInicial = Date.now();
-  dataInicial = Math.floor(dataInicial / 1000);
-
-
   await con.query(`update Cargos set flags = '${serverGroups[cargo].value}' where playerid regexp '${steamid.slice(8)}'
-    and server_id = '${serversInfosFound.serverNumber}'`);
+    and server_id = '${serversInfosFound.serverNumber}' AND flags = '${oldRole}'`);
 
   /*  if (!serverGroups[cargo].value.endsWith('p') && serverGroups[cargo].value != 'vip' && serversInfosFound) {
      await con.query(
