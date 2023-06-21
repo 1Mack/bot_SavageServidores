@@ -1,5 +1,5 @@
 const { InteractionType } = require('discord.js');
-const { functionCargos } = require('../handle/extras/buttons/roles')
+const { functionCargos } = require('../handle/extras/buttons')
 
 module.exports = {
   name: 'interactionCreate',

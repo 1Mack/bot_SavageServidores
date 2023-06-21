@@ -1,9 +1,8 @@
-const { connection, panelApiKey } = require('../../../configs/config_privateInfos');
+const { connection } = require('../../../configs/config_privateInfos');
 const { DesbanLog, PlayerNotFound } = require('./embed');
-const axios = require('axios').default
-const { serversInfos } = require('../../../configs/config_geral');
 const { InternalServerError } = require('../../../embed/geral');
 const chalk = require('chalk');
+const { Desbanir_handle } = require('./desbanirHandle/desbanir_handle');
 
 exports.Desbanir = async function (client, interaction, steamid, motivo) {
 
@@ -12,51 +11,45 @@ exports.Desbanir = async function (client, interaction, steamid, motivo) {
       interaction.webhook.deleteMessage('@original')
     }, 5000))
 
-  let timeNow = Date.now();
-  timeNow = Math.floor(timeNow / 1000);
+  if (steamid['erro']) return interaction.reply({ content: steamid.erro, ephemeral: true })
 
-  const con = connection.promise();
+  const findMSG = await client.guilds.cache.get('792575394271592458').channels.cache.get('1057353383335444532').messages.fetch().then(msgs =>
+    msgs.find(msg => msg.embeds[0].data.fields.find(f => f.name.includes('Steamid')).value == steamid)
+  )
 
+  if (findMSG) return interaction.reply({ content: 'Esse jogador já está na log aguardando ser averiguado!!' }).then(() => setTimeout(() => interaction.deleteReply(), 8000));
+
+
+  const con = connection.promise()
+  let rows
   try {
-    let [rows] = await con.query(
-      `SELECT authid, RemoveType from sb_bans WHERE authid regexp "${steamid.slice(8)}" AND RemovedOn is null`
+
+    [rows] = await con.query(
+      `SELECT bid, authid FROM sb_bans WHERE authid REGEXP "${steamid.slice(8)}" AND RemovedOn IS NULL ORDER BY bid DESC`
     );
 
     if (rows == '') {
       return interaction.reply({ embeds: [PlayerNotFound(interaction)] }).then(() => setTimeout(() => interaction.deleteReply(), 8000));
     }
-    await con.query(
-      `UPDATE sb_bans SET RemovedBy = 22, RemoveType = "U", RemovedOn = ${timeNow}, ureason = "${motivo}" WHERE authid regexp "${steamid.slice(8)}"`
-    );
-    client.channels.cache.get('721854111741509744').send({ embeds: [DesbanLog(steamid, motivo, interaction)] });
-    interaction.reply({ embeds: [DesbanLog(steamid, motivo, interaction)] }).then(() => setTimeout(() => interaction.deleteReply(), 8000));
   } catch (error) {
     interaction.reply({ embeds: [InternalServerError(interaction)] }).then(() => setTimeout(() => interaction.deleteReply(), 8000));
-    console.error(chalk.redBright('Erro no Desbanir'), error);
+    return console.error(chalk.redBright('Erro no Desbanir'), error);
   }
 
-  serversInfos.forEach(m => {
-    m.identifier.forEach(id => {
-      axios.post(`https://panel.mjsv.us/api/client/servers/${id}/command`,
-        JSON.stringify({ command: `removeid STEAM_1:${steamid.slice(8)}` }),
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': `Bearer ${panelApiKey.api}`,
-          }
-        }).catch(() => { })
+  const desbanLog = DesbanLog(steamid, motivo, interaction, rows[0].bid)
 
-      axios.post(`https://panel.mjsv.us/api/client/servers/${id}/command`,
-        JSON.stringify({ command: `removeid STEAM_0:${steamid.slice(8)}` }),
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': `Bearer ${panelApiKey.api}`,
-          }
-        }).catch(() => { })
-    })
-  })
+  if (interaction.member.roles.cache.has('780582159731130378') || interaction.member.roles.cache.has('603318536798077030')) {
 
+    let msg = await client.guilds.cache.get('792575394271592458').channels.cache.get('1057353383335444532').send({ embeds: [desbanLog.embed] });
+
+    return Desbanir_handle(client, interaction, msg, steamid, motivo, rows[0].bid)
+
+
+  } else {
+
+    await client.guilds.cache.get('792575394271592458').channels.cache.get('1057353383335444532').send({ embeds: [desbanLog.embed], components: [desbanLog.button] });
+    return interaction.reply({ content: 'Unban enviado para análise!', ephemeral: true }).then(() => setTimeout(() => {
+      interaction.webhook.deleteMessage('@original')
+    }, 5000))
+  }
 };

@@ -1,15 +1,21 @@
-const { Client, Collection, GatewayIntentBits } = require('discord.js');
+const { Client, Collection, GatewayIntentBits, IntentsBitField, Partials } = require('discord.js');
 const client = new Client(
   {
-    partials: ['MESSAGE', 'CHANNEL', 'REACTION'],
-    intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.GuildVoiceStates, GatewayIntentBits.GuildMembers, GatewayIntentBits.MessageContent]
+    partials: [Partials.Message, Partials.Channel],
+    intents: [
+      GatewayIntentBits.Guilds,
+      GatewayIntentBits.GuildMessages,
+      GatewayIntentBits.GuildVoiceStates,
+      GatewayIntentBits.GuildMembers,
+      GatewayIntentBits.MessageContent,
+      GatewayIntentBits.DirectMessages,
+    ]
   }
 );
 const fs = require('fs');
 const { botConfig } = require('./configs/config_privateInfos');
 const { REST } = require('@discordjs/rest');
 const { Routes } = require('discord-api-types/v9');
-const { RunStore } = require('./handle/checks/store/checkStore');
 const { guildsInfo } = require('./configs/config_geral');
 
 const commandFolders = fs.readdirSync('./commands');
@@ -67,6 +73,5 @@ const rest = new REST({ version: '9' }).setToken(botConfig.token);
   }
 })();
 
-RunStore()
 
 client.login(botConfig.token);

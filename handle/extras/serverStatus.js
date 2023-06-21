@@ -3,12 +3,12 @@ const { EmbedBuilder } = require('discord.js')
 
 exports.ServerStatus = async function (client) {
 
-  return axios.get('http://131.196.196.194:22500/servers').then(({ data }) => {
+  return axios.get('API_INTERNA').then(({ data }) => {
 
     const newData = data.flatMap(m => m.serversInfos).sort(function (a, b) { return a.name.split(' ', 3)[2].replace('#', '') - b.name.split(' ', 3)[2].replace('#', '') })
 
     let embedFormat = newData.map((m, i) => {
-      return `***${m.name.slice(0, m.name.indexOf('|'))}*** \n\n**Mapa:** ${m.map}\n**Players:** ${m.players}/${m.playersTotal}\n**IP:** steam://connect/${m.ip}${i + 1 == newData.length ? '' : '\n▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂\n\n'}`
+      return `***${m.name.slice(0, m.name.indexOf('|'))}*** \n\n**Mapa:** ${m.map}\n**Players:** ${m.players}/${m.playersTotal}\n**IP:** [${m.ip}](https://conectar.savageservidores.com/${m.ip})${i + 1 == newData.length ? '' : '\n▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂\n\n'}`
     })
 
 

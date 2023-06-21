@@ -13,7 +13,7 @@ module.exports = {
   default_permission: false,
   cooldown: 0,
   async execute(client, interaction) {
-    let steamid = interaction.options.getString('steamid'),
+    let steamid = interaction.options.getString('steamid').replace(/[^a-zA-Z_:0-9]/g, ''),
       servidor = interaction.options.getString('servidor').toLowerCase()
 
     if (steamid) {

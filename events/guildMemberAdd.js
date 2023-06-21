@@ -61,5 +61,15 @@ module.exports = {
         .setURL('https://steam.savageservidores.com'),
     )
     member.send({ embeds: [embedPrivateMSG], components: [button] }).catch(() => { })
+    try {
+      member.roles.add('924729364032155739')
+    } catch (err) {
+      try {
+        (await member.guild.members.fetch(member.id)).roles.add('924729364032155739')
+
+      } catch (error) {
+
+      }
+    }
   },
 };

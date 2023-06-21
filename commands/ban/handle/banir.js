@@ -9,6 +9,8 @@ exports.BanirTemp = async function (client, interaction, nick, steamid, tempo, r
       interaction.webhook.deleteMessage('@original')
     }, 5000))
 
+  if (steamid['erro']) return interaction.reply({ content: steamid.erro, ephemeral: true })
+
   if (steamid.startsWith('STEAM_0')) {
     steamid = steamid.replace('0', '1');
   }
@@ -32,14 +34,14 @@ exports.BanirTemp = async function (client, interaction, nick, steamid, tempo, r
   }
 
   try {
-    let sqlBans = 'INSERT INTO sb_bans (ip, authid, name, created, ends, length, reason, aid, sid, country, type) VALUES ?',
-      SqlBan_VALUES = [[`${result.ip}`, `${steamid}`, `${nick}`, timeNow, timeEnd, tempo, reason, 22, 0, null, 0]];
+    let sqlBans = 'INSERT INTO sb_bans (ip, authid, name, created, ends, length, reason, aid, sid, type) VALUES ?',
+      SqlBan_VALUES = [[`${result.ip}`, `${steamid}`, `${nick}`, timeNow, timeEnd, tempo, reason, 22, 0, 0]];
 
     await con.query(sqlBans, [SqlBan_VALUES]);
 
 
   } catch (error) {
-    interaction.channel.send({ embeds: [BanError(interaction.user)] }).then(() => setTimeout(() => interaction.deleteReply(), 10000));
+    interaction.reply({ embeds: [BanError(interaction.user)], ephemeral: true }).then(() => setTimeout(() => interaction.webhook.deleteMessage('@original'), 10000));
     return console.error(chalk.redBright('Erro no Banimento'), error);
   }
 

@@ -12,6 +12,9 @@ const { CheckDatabaseRole } = require('../../../handle/checks/checkDatabaseRole'
 
 exports.Comprado = async function (client, interaction, discord1, steamid, cargo, tempo, servidor, extra) {
 
+  if (steamid['erro']) return interaction.reply({ content: steamid.erro, ephemeral: true })
+
+
   await interaction.deferReply()
 
   try {

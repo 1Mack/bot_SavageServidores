@@ -3,6 +3,9 @@ const { connection } = require('../../../configs/config_privateInfos');
 
 exports.Store_Credits = async function (client, interaction, steamid, credits) {
 
+  if (steamid['erro']) return interaction.reply({ content: steamid.erro, ephemeral: true })
+
+
   if (interaction.user.id !== '323281577956081665') return interaction.reply({ content: 'Você não pode usar esse comando!', ephemeral: true })
 
   let row;

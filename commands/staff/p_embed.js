@@ -11,8 +11,9 @@ module.exports = {
     { name: 'description', type: ApplicationCommandOptionType.String, description: 'Descrição', required: false, choices: null },
     { name: 'image', type: ApplicationCommandOptionType.String, description: 'Link da imagem', required: false, choices: null },
     { name: 'reactions', type: ApplicationCommandOptionType.String, description: 'Reações para adicionar. Tem que por espaço entre as reações junto com vírgula, exemplo → 👍, 😋', required: false, choices: null },
-    { name: 'footer', type: ApplicationCommandOptionType.String, description: 'Texto no rodapé', required: false, choices: null },
+    { name: 'footer', type: ApplicationCommandOptionType.String, description: 'Texto no rodapé → Texto;url', required: false, choices: null },
     { name: 'timestamp', type: ApplicationCommandOptionType.Boolean, description: 'Adicionar hora?', required: false, choices: null },
+    { name: 'thumbnail', type: ApplicationCommandOptionType.String, description: 'Adicionar thumbnail?', required: false, choices: null },
 
   ],
   default_permission: false,
@@ -24,7 +25,8 @@ module.exports = {
       image = interaction.options.getString('image'),
       reactions = interaction.options.getString('reactions'),
       footer = interaction.options.getString('footer'),
-      timestamp = interaction.options.getBoolean('timestamp')
+      timestamp = interaction.options.getBoolean('timestamp'),
+      thumbnail = interaction.options.getString('thumbnail')
 
 
     if (!title && !description && !image) {
@@ -48,10 +50,26 @@ module.exports = {
       }
     }
     if (footer) {
-      embed.setFooter({ text: footer });
+      footer = footer.split(';')
+      if(footer.length == 2) {
+        if(footer[1].includes('http') || footer[1].includes('https')){
+          embed.setFooter({ text: footer[0], iconURL: footer[1] });
+        }
+      }else {
+         if(footer[0].includes('http') || footer[0].includes('https')){
+          embed.setFooter({ iconURL: footer[0] });
+        }else {
+          embed.setFooter({ text: footer[0] });
+        }
+      }
     }
     if (timestamp) {
       embed.setTimestamp();
+    }
+    if (thumbnail) {
+      if (thumbnail.includes('http') || thumbnail.includes('https')) {
+        embed.setThumbnail(thumbnail);
+      }
     }
     try {
       if (reactions) {

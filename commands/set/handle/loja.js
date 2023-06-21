@@ -4,13 +4,16 @@ const { serverGroups, serversInfos, guildsInfo } = require("../../../configs/con
 const { connection2 } = require("../../../configs/config_privateInfos");
 const { webhookSavageStore } = require("../../../configs/config_webhook");
 const { InternalServerError } = require("../../../embed/geral");
-const { Desbanir } = require("../../ban/handle/desbanir");
+const { Desbanir_approve } = require("../../ban/handle/desbanirHandle/desbanir_approve");
+const { CriarServidor } = require("./criar");
 const webhookSavageLogs = new WebhookClient({ id: webhookSavageStore.id, token: webhookSavageStore.token });
 
 exports.Comprado_Loja = async function (client, interaction, discord, servidor, idOrSteam) {
 
   let embedLogCompra = await client.guilds.cache.get(guildsInfo.log).channels.cache.get('954374435622760508').messages.fetch()
 
+
+  if (idOrSteam['erro']) return interaction.reply({ content: idOrSteam.erro, ephemeral: true })
 
   idOrSteam.includes('STEAM') ? idOrSteam = idOrSteam.slice(8) : idOrSteam
   embedLogCompra = embedLogCompra.filter(msg =>
@@ -119,109 +122,123 @@ exports.Comprado_Loja = async function (client, interaction, discord, servidor, 
               .awaitMessageComponent({ filter, time: 100000, errors: ['time'] })
               .then(() => {
               }).catch(() => {
-                return EndBool = true
+                EndBool = true
+                return msgAsk.edit({ content: 'Você não respondeu a tempo, abortando comando', embeds: [], components: [] }).then(m => setTimeout(() => {
+                  m.delete()
+                }, 5000))
               })
           } else if (['UNBAN', 'UNMUTE', 'UNGAG'].includes(pacote)) {
             if (pacote == 'UNBAN') {
 
-              await Desbanir(client, interaction, steamid, 'comprou unban')
+              await Desbanir_approve(client, interaction, steamid, 'comprou unban')
             }
+
           } else {
             let newPacote = pacote.replace(/[()]/g, '').split(' ')
-            
-            let cargo = { allServers: false }
 
-            if (pacote.toLowerCase().includes('todos') ) {
-              cargo.allServers = true
-              cargo.cargo = Object.keys(serverGroups).find(m => {
-                if (newPacote[0].includes('+')) {
-                  return newPacote[0].replace('+', 'PLUSP') == m.toUpperCase()
-                } else {
-                  return newPacote[0] + 'P' == m.toUpperCase()
-                }
-              })
-              cargo.tempo = newPacote[1]
-
+            if (newPacote[0].toUpperCase() === 'ALUGUEL') {
+              let criarServidor = await CriarServidor(client, msgAsk, steamid, servidor, discord, newPacote[2])
+              
+              if (!criarServidor) return (EndBool = true, msgAsk.edit({ embeds: [InternalServerError(interaction)], components: [] }))
             } else {
-              cargo.cargo = Object.keys(serverGroups).find(m => {
-                if (newPacote[0].includes('+')) {
-                  return newPacote[0].replace('+', 'PLUSP') == m.toUpperCase()
-                } else {
-                  return newPacote[0] + 'P' == m.toUpperCase()
-                }
-              })
-              cargo.tempo = newPacote[1]
-            }
 
-            cargo.flags = serverGroups[cargo.cargo]
-            
+              let cargo = { allServers: false }
 
-            let serversInfosFound = serversInfos.find(sv => sv.name == servidor)
-            if (!cargo.allServers) {
-              try {
-                [rows] = await con.query(
-                  `select * from Cargos where playerid like "%${steamid.slice(8)}" AND server_id = "${serversInfosFound.serverNumber}"`
-                );
-              } catch (error) {
-                return (
-                  msgAsk.edit({ embeds: [InternalServerError(interaction)], components: [] }),
-                  console.error(chalk.redBright('Erro no Select'), error)
-                );
+              if (pacote.toLowerCase().includes('todos')) {
+                cargo.allServers = true
+                cargo.cargo = Object.keys(serverGroups).find(m => {
+                  if (newPacote[0].includes('+')) {
+                    return newPacote[0].replace('+', 'PLUSP') == m.toUpperCase()
+                  } else if (newPacote[0].toLowerCase().includes('GERENTE')) {
+                    return newPacote[0] == m.toUpperCase()
+                  } else {
+                    return newPacote[0] + 'P' == m.toUpperCase()
+                  }
+                })
+                cargo.tempo = newPacote[1]
+
+              } else {
+                cargo.cargo = Object.keys(serverGroups).find(m => {
+                  if (newPacote[0].includes('+')) {
+                    return newPacote[0].replace('+', 'PLUSP') == m.toUpperCase()
+                  } else {
+                    return newPacote[0] + 'P' == m.toUpperCase()
+                  }
+                })
+                cargo.tempo = newPacote[1]
               }
-            }
-            let findRow = rows ? rows.find(row => Object.keys(serverGroups).find(key => serverGroups[key].value === row.flags) == cargo.cargo) : undefined
-            
-            try {
-              if (!cargo.allServers && findRow && findRow.server_id == serversInfosFound.serverNumber) {
-                await con.query(
-                  `UPDATE Cargos SET 
+
+              cargo.flags = serverGroups[cargo.cargo]
+
+
+              let serversInfosFound = serversInfos.find(sv => sv.name == servidor)
+              if (!cargo.allServers) {
+                try {
+                  [rows] = await con.query(
+                    `select * from Cargos where playerid like "%${steamid.slice(8)}" AND server_id = "${serversInfosFound.serverNumber}"`
+                  );
+                } catch (error) {
+                  return (
+                    EndBool = true,
+                    msgAsk.edit({ embeds: [InternalServerError(interaction)], components: [] }),
+                    console.error(chalk.redBright('Erro no Select'), error)
+                  );
+                }
+              }
+              let findRow = rows ? rows.find(row => Object.keys(serverGroups).find(key => serverGroups[key].value === row.flags) == cargo.cargo) : undefined
+
+              try {
+                if (!cargo.allServers && findRow && findRow.server_id == serversInfosFound.serverNumber) {
+                  await con.query(
+                    `UPDATE Cargos SET 
                                                                                   discordID = '${discord.id}', 
                                                                                   flags = '${cargo.flags.value}', 
                                                                                   enddate = (DATE_ADD(CURRENT_TIMESTAMP, INTERVAL ${cargo.tempo == 'PERMANENTE' ? '3850' : cargo.tempo} DAY))
                                                                                   WHERE (playerid regexp '${steamid.slice(8)}') AND server_id = "${serversInfosFound.serverNumber}"`
-                );
-              } else {
-                await con.query(`
+                  );
+                } else {
+                  await con.query(`
                                                                                   INSERT IGNORE INTO Cargos (Id, timestamp, playerid, enddate, flags, server_id, discordID) 
                                                                                   VALUES (NULL, NULL, '${steamid}', (DATE_ADD(CURRENT_TIMESTAMP, INTERVAL ${cargo.tempo == 'PERMANENTE' ? '3850' : cargo.tempo} DAY)), '${cargo.flags.value}', ${!cargo.allServers ? `${serversInfosFound.serverNumber}` : '0'}, '${discord.id}')
                                                                               `
+                  );
+                }
+              } catch (error) {
+                return (
+                  EndBool = true,
+                  msgAsk.edit({ embeds: [InternalServerError(interaction)], components: [] }),
+                  console.error(chalk.redBright('Erro no Select'), error)
                 );
               }
-            } catch (error) {
-              return (
-                msgAsk.edit({ embeds: [InternalServerError(interaction)], components: [] }),
-                console.error(chalk.redBright('Erro no Select'), error)
-              );
-            }
-            try {
-              let fetchedUser = await interaction.guild.members.cache.get(discord.id);
+              try {
+                let fetchedUser = await interaction.guild.members.cache.get(discord.id);
 
-              if (!cargo.allServers && fetchedUser) {
-                if (!fetchedUser.roles.cache.has(serversInfosFound.tagComprado)) {
-                  fetchedUser.roles.add(serversInfosFound.tagComprado)
-                }
-                if (!fetchedUser.roles.cache.has('722814929056563260')) {
-                  fetchedUser.roles.add('722814929056563260')
+                if (!cargo.allServers && fetchedUser) {
+                  if (!fetchedUser.roles.cache.has(serversInfosFound.tagComprado)) {
+                    fetchedUser.roles.add(serversInfosFound.tagComprado)
+                  }
+                  if (!fetchedUser.roles.cache.has('722814929056563260')) {
+                    fetchedUser.roles.add('722814929056563260')
+                  }
+
+                  if (!fetchedUser.user.username.includes('Savage |')) {
+                    fetchedUser.setNickname('Savage | ' + fetchedUser.user.username);
+
+                  }
+                } else if (fetchedUser) {
+                  fetchedUser.roles.add(serversInfos.map(m => m.tagComprado).concat('722814929056563260'))
                 }
 
-                if (!fetchedUser.user.username.includes('Savage |')) {
-                  fetchedUser.setNickname('Savage | ' + fetchedUser.user.username);
-
-                }
-              } else if (fetchedUser) {
-                fetchedUser.roles.add(serversInfos.map(m => m.tagComprado).concat('722814929056563260'))
+              } catch (error) {
+                interaction.followUp({ content: `${interaction.user} **| Não consegui setar o cargo/Renomear o player, faça isso manualmente!!**` }).then((m) => setTimeout(() => {
+                  m.delete()
+                }, 5000))
               }
-
-            } catch (error) {
-              interaction.followUp({ content: `${interaction.user} **| Não consegui setar o cargo/Renomear o player, faça isso manualmente!!**` }).then((m) => setTimeout(() => {
-                m.delete()
-              }, 5000))
             }
           }
 
-          if (EndBool) return msgAsk.edit({ content: 'Você não respondeu a tempo, abortando comando', embeds: [], components: [] }).then(m => setTimeout(() => {
-            m.delete()
-          }, 5000))
+          if (EndBool) return;
+
 
           webhookSavageLogs.editMessage(embedLogCompra.id, { embeds: [embedLogCompra.embeds[0]] })
 

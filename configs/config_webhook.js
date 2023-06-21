@@ -1,8 +1,8 @@
+
 const webhookSavageLogs = {
   id: '',
   token: '',
 };
-
 
 const webhookSavageStore = {
   id: '',

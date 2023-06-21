@@ -13,7 +13,7 @@ class API {
     try {
       return (await this.api.get('/packages')).data
     } catch (error) {
-      return;
+      return {erorr: error};
     }
   }
   delivery = async (ids) => {

@@ -8,6 +8,9 @@ const chalk = require('chalk');
 
 
 exports.UP_Especifico = async function (client, interaction, servidor, motivo, discord_steam) {
+
+  if (discord_steam['erro']) return interaction.reply({ content: steamid.erro, ephemeral: true })
+
   if (!discord_steam) return interaction.reply({ content: 'Você precisa informar o discord ou a steamid do player!!', ephemeral: true })
   if (typeof (discord_steam) == 'string') {
     discord_steam = { steam: discord_steam }

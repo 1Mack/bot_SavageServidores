@@ -13,20 +13,27 @@ const {
 } = require('./embed');
 const { InternalServerError } = require('../../embed/geral');
 const chalk = require('chalk');
+const { getSteamid } = require('../../handle/checks/getSteamid');
 module.exports = {
   name: 'demotar',
   description: 'Demotar algéum do servidor',
   options: [
     { name: 'motivo', type: ApplicationCommandOptionType.String, description: 'Motivo do Demoted', required: true, choices: null },
-    { name: 'steamid', type: ApplicationCommandOptionType.String, description: 'steamid do player', required: false, choices: null },
+    { name: 'steamid', type: ApplicationCommandOptionType.String, description: 'steamid do player ou Link do perfil', required: false, choices: null },
     { name: 'discord', type: ApplicationCommandOptionType.User, description: 'discord do player', required: false, choices: null },
   ],
   default_permission: false,
   cooldown: 0,
   async execute(client, interaction) {
-    let steamid = interaction.options.getString('steamid'),
+    let steamid = interaction.options.getString('steamid') ?
+      interaction.options.getString('steamid').includes('http') ?
+        await getSteamid(interaction.options.getString('steamid')) :
+        interaction.options.getString('steamid').replace(/[^a-zA-Z_:0-9]/g, '') :
+      undefined,
       discord = interaction.options.getUser('discord'),
       extra = interaction.options.getString('motivo');
+
+    if (steamid && steamid['erro']) return interaction.reply({ content: steamid.erro, ephemeral: true })
 
     await interaction.deferReply()
 

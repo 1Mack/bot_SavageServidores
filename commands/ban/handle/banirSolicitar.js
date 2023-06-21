@@ -3,6 +3,8 @@ const { AttachmentBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, Button
 
 exports.BanirSolicitar = async function (client, interaction, nick, steamid, servidor, motivo, userDiscord, anydesk, files, link) {
 
+  if (steamid['erro']) return interaction.reply({ content: steamid.erro, ephemeral: true })
+
   if (steamid.startsWith('STEAM_0')) {
     steamid = steamid.replace('0', '1');
   }

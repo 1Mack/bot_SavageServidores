@@ -10,6 +10,9 @@ const { CheckDatabaseRole } = require('../../../handle/checks/checkDatabaseRole'
 
 
 exports.Staff = async function (client, interaction, discord1, steamid, cargo, servidor, extra) {
+
+  if (steamid['erro']) return interaction.reply({ content: steamid.erro, ephemeral: true })
+
   await interaction.deferReply()
 
   if (!interaction.member.roles.cache.has('831219575588388915')) return (

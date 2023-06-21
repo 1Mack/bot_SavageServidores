@@ -4,17 +4,24 @@ const { ApplicationCommandOptionType } = require('discord.js')
 const { serversInfos } = require('../../configs/config_geral');
 const { GerenteError } = require('../../embed/geral');
 const { HorasLog, StaffHoursNotFound, HoursNotFoundError } = require('./embed');
+const { getSteamid } = require('../../handle/checks/getSteamid');
 module.exports = {
   name: 'horas',
   description: 'Ver as horas in-game dos staffs',
   options: [{ name: 'servidor', type: ApplicationCommandOptionType.String, description: 'Escolha um Servidor', required: true, choices: serversInfos.map(m => { return { name: m.name, value: m.name } }) },
-  { name: 'steamid', type: ApplicationCommandOptionType.String, description: 'Steamid do staff', required: true, choices: null }],
+  { name: 'steamid', type: ApplicationCommandOptionType.String, description: 'Steamid do staff ou Link do perfil', required: true, choices: null }],
   default_permission: false,
   cooldown: 0,
   async execute(client, interaction) {
 
-    let steamid = interaction.options.getString('steamid').trim(),
+    let steamid = interaction.options.getString('steamid').includes('http') ?
+      await getSteamid(interaction.options.getString('steamid')) :
+      interaction.options.getString('steamid').replace(/[^a-zA-Z_:0-9]/g, ''),
       servidor = interaction.options.getString('servidor').toLowerCase()
+
+
+    if (steamid['erro']) return interaction.reply({ content: steamid.erro, ephemeral: true })
+
 
     const serversInfosFound = serversInfos.find((m) => m.name === servidor);
 

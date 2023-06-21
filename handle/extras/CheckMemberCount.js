@@ -26,15 +26,13 @@ exports.CheckMemberCount = async function (client) {
   ChangeChannelName(guild.memberCount.toString(), guild.channels.cache.get('951490853434716230'), '𝗗𝗜𝗦𝗖𝗢𝗥𝗗')
 
 
-  try {
 
-    axios.get('https://steamcommunity.com/groups/SavageServidores/memberslistxml?xml=1').then(({ data }) => {
-      let steamGroup = convert.xml2js(data, { compact: true, spaces: 4, })
+  axios.get('https://steamcommunity.com/groups/SavageServidores/memberslistxml?xml=1').then(({ data }) => {
+    let steamGroup = convert.xml2js(data, { compact: true, spaces: 4, })
 
-      ChangeChannelName(steamGroup.memberList.groupDetails.memberCount._text, guild.channels.cache.get('1051110679446306886'), '𝗦𝗧𝗘𝗔𝗠')
-    })
+    ChangeChannelName(steamGroup.memberList.groupDetails.memberCount._text, guild.channels.cache.get('1051110679446306886'), '𝗦𝗧𝗘𝗔𝗠')
+  }).catch(() => { })
 
-  } catch (error) { }
 
 
 }

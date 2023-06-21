@@ -1,3 +1,4 @@
+const chalk = require("chalk");
 const { serversInfos } = require("../../../configs/config_geral");
 const { connection2, connection, storePanelToken } = require("../../../configs/config_privateInfos");
 const { CheckDatabaseRole } = require("../checkDatabaseRole");
@@ -5,7 +6,6 @@ const { ReloadRolesAndTags } = require("../reloadRolesAndTags");
 
 const api = require("./api");
 const webhook = require("./webhook");
-const con = connection2.promise();
 const con2 = connection.promise();
 
 exports.RunStore = function () {
@@ -112,7 +112,7 @@ async function processSale(sale, type) {
         { name: `Servidor ${cont}`, value: `[${mainArray[2]}]`, inline: true },
       )
 
-      if (!['unmute', 'ungag', 'unban', 'staff', 'skin_exclusiva'].includes(mainArray[0])) {
+      if (!['unmute', 'ungag', 'unban', 'staff', 'skin_exclusiva', 'aluguel'].includes(mainArray[0])) {
 
         if (['creditos'].includes(mainArray[0])) {
           sale.commands = `UPDATE store_players set credits = credits + ${mainArray[1]} where authid REGEXP '${sale.player.slice(8)}'`
@@ -213,8 +213,8 @@ function toSteamID(steamHex) {
 }
 
 async function asyncOnlineFilter(sales) {
-  if (sales.erro) {
-    console.log(sales.erro)
+  if (sales.error) {
+    console.error(chalk.redBright('Erro na loja'), sales.erro)
     return [];
   } else {
     return sales.filter((e) => e != null);

@@ -49,7 +49,7 @@ module.exports = {
             }, 8000))
         } else {
 
-          const servidores = ['awp', 'mix', 'retake', 'retakepistol', 'arena'];
+          const servidores = ['awp', 'mix', 'retake', 'arena'];
 
           let rows, rows1;
           for (let serverNumber in servidores) {

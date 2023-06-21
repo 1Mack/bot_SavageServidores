@@ -5,24 +5,32 @@ const { connection2 } = require('../../configs/config_privateInfos');
 const { serversInfos, serverGroups } = require('../../configs/config_geral');
 
 const { InternalServerError } = require('../../embed/geral');
+const { getSteamid } = require('../../handle/checks/getSteamid');
 
 module.exports = {
   name: 'cargos',
   description: 'Ver os cargos do player in-game',
   options: [
     { name: 'discord', type: ApplicationCommandOptionType.User, description: 'Discord do player', required: false, choices: null },
-    { name: 'steamid', type: ApplicationCommandOptionType.String, description: 'Steamid do player', required: false, choices: null }
+    { name: 'steamid', type: ApplicationCommandOptionType.String, description: 'Steamid do player ou Link do perfil', required: false, choices: null }
   ],
   default_permission: false,
   cooldown: 0,
   async execute(client, interaction) {
     let discord_steam = interaction.options.getUser('discord') ?
       interaction.options.getUser('discord') :
-      interaction.options.getString('steamid').trim()
+      interaction.options.getString('steamid').includes('http') ?
+        await getSteamid(interaction.options.getString('steamid')) :
+        interaction.options.getString('steamid').replace(/[^a-zA-Z_:0-9]/g, '')
+
+
 
     if (!discord_steam) return interaction.reply({ content: 'Você precisa informar o discord ou a steamid do player!!', ephemeral: true }).then(() => setTimeout(() => {
       interaction.webhook.deleteMessage('@original')
     }, 5000))
+
+    if (discord_steam['erro']) return interaction.reply({ content: discord_steam.erro, ephemeral: true })
+
 
     let StaffFoundEmbed = new EmbedBuilder().setColor('#0099ff')
 
@@ -54,7 +62,7 @@ module.exports = {
         let findDiscordID = await rows.find(row => row.discordID != null)
 
         if (findDiscordID) {
-          StaffFoundEmbed.setTitle(`${(await interaction.guild.members.cache.get(findDiscordID.discordID)).user.username}`)
+          StaffFoundEmbed.setTitle(`<@${findDiscordID}>`)
         } else {
           StaffFoundEmbed.setTitle(`${discord_steam}`)
         }
