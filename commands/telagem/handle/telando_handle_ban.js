@@ -18,7 +18,7 @@ exports.Telando_handle_ban = async function (interaction, isFromCancelled) {
 
   let { customId } = await interaction.channel
     .awaitMessageComponent({ filter, time: 100000, errors: ['time'] }).catch((err) => {
-      console.log(err)
+      if (err.code !== 'InteractionCollectorError') console.log(err)
       interaction.message.delete()
       interaction.channel.send({ content: '<:blank:773345106525683753>', components: [telandoButtons.banOrCancel] })
       return interaction.channel.send('Você não respondeu a tempo...voltando ao painel inicial!').then(() => setTimeout((m) => {

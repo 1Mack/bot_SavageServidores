@@ -130,7 +130,7 @@ exports.Comprado_Loja = async function (client, interaction, discord, servidor, 
           } else if (['UNBAN', 'UNMUTE', 'UNGAG'].includes(pacote)) {
             if (pacote == 'UNBAN') {
 
-              await Desbanir_approve(client, interaction, steamid, 'comprou unban')
+              await Desbanir_approve(client, interaction, steamid, 'comprou unban', null, true)
             }
 
           } else {
@@ -138,7 +138,7 @@ exports.Comprado_Loja = async function (client, interaction, discord, servidor, 
 
             if (newPacote[0].toUpperCase() === 'ALUGUEL') {
               let criarServidor = await CriarServidor(client, msgAsk, steamid, servidor, discord, newPacote[2])
-              
+
               if (!criarServidor) return (EndBool = true, msgAsk.edit({ embeds: [InternalServerError(interaction)], components: [] }))
             } else {
 

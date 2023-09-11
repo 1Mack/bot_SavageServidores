@@ -9,7 +9,7 @@ exports.BanirTemp = async function (client, interaction, nick, steamid, tempo, r
       interaction.webhook.deleteMessage('@original')
     }, 5000))
 
-  if (steamid['erro']) return interaction.reply({ content: steamid.erro, ephemeral: true })
+  if (steamid['error']) return interaction.reply({ content: steamid.erro, ephemeral: true })
 
   if (steamid.startsWith('STEAM_0')) {
     steamid = steamid.replace('0', '1');

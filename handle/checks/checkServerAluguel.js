@@ -1,4 +1,3 @@
-const { EmbedBuilder, hyperlink } = require("discord.js");
 const { connection2, panelApiKey } = require("../../configs/config_privateInfos")
 const moment = require('moment');
 moment.locale('en-gb')
@@ -14,30 +13,33 @@ exports.CheckServerAluguel = async function (client) {
 
   try {
 
-    [rows] = await con.query(`SELECT * FROM Servidor_Aluguel where endDate IS NOT NULL ORDER BY endDate`)
+    [rows] = await con.query(`SELECT * FROM Servidor_Aluguel where end_at IS NOT NULL AND LENGTH(end_at) > 0 ORDER BY end_at`)
 
-  } catch (error) { }
+  } catch (error) { console.log(error) }
 
   if (!rows || rows == '') return;
 
   for (let row of rows) {
 
-    const endDate = moment.utc(row.endDate).local().subtract(3, 'hours');
-    let currentDate = moment.utc().local()
+    const endDate = moment(row.end_at, 'DD-MM-YYYY HH:mm:ss').local();
+    let currentDate = moment().local()
 
-    schedule.scheduleJob(row.name, currentDate <= 0 ? currentDate.add(3, 'seconds').toISOString() : endDate.toISOString(), async function () {
+    schedule.scheduleJob(row.server_id.toString(), currentDate.isAfter(endDate) ? currentDate.add(3, 'seconds').toLocaleString() : endDate.toLocaleString(), async function () {
       await con.query(
         `UPDATE Servidor_Aluguel SET 
           password = '',
-          discordID = '',
+          steamid = '',
           tempo = '',
-          endDate = NULL,
-          timestamp = NULL,
-          steamid = ''
-           
+          email = '',
+          panel_password = '',
+          token = '',
+          created_at = '',
+          end_at = ''
           WHERE identifier = '${row.identifier}'`
 
       )
+      await con.query(`DELETE FROM Cargos WHERE server_id = ${row.server_id}`)
+
       let response
       response = await axios.get(`https://panel.mjsv.us/api/client/servers/${row.identifier}/files/contents?file=%2Fcsgo%2Fcfg%2Fserver.cfg`,
         {
@@ -48,73 +50,72 @@ exports.CheckServerAluguel = async function (client) {
           }
         }).catch(err => undefined)
 
-      if (!response) return 'VER ERRO'
+      if (response) {
 
-      let index = response.data.indexOf('sv_password')
-      let data = response.data.replace(response.data.substring(index, response.data.indexOf('\n', index)), `sv_password vazio${row.serverID}`)
+        let index = response.data.indexOf('sv_password')
+        let data = response.data.replace(response.data.substring(index, response.data.indexOf('\n', index)), `sv_password vazio${row.server_id}`)
 
-      response = await axios.post(`https://panel.mjsv.us/api/client/servers/${row.identifier}/files/write?file=%2Fcsgo%2Fcfg%2Fserver.cfg`, data,
-        {
-          headers: {
-            'Content-Type': 'text/plain',
-            'Accept': 'application/json',
-            'Authorization': `Bearer ${panelApiKey.api}`,
-          },
+        response = await axios.post(`https://panel.mjsv.us/api/client/servers/${row.identifier}/files/write?file=%2Fcsgo%2Fcfg%2Fserver.cfg`, data,
+          {
+            headers: {
+              'Content-Type': 'text/plain',
+              'Accept': 'application/json',
+              'Authorization': `Bearer ${panelApiKey.api}`,
+            },
 
-        }).catch(err => undefined)
+          }).catch(err => {
+            console.log(err)
+            return undefined
+          })
 
-      if (!response) return 'VER ERRO'
+        if (!response) guild.channels.cache.get('770401787537522738').send(`<@323281577956081665> | Erro ao editar o server.cfg do servidor **${row.server_id}/${row.name}**`)
 
-      response = await axios.post(`https://panel.mjsv.us/api/client/servers/${row.identifier}/power`, { signal: 'restart' },
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': `Bearer ${panelApiKey.api}`,
-          },
+        response = await axios.post(`https://panel.mjsv.us/api/client/servers/${row.identifier}/power`, { signal: 'restart' },
+          {
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+              'Authorization': `Bearer ${panelApiKey.api}`,
+            },
 
-        }).catch(err => undefined)
+          }).catch(err => undefined)
 
-      if (!response) return 'VER ERRO'
+        if (!response) guild.channels.cache.get('770401787537522738').send(`<@323281577956081665> | Erro ao restartar o servidor **${row.server_id}/${row.name}`)
 
-      const getMember = await guild.members.cache.get(row.discordID) || await guild.members.fetch(row.discordID)
-
-      const findChannel = guild.channels.cache.find(ch => ch.topic === row.discordID)
-
-      if (findChannel && (await findChannel.messages.fetchPinned()).size > 0) findChannel.send('<@323281577956081665> pode fechar')
-
-      if (!getMember) return;
-
-
-      const embed = new EmbedBuilder().
-        setTitle('Servidor Alugado')
-        .setDescription(`***Olá <@${row.discordID}>,***
-        
-        seu servidor acabou de vencer!
-  
-        Caso queira renovar, basta abrir um ${hyperlink('ticket de compras', 'https://discord.com/channels/343532544559546368/855200110685585419/927000168933511219')}
-        <:blank:773345106525683753> 
-        `)
-        .addFields(
-          { name: 'Tempo Alugado', value: `${row.tempo} Dias`, inline: false },
-          { name: 'Alugado no dia', value: `${moment.utc(row.timestamp).local().subtract(3, 'hours').format('DD/MM/YYYY HH:mm:ss')}`, inline: false },
-          { name: 'Termino no dia', value: `${endDate.format('DD/MM/YYYY HH:mm:ss')}`, inline: false },
-          { name: 'Servidor Alocado', value: `${row.name}`, inline: false },
-          { name: 'Tipo', value: `${row.type}`, inline: false },
-        )
-        .setThumbnail('https://cdn.discordapp.com/attachments/814295769699713047/1117827179682738236/S_Logo.png')
-        .setImage('https://cdn.discordapp.com/attachments/751428595536363610/837855972663754792/savage-servidores3.gif')
-        .setFooter({ text: 'Savage Servidores', iconURL: 'https://cdn.discordapp.com/attachments/814295769699713047/1117827179682738236/S_Logo.png' })
-        .setTimestamp()
-
-      await getMember.send({ embeds: [embed] }).catch(() => { })
-
-      if (getMember._roles.find('1106551221176766496')) {
-        getMember.roles.remove('1106551221176766496').catch(() => { })
+      } else {
+        guild.channels.cache.get('770401787537522738').send(`<@323281577956081665> | Erro ao pegar informações do server.cfg do servidor **${row.server_id}/${row.name}`)
       }
 
+      let demoDelete
+      try {
+        demoDelete = await axios.get(`https://panel.mjsv.us/api/client/servers/${row.identifier}/files/list?directory=%2Fcsgo%2Fwarmod`,
+          {
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+              'Authorization': `Bearer ${panelApiKey.api}`,
+            },
+          })
+      } catch (err) { }
+
+      if (!demoDelete || demoDelete.data.data.length == 0) return;
+
+      try {
+        axios.post(`https://panel.mjsv.us/api/client/servers/${row.identifier}/files/delete`, {
+          "root": "/csgo/warmod",
+          "files":
+            demoDelete.data.data.map(m => m.attributes.name)
+
+        },
+          {
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+              'Authorization': `Bearer ${panelApiKey.api}`,
+            },
+          })
+
+      } catch (err) { guild.channels.cache.get('770401787537522738').send(`<@323281577956081665> | Erro ao deletar as demos do servidor **${row.server_id}/${row.name}**`) }
     })
-
-
   }
 }

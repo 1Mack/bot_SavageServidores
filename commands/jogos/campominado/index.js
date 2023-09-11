@@ -236,22 +236,22 @@ exports.CampoMinado = async function (client, interaction, bombs, creditos) {
         }
       });
   }
-  
-  async function Query(wonBool) {
-      if (wonBool) {
-        result.credits += creditosEarned
 
-        await con.query(`UPDATE store_players SET credits = ${result.credits} where authid = '${result.authid}'`).catch((err) => console.log(err))
+  async function Query(wonBool) {
+    if (wonBool) {
+      result.credits += creditosEarned
+
+      await con.query(`UPDATE store_players SET credits = ${result.credits} where authid = '${result.authid}'`).catch((err) => console.log(err))
 
     } else {
-        result.credits -= creditos
-        try {
-            await con.query(`UPDATE store_players SET credits = ${result.credits} where authid = '${result.authid}'`)
+      result.credits -= creditos
+      try {
+        await con.query(`UPDATE store_players SET credits = ${result.credits} where authid = '${result.authid}'`)
 
-        } catch (error) {
-            console.log(error)
-        }
-    }  
+      } catch (error) {
+        console.log(error)
+      }
+    }
   }
 
   if (!gameOver.won) {

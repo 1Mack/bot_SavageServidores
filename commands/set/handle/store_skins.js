@@ -3,7 +3,7 @@ const { connection } = require('../../../configs/config_privateInfos');
 
 exports.Store_Skins = async function (client, interaction, steamid, skin) {
 
-  if (steamid['erro']) return interaction.reply({ content: steamid.erro, ephemeral: true })
+  if (steamid['error']) return interaction.reply({ content: steamid.erro, ephemeral: true })
 
 
   if (interaction.user.id !== '323281577956081665') return interaction.reply({ content: 'Você não pode usar esse comando!', ephemeral: true })

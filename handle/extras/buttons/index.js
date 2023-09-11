@@ -227,6 +227,16 @@ const functionCargos = {
   'desmute_approve'(interaction, client) {
     Desmutar_handle(client, interaction, 'approve')
   },
+  async 'kick'(interaction, client) {
+    try {
+      const msg = await interaction.guild.channels.cache.get(interaction.channelId).messages.fetch(interaction.message.id)
+      const member = await interaction.guild.members.cache.get(msg.embeds[0].data.footer.text)
+      member.kick('levou kick por msg proibida')
+      msg.delete()
+    } catch (error) {
+      return interaction.reply('erro na função de kick')
+    }
+  }
   /* 'acharInativosStaff'(interaction, client) {
 
     const fs = require('fs');

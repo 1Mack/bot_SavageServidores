@@ -202,7 +202,7 @@ module.exports = {
         }
       })
       .catch((err) => {
-        console.log(err)
+        if (err.code !== 'InteractionCollectorError') console.log(err)
         interaction.channel.send(`Você não respondeu a tempo, abortando comando<a:savage_loading:837104765338910730>`)
           .then((m) => setTimeout(() => {
             m.delete()

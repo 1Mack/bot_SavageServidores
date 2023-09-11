@@ -54,7 +54,7 @@ exports.Desbanir_handle = async function (client, interaction, type, steamid, mo
     if (unban === 'desbanido') {
       msgFound.delete()
 
-      if (interaction.guild.id === '792575394271592458') {
+      if (interaction.guildId === '792575394271592458') {
         interaction.guild.channels.cache.get('1067900204893863936').send({ embeds: [UnbanGuildLog(true, userAuthor, steamid, motivo, interaction.user)] })
       } else {
         client.guilds.cache.get('792575394271592458').channels.cache.get('1067900204893863936').send({ embeds: [UnbanGuildLog(true, userAuthor, steamid, motivo, interaction.user)] })

@@ -227,9 +227,8 @@ exports.UP_Procurar_merecedores = async function (client, interaction, servidor)
       .catch(async (error) => {
 
         await msg.edit({ content: `${interaction.user} **| Você não respondeu a tempo....Deletando Canal**`, embeds: [], components: [] })
-        if (error.code !== 'INTERACTION_COLLECTOR_ERROR') {
-          console.log(error)
-        }
+        if (error.code !== 'INTERACTION_COLLECTOR_ERROR') console.log(error)
+
         await wait(5000)
         outloop = true
       });

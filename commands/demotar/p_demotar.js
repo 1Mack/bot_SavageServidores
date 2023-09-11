@@ -13,7 +13,7 @@ const {
 } = require('./embed');
 const { InternalServerError } = require('../../embed/geral');
 const chalk = require('chalk');
-const { getSteamid } = require('../../handle/checks/getSteamid');
+const { GetSteamid } = require('../../handle/checks/getSteamid');
 module.exports = {
   name: 'demotar',
   description: 'Demotar algéum do servidor',
@@ -27,13 +27,13 @@ module.exports = {
   async execute(client, interaction) {
     let steamid = interaction.options.getString('steamid') ?
       interaction.options.getString('steamid').includes('http') ?
-        await getSteamid(interaction.options.getString('steamid')) :
+        await GetSteamid(interaction.options.getString('steamid')) :
         interaction.options.getString('steamid').replace(/[^a-zA-Z_:0-9]/g, '') :
       undefined,
       discord = interaction.options.getUser('discord'),
       extra = interaction.options.getString('motivo');
 
-    if (steamid && steamid['erro']) return interaction.reply({ content: steamid.erro, ephemeral: true })
+    if (steamid && steamid['error']) return interaction.reply({ content: steamid.erro, ephemeral: true })
 
     await interaction.deferReply()
 
@@ -88,13 +88,18 @@ module.exports = {
     }
 
     let serversInfosFound = rows.map(row => {
-      let serverFind = serversInfos.find(m => m.serverNumber == row.server_id)
+      let serverFind = row.server_id == 0
+        ?
+        { serverNumber: 0, visualName: 'TODOS' }
+        :
+        serversInfos.find(m => m.serverNumber == row.server_id)
 
       let cargo = Object.keys(serverGroups).find(key => serverGroups[key].value === row.flags)
 
       return { row, serverFind, cargo }
     })
-    const discordUser = rows.find(dc => dc.discordID != null) || { discordID: discord.id }
+
+    const discordUser = discord ? discord : rows.find(dc => dc.discordID != null)
 
     let msgFunction;
 
@@ -108,7 +113,7 @@ module.exports = {
       return i.user.id === interaction.user.id;
     };
 
-    await interaction.channel.awaitMessageComponent({ filter, componentType: ComponentType.SelectMenu, time: 60000 })
+    await interaction.channel.awaitMessageComponent({ filter, componentType: ComponentType.StringSelect, time: 60000 })
       .then(async ({ values }) => {
 
         serversInfosFound = await serversInfosFound.filter(info => {
@@ -182,7 +187,7 @@ module.exports = {
               }
               let fetchedUser;
 
-              if (discordUser != '') {
+              if (discordUser) {
                 fetchedUser = await interaction.guild.members.cache.get(discordUser.discordID);
               }
 
@@ -255,21 +260,20 @@ module.exports = {
             }
 
           }).catch(async (err) => {
-            return (
-              console.log(err),
-              msg.edit({ content: '**Não respondeu a tempo, abortando Comando** <a:savage_loading:837104765338910730>**', embeds: [], components: [] }),
-              await wait(4000),
-              msg.delete()
-            )
+            if (err.code !== 'InteractionCollectorError') console.log(err)
+
+            msg.edit({ content: '**Não respondeu a tempo, abortando Comando** <a:savage_loading:837104765338910730>**', embeds: [], components: [] })
+            await wait(4000)
+
+            return msg.delete()
           })
       }).catch(async (err) => {
-        return (
-          console.log(err),
+        if (err.code !== 'InteractionCollectorError') console.log(err)
 
-          msg.edit({ content: '**Não respondeu a tempo, abortando Comando** <a:savage_loading:837104765338910730>**', embeds: [], components: [] }),
-          await wait(4000),
-          msg.delete()
-        )
+        msg.edit({ content: '**Não respondeu a tempo, abortando Comando** <a:savage_loading:837104765338910730>**', embeds: [], components: [] })
+        await wait(4000)
+
+        return msg.delete()
       })
 
 

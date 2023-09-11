@@ -3,7 +3,7 @@ const { EmbedBuilder } = require('discord.js')
 
 exports.ServerStatus = async function (client) {
 
-  return axios.get('API_INTERNA').then(({ data }) => {
+  return axios.get('http://131.196.196.194:22500/servers').then(({ data }) => {
 
     const newData = data.flatMap(m => m.serversInfos).sort(function (a, b) { return a.name.split(' ', 3)[2].replace('#', '') - b.name.split(' ', 3)[2].replace('#', '') })
 

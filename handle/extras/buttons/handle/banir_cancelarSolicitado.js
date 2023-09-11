@@ -1,96 +1,86 @@
 const { ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType } = require("discord.js");
 const { BanirTemp } = require("../../../../commands/ban/handle/banir");
+const { CommandHandler } = require("../../../commands/commandHandler");
+const { Banlog } = require("../../../../commands/ban/handle/embed");
 
 exports.Solicitado_banirCancelar = async function (interaction, client, type) {
 
   if (!interaction.member.roles.cache.has('778273624305696818')) {
     return interaction.reply({ content: 'Voce não pode reagir a esse botão!', ephemeral: true })
   }
-
+  await interaction.deferUpdate()
+  const primaryButtons = interaction.message.components
   const button = new ActionRowBuilder().addComponents(
     new ButtonBuilder()
       .setCustomId('cancel')
-      .setLabel('NÃO')
+      .setLabel('CANCELAR AÇÃO')
       .setStyle(ButtonStyle.Primary),
     new ButtonBuilder()
       .setCustomId('confirm')
-      .setLabel('SIM')
+      .setLabel('CONCLUIR AÇÃO')
       .setStyle(ButtonStyle.Danger)
 
   )
-  let msg = await interaction.channel.send(`${interaction.user} deseja concluir essa ação?`)
 
-  interaction.message.edit({ components: [] })
-
-  await msg.edit({ components: [button] })
+  interaction.message.edit({ components: [button] })
 
   const filter = i => {
     i.deferUpdate();
-    return i.user.id === interaction.user.id && i.message.id == msg.id;
+    return i.user.id === interaction.user.id && i.message.id == interaction.message.id;
   };
-  let endExit = false
-  await msg
-    .awaitMessageComponent({ filter, time: 50000, componentType: ComponentType.Button, errors: ['time'] })
-    .then(async ({ customId }) => {
 
-      if (customId == 'cancel') {
-        endExit = true
+  const response = await interaction.message.channel
+    .awaitMessageComponent({ filter, time: 50000, componentType: ComponentType.Button, errors: ['time'] }).catch(() => undefined)
 
-      } else {
-        if (type == 'banirSolicitado') {
-          let message = interaction.message.embeds
-          for (let i in message) {
-            message[i].color = '57F287'
-          }
-          message[0].title = `Banido pelo ${interaction.user.username}`
-          let banirMSG = message[0].fields
+  if (!response) {
+    interaction.message.edit({ components: primaryButtons })
+    return interaction.channel.send(`${interaction.user} | ***Houve um erro ao tentar proceguir coma ação!***`).then(m => setTimeout(() => {
+      m.delete()
+    }, 5000))
+  }
 
-          await BanirTemp(client, interaction, banirMSG[0].value, banirMSG[1].value, '0', banirMSG[5].value, banirMSG[3])
-          interaction.message.edit({ embeds: message })
-          msg.delete()
-        } else if (type == 'cancelarSolicitado') {
-          let message = interaction.message.embeds
-          for (let i in message) {
-            message[i].color = 'ED4245'
-          }
-          message[0].title = `Negado pelo ${interaction.user.username}`
+  if (response.customId == 'cancel') {
+    interaction.message.edit({ components: primaryButtons })
+    return interaction.channel.send(`${interaction.user} | ***Ação cancelada com sucesso!***`).then(m => setTimeout(() => {
+      m.delete()
+    }, 5000))
+  } else if (type == 'banirSolicitado') {
+    const [nick, steamid, reason] = [interaction.message.embeds[0].fields[0].value, interaction.message.embeds[0].fields[1].value, interaction.message.embeds[0].fields[5].value]
 
-          interaction.message.edit({ embeds: message })
-        } else {
-          let message = interaction.message.embeds
-          for (let i in message) {
-            message[i].color = '57F287'
-          }
-          message[0].title = `Ban confirmado pelo ${interaction.user.username}`
+    const commandHandler = await new CommandHandler(client).ban(nick, steamid, '0', reason)
 
-          interaction.message.edit({ embeds: message })
-        }
+    if (commandHandler['error']) {
+      interaction.message.edit({ components: primaryButtons })
+      return interaction.channel.send(`${interaction.user} | ***Houve um erro ao tentar proceguir coma ação!***\n\n\`\`\`${commandHandler.error}\`\`\``).then(m => setTimeout(() => {
+        m.delete()
+      }, 5000))
+    }
+    changeEmbedInfos(type)
+    interaction.guild.channels.cache.get('721854111741509744').send({ embeds: [Banlog(nick, steamid, '0', reason, interaction.user)] });
+
+  } else {
+    changeEmbedInfos(type)
+  }
+
+  function changeEmbedInfos(type) {
+    let messageEmbed = interaction.message.embeds
+    if (type == 'banirSolicitado') {
+      for (let i in messageEmbed) {
+        messageEmbed[i].data.color = '15548997'
       }
-    }).catch(() => { endExit = true })
+      messageEmbed[0].data.title = `BANIDO - ${interaction.user.username}`
+    } else if (type == 'cancelarSolicitado') {
+      for (let i in messageEmbed) {
+        messageEmbed[i].data.color = '2303786'
+      }
+      messageEmbed[0].data.title = `REPROVADO - ${interaction.user.username}`
+    } else {
+      for (let i in messageEmbed) {
+        messageEmbed[i].data.color = '2303786'
+      }
+      messageEmbed[0].data.title = `JÁ BANIDO -  ${interaction.user.username}`
+    }
+    interaction.message.edit({ embeds: messageEmbed, components: [] })
+  }
 
-  if (endExit) {
-    button.setComponents(
-      new ButtonBuilder()
-        .setCustomId('cancelarSolicitado')
-        .setLabel('CANCELAR')
-        .setStyle(ButtonStyle.Primary),
-      new ButtonBuilder()
-        .setCustomId('banidoSolicitado')
-        .setLabel('JÁ FOI BANIDO')
-        .setStyle(ButtonStyle.Secondary),
-      new ButtonBuilder()
-        .setCustomId('banirSolicitado')
-        .setLabel('BANIR')
-        .setStyle(ButtonStyle.Danger)
-    )
-    interaction.message.edit({ components: [button] })
-    msg.edit({ content: 'Ação cancelada!', components: [] }).then(() => setTimeout(() => {
-      msg.delete()
-    }, 5000))
-  }
-  if (type != 'banirSolicitado') {
-    msg.edit({ content: 'Ação concluida com sucesso!', components: [] }).then(() => setTimeout(() => {
-      msg.delete()
-    }, 5000))
-  }
 }

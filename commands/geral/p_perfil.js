@@ -31,7 +31,7 @@ module.exports = {
     let steamid64;
     try {
       steamid64 = await axios.get(
-        `https://api.steampowered.com/ISteamUser/ResolveVanityURL/v1/?key=${steamApiKey}&vanityurl=${steamURL}`
+        `https://api.steampowered.com/ISteamUser/ResolveVanityURL/v1/?key=${steamApiKey.api}&vanityurl=${steamURL}`
       ).then(async ({ data }) => {
         return data.response.steamid;
       });
@@ -48,7 +48,7 @@ module.exports = {
     try {
       PerfilInfos = {
         amigos: await axios.get(
-          `https://api.steampowered.com/ISteamUser/GetFriendList/v1/?key=${steamApiKey}&steamid=${steamid64}`
+          `https://api.steampowered.com/ISteamUser/GetFriendList/v1/?key=${steamApiKey.api}&steamid=${steamid64}`
         )
           .then(async ({ data }) => {
 
@@ -58,28 +58,28 @@ module.exports = {
             return 'Privado'
           }),
         bans: await axios.get(
-          `https://api.steampowered.com/ISteamUser/GetPlayerBans/v1/?key=${steamApiKey}&steamids=${steamid64}`
+          `https://api.steampowered.com/ISteamUser/GetPlayerBans/v1/?key=${steamApiKey.api}&steamids=${steamid64}`
         )
           .then(async ({ data }) => {
             return data.players;
           })
           .catch(() => { }),
         playerInfos: await axios.get(
-          `https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v2/?key=${steamApiKey}&steamids=${steamid64}`
+          `https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v2/?key=${steamApiKey.api}&steamids=${steamid64}`
         )
           .then(async ({ data }) => {
             return data.response.players;
           })
           .catch(() => { }),
         jogos_totais: await axios.get(
-          `https://api.steampowered.com/IPlayerService/GetOwnedGames/v1/?key=${steamApiKey}&steamid=${steamid64}&include_appinfo=false&include_played_free_games=true`
+          `https://api.steampowered.com/IPlayerService/GetOwnedGames/v1/?key=${steamApiKey.api}&steamid=${steamid64}&include_appinfo=false&include_played_free_games=true`
         )
           .then(async ({ data }) => {
             return data.response.game_count == undefined ? 'Privado' : data.response.game_count;
           })
           .catch(() => { }),
         /*  steam_lvl: await axios.get(
-           `https://api.steampowered.com/IPlayerService/GetSteamLevel/v1/?key=${steamApiKey}&steamid=${steamid64}`
+           `https://api.steampowered.com/IPlayerService/GetSteamLevel/v1/?key=${steamApiKey.api}&steamid=${steamid64}`
          )
            .then(async ({ data }) => {
              console.log(data)

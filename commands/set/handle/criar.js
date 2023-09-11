@@ -1,10 +1,12 @@
 const { EmbedBuilder } = require('discord.js')
 const { panelApiKey, connection2 } = require('../../../configs/config_privateInfos')
-const { AdminServidorAdicionar } = require('../../servidor/handle/admin/adicionar')
 const { CheckServerAluguel } = require('../../../handle/checks/checkServerAluguel')
+const moment = require('moment')
+const { Email } = require('../../../handle/email')
+moment.locale('en-gb')
 const axios = require('axios').default
 
-exports.CriarServidor = async function (client, interaction, steamid, servidor, discord, tempo, valor, serverid, fromSetarDirectly) {
+exports.CriarServidor = async function (client, interaction, steamid, email, tempo, valor, serverid, fromSetarDirectly) {
 
   async function handleMessage(content, first, toDelete, last) {
     if (fromSetarDirectly) {
@@ -31,7 +33,7 @@ exports.CriarServidor = async function (client, interaction, steamid, servidor, 
 
   const con = connection2.promise();
 
-  let [rows] = await con.query(`SELECT * FROM Servidor_Aluguel where type = '${servidor}' and ${serverid ? `serverID=${serverid}` : '(endDate < DATE_SUB(CURRENT_TIMESTAMP(), INTERVAL 3 HOUR)  OR endDate is null)'} `).catch(() => undefined)
+  let [rows] = await con.query(`SELECT * FROM Servidor_Aluguel where ${serverid ? `server_id=${serverid}` : 'end_at IS NULL OR LENGTH(end_at) < 2'} `).catch(() => undefined)
 
   if (!rows || rows == '') {
     await handleMessage('***Não há servidores disponíveis, tente novamente mais tarde!***', false, true)
@@ -88,70 +90,44 @@ exports.CriarServidor = async function (client, interaction, steamid, servidor, 
     await handleMessage('***Aconteceu algum erro na hora de ligar o servidor!***', false, true)
     return false
   }
+  const panel_password = ((length = 10, wishlist = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz@#') => Array(length).fill(0).map(() => wishlist[Math.floor(Math.random() * (wishlist.length + 1))]).join(''))()
 
   try {
     await con.query(`
     UPDATE Servidor_Aluguel SET 
     password ='${password}',
     steamid ='${steamid}',
-    discordID = '${discord.id}',
     tempo = ${tempo},
-    enddate = (DATE_ADD(CURRENT_TIMESTAMP, INTERVAL ${tempo} DAY))
+    email = '${email}',
+    panel_password = '${panel_password}',
+    created_at = '${moment().local().format('DD-MM-YYYY HH:mm:ss')}',
+    end_at = '${moment().local().add(tempo, 'd').format('DD-MM-YYYY HH:mm:ss')}'
     WHERE id = ${rows.id}
 `)
   } catch (error) {
+    console.log(error)
     await handleMessage('***Erro interno ou servidor ja cadastrado***', false, true)
     return false
   }
-
+  new Email({ client_email: email }).serverCreated(password)
   try {
-    await AdminServidorAdicionar(interaction, steamid, discord, tempo, `${rows.serverID}`)
+    await this.con2.query(`INSERT IGNORE INTO Cargos
+    (playerid, enddate, flags, server_id) 
+    VALUES ('${steamid}', (DATE_ADD(CURRENT_TIMESTAMP, INTERVAL ${tempo} DAY)), 'a/z/t', ${rows.server_id})`)
 
   } catch (error) {
+    console.log(error)
     await handleMessage('***Erro ao setar o admin***', false, true)
-    return false
   }
-
 
   var finalDate = new Date(new Date().getTime() + (tempo * 24 * 60 * 60 * 1000)).toLocaleString('en-GB')
 
-  const embed = new EmbedBuilder()
-    .setTitle('Orientações Básicas (LEIA COM ATENÇÃO)')
-    .setDescription(`
-  <:blank:773345106525683753>
-  **Comandos pelo Discord**
-  > </servidor admin adicionar:1100497030029258772> → Adiciona um admin no seu servidor
-  > </servidor admin remover:1100497030029258772> → Remove um admin no seu servidor
-  > </servidor energia:1100497030029258772> → Liga ou Desliga o servidor
-  > </servidor senha:1100497030029258772> → Altera a senha do servidor
-  
-  
-  **Comandos Dentro do Servidor**
-  > __!admin__ → Acesso a todos os comandos disponíveis
-  > __!knife, !ws, !agents, !sticker__ → Para escolher faca, skin, agentes e sticker, respectivamente
-  > __!mvp__ → Para mudar o som ao final da partida
-  > __!fov__ → Para alterar o FOV do jogador
-  > __!map nomeDoMapa__ → Para alterar o MAPA
-  > __!r__ → Para se marcar como pronto (comando usado para poder começar a partida)
-  > __!forceallready__ → Para marcar todos como pronto (comando usado para forçar o começo da partida)
-
-  <:blank:773345106525683753>
-  `)
-    .setFields(
-      { name: 'IP NAVEGADOR', value: `[steam://connect/${rows.ip}/${password}](https://conectar.savageservidores.com/${rows.ip}/${password})` },
-      { name: 'IP CONSOLE', value: `connect ${rows.ip};password ${password}` },
-      { name: 'DURAÇÃO', value: `${tempo} ${tempo == 1 ? 'Dia' : 'Dias'} - (${finalDate})` },
-    ).setFooter({ text: `Servidor ${rows.name}` })
-
-  await handleMessage({ content: '', embeds: [embed] }, false, false, true)
-
-  interaction.member.roles.add('1106551221176766496')
+  await handleMessage({ content: 'Criado!', }, false, false, true)
 
   const logServidor = new EmbedBuilder()
     .setColor('#0066FF')
-    .setTitle(`${servidor.toUpperCase()} - ${tempo} Dias`)
+    .setTitle(`MIX - ${tempo} Dias`)
     .addFields(
-      { name: 'Discord', value: `${discord}`, inline: false },
       { name: 'Steamid', value: `${steamid}`, inline: false },
       { name: 'Tempo', value: `${tempo} Dias`, inline: false },
       { name: 'Termino', value: `${finalDate}`, inline: false },
@@ -165,6 +141,37 @@ exports.CriarServidor = async function (client, interaction, steamid, servidor, 
   client.guilds.cache.get('792575394271592458').channels.cache.get('1100435745832960203').send({ embeds: [logServidor] })
 
   CheckServerAluguel(client)
+
+  let demoDelete
+  try {
+    demoDelete = await axios.get(`https://panel.mjsv.us/api/client/servers/${row.identifier}/files/list?directory=%2Fcsgo%2Fwarmod`,
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${panelApiKey.api}`,
+        },
+      })
+  } catch (err) { console.log(err.data) }
+
+  if (demoDelete.data.data.length == 0) return;
+
+  try {
+    axios.post(`https://panel.mjsv.us/api/client/servers/${rows.identifier}/files/delete`, {
+      "root": "/csgo/warmod",
+      "files":
+        demoDelete.data.data.map(m => m.attributes.name)
+
+    },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${panelApiKey.api}`,
+        },
+      })
+
+  } catch (err) { console.log(err.data) }
 
   return true
 }

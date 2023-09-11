@@ -29,14 +29,14 @@ exports.UP_Especifico = async function (client, interaction, servidor, motivo, d
   try {
     [result] = (await con2.query(`SELECT * FROM Cargos where 
         ${discord_steam['discord'] ? `playerid regexp 
-        REPLACE(
+        'REPLACE(
             (select playerid from Cargos where discordID = '${discord_steam['discord'].id}' LIMIT 1), 
             SUBSTRING(
                 (select playerid from Cargos where discordID = '${discord_steam['discord'].id}' LIMIT 1), 
                 1, 8), 
                 ''
-            )` :
-        `playerid regexp ${discord_steam['steam'].slice(8)}`}
+            )'` :
+        `playerid regexp '${discord_steam['steam'].slice(8)}'`}
         AND (server_id = '${serversInfosFound.serverNumber}' OR server_id = '0')`))
   } catch (error) {
     return (
@@ -165,9 +165,8 @@ exports.UP_Especifico = async function (client, interaction, servidor, motivo, d
       .catch(async (error) => {
 
         await msg.edit({ content: `${interaction.user} **| Você não respondeu a tempo....Comando abortado**`, embeds: [], components: [] })
-        if (error.code !== 'INTERACTION_COLLECTOR_ERROR') {
-          console.log(error)
-        }
+        if (error.code !== 'INTERACTION_COLLECTOR_ERROR') console.log(error)
+
       });
   }
   if (exitMessage) return exitMessage
@@ -254,9 +253,8 @@ exports.UP_Especifico = async function (client, interaction, servidor, motivo, d
         m.delete()
       }, 5000))
 
-      if (error.code !== 'INTERACTION_COLLECTOR_ERROR') {
-        console.log(error)
-      }
+      if (error.code !== 'INTERACTION_COLLECTOR_ERROR') console.log(error)
+
     });
 
 }

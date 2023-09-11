@@ -4,7 +4,7 @@ const chalk = require('chalk');
 
 exports.MutarTemp = async function (client, interaction, nick, steamid, tempo, reason, tipo) {
 
-  if (steamid['erro']) return interaction.reply({ content: steamid.erro, ephemeral: true })
+  if (steamid['error']) return interaction.reply({ content: steamid.erro, ephemeral: true })
 
   if (steamid.startsWith('STEAM_0')) {
     steamid = steamid.replace('0', '1');

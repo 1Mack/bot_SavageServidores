@@ -39,7 +39,7 @@ exports.TicketCreate = async function (interaction, client) {
       };
 
       await channel
-        .awaitMessageComponent({ filter, componentType: ComponentType.SelectMenu, time: 100000 })
+        .awaitMessageComponent({ filter, componentType: ComponentType.StringSelect, time: 100000 })
         .then(async (response) => {
 
           await msg.edit({ embeds: [TicketServerOptions(interaction.user).embed], components: [TicketServerOptions(interaction.user).lista] });
@@ -49,7 +49,7 @@ exports.TicketCreate = async function (interaction, client) {
           };
 
           await channel
-            .awaitMessageComponent({ filter, componentType: ComponentType.SelectMenu, time: 100000 })
+            .awaitMessageComponent({ filter, componentType: ComponentType.StringSelect, time: 100000 })
             .then(async (response2) => {
 
 
@@ -95,12 +95,14 @@ exports.TicketCreate = async function (interaction, client) {
 
 
             })
-            .catch((error) => {
-              return channel.delete(), console.log(error);
+            .catch((err) => {
+              if (err.code !== 'InteractionCollectorError') console.log(err)
+              return channel.delete()
             });
         })
-        .catch((error) => {
-          return channel.delete(), console.log(error)
+        .catch((err) => {
+          if (err.code !== 'InteractionCollectorError') console.log(err)
+          return channel.delete()
         });
     });
 };

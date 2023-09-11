@@ -14,7 +14,7 @@ exports.logVip = function (fetchUser, discord1, steamid, DataInicialUTC, DataFin
     .setColor('#0099ff')
     .setTitle(fetchUser.username.toString())
     .addFields(
-      { name: 'discord', value: discord1.toString() },
+      { name: 'discord', value: discord1 ? discord1.toString() : 'Indefinido' },
       { name: 'Steamid', value: steamid },
       { name: 'Data da Compra', value: DataInicialUTC.toString() },
       { name: 'Data Final', value: DataFinalUTC == 0 ? '**PERMANENTE**' : DataFinalUTC.toString() },
@@ -46,7 +46,7 @@ exports.SetSuccess = function (interaction, fetchedUser, cargo) {
   const embed = new EmbedBuilder()
     .setColor('#00ff00')
     .setDescription(
-      `<a:right_savage:856211226300121098> ${interaction.user}, O **${fetchedUser.username}** foi setado com o cargo **${cargo}** in-game com sucesso !`
+      `<a:right_savage:856211226300121098> ${interaction.user}, ${fetchedUser ? fetchedUser : ''} foi setado com o cargo **${cargo}** in-game com sucesso !`
     );
   return embed;
 };

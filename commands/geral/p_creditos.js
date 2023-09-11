@@ -1,3 +1,4 @@
+const { guildsInfo } = require('../../configs/config_geral');
 const { connection } = require('../../configs/config_privateInfos');
 const { WrongChannel, SugestaoLog } = require('./embed');
 const { ApplicationCommandOptionType } = require('discord.js')

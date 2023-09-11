@@ -6,7 +6,7 @@ const { Desmutar_handle } = require('./desmutarHandle/desmutar_handle');
 
 exports.Desmutar = async function (client, interaction, steamid, motivo, tipo) {
 
-  if (steamid['erro']) return interaction.reply({ content: steamid.erro, ephemeral: true })
+  if (steamid['error']) return interaction.reply({ content: steamid.erro, ephemeral: true })
 
   const findMSG = await client.guilds.cache.get('792575394271592458').channels.cache.get('1057353383335444532').messages.fetch().then(msgs =>
     msgs.find(msg => msg.embeds[0].data.fields.find(f => f.name.includes('Steamid')).value == steamid)

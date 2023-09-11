@@ -13,7 +13,7 @@ exports.Desmutar_approve = async function (client, interaction, steamid, motivo,
   const con = connection.promise();
   let rows
 
-  if (interaction.guild.id === '343532544559546368') {
+  if (interaction.guildId === '343532544559546368') {
     try {
       let [rows] = await con.query(
         `SELECT bid FROM sb_comms WHERE bid=${id} AND RemovedOn IS NULL`

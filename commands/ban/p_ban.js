@@ -3,7 +3,7 @@ const { BanirSolicitar } = require('./handle/banirSolicitar');
 const { BanirTemp } = require('./handle/banir');
 const { Desbanir } = require('./handle/desbanir');
 const { ApplicationCommandOptionType } = require('discord.js');
-const { getSteamid } = require('../../handle/checks/getSteamid');
+const { GetSteamid } = require('../../handle/checks/getSteamid');
 module.exports = {
   name: 'ban',
   description: 'Opções de Ban',
@@ -51,7 +51,7 @@ module.exports = {
         BanirSolicitar(client, interaction,
           interaction.options.getString('nick').trim(),
           interaction.options.getString('steamid').includes('http') ?
-            await getSteamid(interaction.options.getString('steamid')) :
+            await GetSteamid(interaction.options.getString('steamid')) :
             interaction.options.getString('steamid').replace(/[^a-zA-Z_:0-9]/g, ''),
           interaction.options.getString('servidor').toLowerCase(),
           interaction.options.getString('motivo').trim(),
@@ -70,7 +70,7 @@ module.exports = {
         BanirTemp(client, interaction,
           interaction.options.getString('nick').trim(),
           interaction.options.getString('steamid').includes('http') ?
-            await getSteamid(interaction.options.getString('steamid')) :
+            await GetSteamid(interaction.options.getString('steamid')) :
             interaction.options.getString('steamid').replace(/[^a-zA-Z_:0-9]/g, ''),
           interaction.options.getInteger('tempo'),
           interaction.options.getString('motivo').trim(),
@@ -80,7 +80,7 @@ module.exports = {
       case 'remover':
         Desbanir(client, interaction,
           interaction.options.getString('steamid').includes('http') ?
-            await getSteamid(interaction.options.getString('steamid')) :
+            await GetSteamid(interaction.options.getString('steamid')) :
             interaction.options.getString('steamid').replace(/[^a-zA-Z_:0-9]/g, ''),
           interaction.options.getString('motivo').trim(),
         )

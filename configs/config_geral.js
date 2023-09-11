@@ -11,12 +11,17 @@ const serversInfos = [
     mostActiveServers: true
 
   },
- //....
 ];
 
 const serverGroups = {
   fundador: { value: "z/a/t" },
- //...
+}
+const serverGroupsNormal = {
+  fundador: "z/a/t",
+
+}
+const serverGroupsPaid = {
+  gerente: "a/b/c/d/f/g/h/i/j/k/l/m/n/s/o/t",
 }
 
 const guildsInfo = {
@@ -28,4 +33,6 @@ module.exports = {
   serversInfos,
   serverGroups,
   guildsInfo,
+  serverGroupsNormal,
+  serverGroupsPaid
 };

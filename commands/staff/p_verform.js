@@ -194,7 +194,7 @@ module.exports = {
 
       const buttonInteraction = await canalCheck.awaitMessageComponent({ filter, componentType: ComponentType.Button, time: 1000000 })
         .catch(async (err) => {
-          console.log(err)
+          if (err.code !== 'InteractionCollectorError') console.log(err)
           await msg.edit({ content: `${interaction.user} **| Você não respondeu a tempo....Deletando Canal**`, components: [], embeds: [] })
           await wait(6000)
           return await canalCheck.delete()

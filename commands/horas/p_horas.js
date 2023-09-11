@@ -4,7 +4,7 @@ const { ApplicationCommandOptionType } = require('discord.js')
 const { serversInfos } = require('../../configs/config_geral');
 const { GerenteError } = require('../../embed/geral');
 const { HorasLog, StaffHoursNotFound, HoursNotFoundError } = require('./embed');
-const { getSteamid } = require('../../handle/checks/getSteamid');
+const { GetSteamid } = require('../../handle/checks/getSteamid');
 module.exports = {
   name: 'horas',
   description: 'Ver as horas in-game dos staffs',
@@ -15,12 +15,12 @@ module.exports = {
   async execute(client, interaction) {
 
     let steamid = interaction.options.getString('steamid').includes('http') ?
-      await getSteamid(interaction.options.getString('steamid')) :
+      await GetSteamid(interaction.options.getString('steamid')) :
       interaction.options.getString('steamid').replace(/[^a-zA-Z_:0-9]/g, ''),
       servidor = interaction.options.getString('servidor').toLowerCase()
 
 
-    if (steamid['erro']) return interaction.reply({ content: steamid.erro, ephemeral: true })
+    if (steamid['error']) return interaction.reply({ content: steamid.erro, ephemeral: true })
 
 
     const serversInfosFound = serversInfos.find((m) => m.name === servidor);

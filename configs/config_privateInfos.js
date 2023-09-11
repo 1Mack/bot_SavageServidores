@@ -8,12 +8,16 @@ const botConfig = {
 const panelApiKey = {
   api: '',
 };
+const steamApiKey = {
+  api: '',
+};
 
 const connection = mysql.createPool({
   host: '',
   user: '',
   password: '',
   database: '',
+  port: ''
 });
 
 const connection2 = mysql.createPool({
@@ -32,6 +36,7 @@ module.exports = {
   connection,
   connection2,
   panelApiKey,
-  storePanelToken
+  storePanelToken,
+  steamApiKey
 };
 

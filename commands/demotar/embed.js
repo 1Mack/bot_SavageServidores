@@ -1,5 +1,6 @@
 const { ActionRowBuilder, EmbedBuilder, StringSelectMenuBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
-
+const moment = require('moment');
+moment.locale('en-gb')
 exports.MackNotTarget = function (interaction) {
   const embed = new EmbedBuilder()
     .setColor('#ff0000')
@@ -76,13 +77,13 @@ exports.DemotedAskConfirm = function (interaction) {
 
 exports.DemotedInfo = function (rows, user) {
 
-  rows = rows.filter((value, index, self) =>
-    index === self.findIndex((t) => (
-      t.serverFind ?
-        t.serverFind.serverNumber === value.serverFind.serverNumber && t.cargo === value.cargo :
-        t.row.server_id === value.row.server_id && t.cargo === value.cargo
-    ))
-  )
+  /*  rows = rows.filter((value, index, self) =>
+     index === self.findIndex((t) => (
+       t.serverFind ?
+         t.serverFind.serverNumber === value.serverFind.serverNumber && t.cargo === value.cargo :
+         t.row.server_id === value.row.server_id && t.cargo === value.cargo
+     ))
+   ) */
 
   const embed = new EmbedBuilder()
     .setColor('#0099ff')
@@ -94,12 +95,16 @@ exports.DemotedInfo = function (rows, user) {
     .addComponents(
       new StringSelectMenuBuilder()
         .setCustomId('demoted_selectMenu')
+        .setPlaceholder('Escolha quais cargos demotar (Você pode selecionar mais de um)')
         .setMaxValues(rows.length)
         .setMinValues(1)
         .addOptions(
           rows.map((m, i) => {
+
+            let getFullDate = moment(m.row.enddate).local().subtract(3, 'hours')
+
             return {
-              label: `${m.serverFind ? m.serverFind.visualName.toUpperCase() : m.row.server_id == '0' ? 'TODOS' : 'Desconhecido'} | ${m.cargo}`,
+              label: `${m.serverFind ? m.serverFind.visualName.toUpperCase() : 'Desconhecido'}    | ${m.cargo} (${m.cargo.endsWith('p') ? getFullDate.year() >= 2033 ? 'PERMANENTE' : getFullDate.format('DD-MM-YYYY HH:mm:ss') : 'STAFF'})`,
               value: `${m.serverFind ? m.serverFind.serverNumber : m.row.server_id}-${m.cargo}`
             }
           })

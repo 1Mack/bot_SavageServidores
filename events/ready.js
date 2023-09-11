@@ -15,16 +15,25 @@ module.exports = {
     await client.guilds.cache.get(guildsInfo.main).channels.fetch()
     console.log('Canais Carregados')
 
-    RunStore()
+    console.log("> LOJA CARREGADA");
+    RunStore(client).then(() => {
+      setInterval(() => {
+        RunStore(client)
+      }, 60000);
+    })
     CheckServerAluguel(client)
     let channel = await client.guilds.cache.get(guildsInfo.main).channels.cache.get('717331699125714986')
 
     await channel.bulkDelete(100)
-    await channel.send({ embeds: (await ServerStatus(client)) }).then(msg => {
+    channel.send({ embeds: (await ServerStatus(client)) }).then(msg => {
       setInterval(async () => {
         msg.edit({ embeds: (await ServerStatus(client)) })
-        CheckMemberCount(client)
       }, 30000)
+    })
+    CheckMemberCount(client).then(() => {
+      setInterval(async () => {
+        CheckMemberCount(client)
+      }, 300000)
     })
   },
 };

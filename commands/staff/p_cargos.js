@@ -5,7 +5,7 @@ const { connection2 } = require('../../configs/config_privateInfos');
 const { serversInfos, serverGroups } = require('../../configs/config_geral');
 
 const { InternalServerError } = require('../../embed/geral');
-const { getSteamid } = require('../../handle/checks/getSteamid');
+const { GetSteamid } = require('../../handle/checks/getSteamid');
 
 module.exports = {
   name: 'cargos',
@@ -20,7 +20,7 @@ module.exports = {
     let discord_steam = interaction.options.getUser('discord') ?
       interaction.options.getUser('discord') :
       interaction.options.getString('steamid').includes('http') ?
-        await getSteamid(interaction.options.getString('steamid')) :
+        await GetSteamid(interaction.options.getString('steamid')) :
         interaction.options.getString('steamid').replace(/[^a-zA-Z_:0-9]/g, '')
 
 

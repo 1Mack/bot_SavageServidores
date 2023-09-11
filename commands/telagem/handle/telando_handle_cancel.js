@@ -24,42 +24,42 @@ exports.Telando_handle_cancel = async function (interaction) {
     return i.user.id === interaction.user.id;
   };
 
-  interaction = await interaction.channel.awaitMessageComponent({ filter, componentType: ComponentType.Button, time: 60000 }).catch(() => { })
+  const interactionHandle = await interaction.channel.awaitMessageComponent({ filter, componentType: ComponentType.Button, time: 60000 }).catch(() => { })
 
-  if (!interaction || interaction.customId === 'cancel') {
+  if (!interactionHandle || interactionHandle.customId === 'cancel') {
 
     interaction.message.delete()
 
-    return interaction.reply({ content: '<:blank:773345106525683753>', components: [telandoButtons.banOrCancel] })
+    return interactionHandle ? interactionHandle.reply({ components: [telandoButtons.banOrCancel] }) : interactionHandle.channel.send({ components: [telandoButtons.banOrCancel] })
 
-  } else if (interaction.customId === 'send_telados') {
+  } else if (interactionHandle.customId === 'send_telados') {
 
-    Telando_handle_ban(interaction, true)
+    Telando_handle_ban(interactionHandle, true)
   } else {
-    interaction.message.delete()
+    interactionHandle.message.delete()
 
-    interaction.reply({ content: 'Deseja prosseguir com essa ação?', components: [telandoButtons.confirm] })
+    interactionHandle.reply({ content: 'Deseja prosseguir com essa ação?', components: [telandoButtons.confirm] })
 
     const filter2 = i => {
       i.deferUpdate();
-      return i.user.id == interaction.user.id && i.channelId == interaction.channelId;
+      return i.user.id == interactionHandle.user.id && i.channelId == interactionHandle.channelId;
     };
 
-    let { customId } = await interaction.channel
+    let { customId } = await interactionHandle.channel
       .awaitMessageComponent({ filter: filter2, time: 100000, errors: ['time'] }).catch(() => {
-        interaction.deleteReply()
+        interactionHandle.deleteReply()
 
-        interaction.channel.send({ content: '<:blank:773345106525683753>', components: [telandoButtons.banOrCancel] })
-        return interaction.channel.send('Você não respondeu a tempo...voltando ao painel inicial!').then(() => setTimeout((m) => {
+        interactionHandle.channel.send({ components: [telandoButtons.banOrCancel] })
+        return interactionHandle.channel.send('Você não respondeu a tempo...voltando ao painel inicial!').then(() => setTimeout((m) => {
           m.delete()
         }, 5000))
       })
-    interaction.deleteReply()
+    interactionHandle.deleteReply()
 
     if (customId === 'nao') {
-      return interaction.channel.send({ content: '<:blank:773345106525683753>', components: [telandoButtons.banOrCancel] })
+      return interactionHandle.channel.send({ components: [telandoButtons.banOrCancel] })
     } else {
-      return interaction.channel.delete()
+      return interactionHandle.channel.delete()
     }
   }
 

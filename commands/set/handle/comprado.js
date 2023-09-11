@@ -12,8 +12,8 @@ const { CheckDatabaseRole } = require('../../../handle/checks/checkDatabaseRole'
 
 exports.Comprado = async function (client, interaction, discord1, steamid, cargo, tempo, servidor, extra) {
 
-  if (steamid['erro']) return interaction.reply({ content: steamid.erro, ephemeral: true })
-
+  if (steamid['error']) return interaction.reply({ content: steamid.erro, ephemeral: true })
+  if (!discord1 && cargo != 'vip') return interaction.reply({ content: 'Para setar um cargo de staff, você deve, obrigatoriamente, fornecer o discord do player!', ephemeral: true })
 
   await interaction.deferReply()
 
@@ -44,20 +44,21 @@ exports.Comprado = async function (client, interaction, discord1, steamid, cargo
 
 
     let fetchedUser
-    try {
-      fetchedUser = await interaction.guild.members.cache.get(discord1.id);
-    } catch (error) {
-      return interaction.followUp({ embeds: [PlayerDiscordNotFound(interaction)], ephemeral: true }).then(() => setTimeout(() => {
-        interaction.webhook.deleteMessage('@original')
-      }, 5000))
+    if (discord1) {
+      try {
+        fetchedUser = await interaction.guild.members.cache.get(discord1.id);
+      } catch (error) {
+        return interaction.followUp({ embeds: [PlayerDiscordNotFound(interaction)], ephemeral: true }).then(() => setTimeout(() => {
+          interaction.webhook.deleteMessage('@original')
+        }, 5000))
+      }
     }
-
     let guild = client.guilds.cache.get(guildsInfo.log);
 
     const canal = guild.channels.cache.get('954374435622760508')
 
     try {
-      await CheckDatabaseRole(steamid, serversInfosFound ? serversInfosFound.serverNumber : '0', true, serverGroups[cargo].value, tempo, discord1.id)
+      await CheckDatabaseRole(steamid, serversInfosFound ? serversInfosFound.serverNumber : '0', true, serverGroups[cargo].value, tempo, discord1 ? discord1.id : '')
     } catch (error) {
       interaction.editReply({ embeds: [InternalServerError(interaction)], ephemeral: true }).then(() => setTimeout(() => {
         interaction.webhook.deleteMessage('@original')
@@ -69,9 +70,9 @@ exports.Comprado = async function (client, interaction, discord1, steamid, cargo
       ReloadRolesAndTags(servers.identifier)
     }) : ReloadRolesAndTags(serversInfosFound.identifier)
 
-    interaction.editReply({ embeds: [SetSuccess(interaction, fetchedUser.user, cargo)], ephemeral: true })
+    interaction.editReply({ embeds: [SetSuccess(interaction, fetchedUser ? fetchedUser.user : '', cargo)], ephemeral: true })
       ||
-      interaction.followUp({ embeds: [SetSuccess(interaction, fetchedUser.user, cargo)], ephemeral: true })
+      interaction.followUp({ embeds: [SetSuccess(interaction, fetchedUser ? fetchedUser.user : '', cargo)], ephemeral: true })
     if (cargo != 'vip') {
       try {
         if (serversInfosFound && fetchedUser) {
@@ -96,7 +97,7 @@ exports.Comprado = async function (client, interaction, discord1, steamid, cargo
       }
     }
     canal.send({ embeds: [logVip(fetchedUser.user, discord1, steamid, DataInicialUTC, DataFinalUTC, cargo, servidor, extra, interaction)] });
-    fetchedUser.send({ embeds: [vipSendMSG(fetchedUser.user, cargo, tempo, servidor)] });
+    if (fetchedUser) fetchedUser.send({ embeds: [vipSendMSG(fetchedUser.user, cargo, tempo, servidor)] });
   } catch (err) {
     console.log(err)
 

@@ -8,7 +8,7 @@ const { UP_Especifico } = require('./handle/up_especifico');
 const { ApplicationCommandOptionType } = require('discord.js');
 const { Store_Skins } = require('./handle/store_skins');
 const { Store_Credits } = require('./handle/store_credits');
-const { getSteamid } = require('../../handle/checks/getSteamid');
+const { GetSteamid } = require('../../handle/checks/getSteamid');
 const { CriarServidor } = require('./handle/criar');
 
 module.exports = {
@@ -17,16 +17,16 @@ module.exports = {
   options: [
     {
       name: 'comprado', type: ApplicationCommandOptionType.SubcommandGroup, description: 'Para cargos comprados', options: [
-        {
+        /* {
           name: 'loja', type: ApplicationCommandOptionType.Subcommand, description: 'Para cargos comprados pela loja', options: [
             { name: 'discord', type: ApplicationCommandOptionType.User, description: 'discord do player', required: true, choices: null },
             { name: 'servidor', type: ApplicationCommandOptionType.String, description: 'Escolha um Servidor para o Set', required: true, choices: serversInfos.map(m => { return { name: m.name, value: m.name } }).concat({ name: 'all', value: 'all' }) },
             { name: 'steamid_idcompra', type: ApplicationCommandOptionType.String, description: 'Steamid do comprador, Link do perfil ou o ID da compra', required: true, choices: null },
           ]
-        },
+        }, */
         {
           name: 'discord', type: ApplicationCommandOptionType.Subcommand, description: 'Para cargos comprados pelo discord', options: [
-            { name: 'discord', type: ApplicationCommandOptionType.User, description: 'discord do player', required: true, choices: null },
+
             { name: 'steamid', type: ApplicationCommandOptionType.String, description: 'Steamid do player ou Link do perfil', required: true, choices: null },
             {
               name: 'cargo', type: ApplicationCommandOptionType.String, description: 'Escolha um cargo para o Set', required: true, choices: Object.keys(serverGroups).filter(
@@ -37,6 +37,7 @@ module.exports = {
             },
             { name: 'tempo', type: ApplicationCommandOptionType.Integer, description: 'Tempo em dias do set', required: true, choices: null },
             { name: 'servidor', type: ApplicationCommandOptionType.String, description: 'Escolha um Servidor para o Set', required: true, choices: serversInfos.map(m => { return { name: m.name, value: m.name } }).concat({ name: 'all', value: 'all' }) },
+            { name: 'discord', type: ApplicationCommandOptionType.User, description: 'discord do player', required: false, choices: null },
             { name: 'observações', type: ApplicationCommandOptionType.String, description: 'Observações sobre o set', required: false, choices: null }
           ]
         }
@@ -46,11 +47,9 @@ module.exports = {
       name: 'servidor', type: ApplicationCommandOptionType.SubcommandGroup, description: 'Para cargos comprados', options: [
         {
           name: 'criar', type: ApplicationCommandOptionType.Subcommand, description: 'Solicitar um banimento', options: [
-            {
-              name: 'steamid', type: ApplicationCommandOptionType.String, description: 'Steamids ou link do perfl dos Players separados por vírgula', required: true, choices: null
-            },
-            { name: 'servidor', type: ApplicationCommandOptionType.String, description: 'Qual servidor será', required: true, choices: [{ name: 'mix', value: 'mix' }, { name: 'retake', value: 'retake' }] },
-            { name: 'discord', type: ApplicationCommandOptionType.User, description: 'discord do player', required: true, choices: null },
+            { name: 'steamid', type: ApplicationCommandOptionType.String, description: 'Steamid ou link do perfl do Player', required: true, choices: null },
+            { name: 'email', type: ApplicationCommandOptionType.String, description: 'email', required: true, choices: null },
+            { name: 'servidor', type: ApplicationCommandOptionType.String, description: 'Qual servidor será', required: true },
             { name: 'tempo', type: ApplicationCommandOptionType.Integer, description: 'Valor em dias', required: true, choices: null },
             { name: 'valor', type: ApplicationCommandOptionType.String, description: 'Valor diferente do site? Se sim, qual?', required: false, choices: null },
             { name: 'serverid', type: ApplicationCommandOptionType.String, description: 'Quer setar um servidor específico? Se sim, qual?', required: false, choices: null }
@@ -138,7 +137,7 @@ module.exports = {
           interaction.options.getUser('discord'),
           interaction.options.getString('servidor').toLowerCase(),
           interaction.options.getString('steamid_idcompra').includes('http') ?
-            await getSteamid(interaction.options.getString('steamid_idcompra')) :
+            await GetSteamid(interaction.options.getString('steamid_idcompra')) :
             interaction.options.getString('steamid_idcompra').replace(/[^a-zA-Z_:0-9]/g, ''),
         )
         break;
@@ -146,7 +145,7 @@ module.exports = {
         Comprado(client, interaction,
           interaction.options.getUser('discord'),
           interaction.options.getString('steamid').includes('http') ?
-            await getSteamid(interaction.options.getString('steamid')) :
+            await GetSteamid(interaction.options.getString('steamid')) :
             interaction.options.getString('steamid').replace(/[^a-zA-Z_:0-9]/g, ''),
           interaction.options.getString('cargo').toLowerCase(),
           interaction.options.getInteger('tempo'),
@@ -158,7 +157,7 @@ module.exports = {
         Staff(client, interaction,
           interaction.options.getUser('discord'),
           interaction.options.getString('steamid').includes('http') ?
-            await getSteamid(interaction.options.getString('steamid')) :
+            await GetSteamid(interaction.options.getString('steamid')) :
             interaction.options.getString('steamid').replace(/[^a-zA-Z_:0-9]/g, ''),
           interaction.options.getString('cargo').toLowerCase(),
           interaction.options.getString('servidor').toLowerCase(),
@@ -167,9 +166,10 @@ module.exports = {
         break;
       case 'criar':
         CriarServidor(client, interaction,
-          interaction.options.getString('steamid').replace(/[^a-zA-Z_:,0-9]/g, ''),
-          interaction.options.getString('servidor').toLowerCase(),
-          interaction.options.getUser('discord'),
+          interaction.options.getString('steamid').includes('http') ?
+            await GetSteamid(interaction.options.getString('steamid')) :
+            interaction.options.getString('steamid').replace(/[^a-zA-Z_:0-9]/g, ''),
+          interaction.options.getString('email'),
           interaction.options.getInteger('tempo'),
           interaction.options.getString('valor'),
           interaction.options.getString('serverid'),
@@ -182,7 +182,7 @@ module.exports = {
           interaction.options.getString('motivo'),
           interaction.options.getUser('discord') || interaction.options.getString('steamid') ?
             interaction.options.getString('steamid').includes('http') ?
-              await getSteamid(interaction.options.getString('steamid')) :
+              await GetSteamid(interaction.options.getString('steamid')) :
               interaction.options.getString('steamid').replace(/[^a-zA-Z_:0-9]/g, '') :
             null
         )
@@ -195,7 +195,7 @@ module.exports = {
       case 'creditos':
         Store_Credits(client, interaction,
           interaction.options.getString('steamid').includes('http') ?
-            await getSteamid(interaction.options.getString('steamid')) :
+            await GetSteamid(interaction.options.getString('steamid')) :
             interaction.options.getString('steamid').replace(/[^a-zA-Z_:0-9]/g, ''),
           interaction.options.getInteger('total_creditos')
         )
@@ -203,7 +203,7 @@ module.exports = {
       case 'skins':
         Store_Skins(client, interaction,
           interaction.options.getString('steamid').includes('http') ?
-            await getSteamid(interaction.options.getString('steamid')) :
+            await GetSteamid(interaction.options.getString('steamid')) :
             interaction.options.getString('steamid').replace(/[^a-zA-Z_:0-9]/g, ''),
           interaction.options.getString('skin')
         )
